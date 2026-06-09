@@ -1,0 +1,190 @@
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { parseCSV } from "./parsers/csv.parser.js";
+import { parsePDF } from "./parsers/pdf.parser.js";
+import { getClaudeService } from "../../services/claude.service.js";
+import { env } from "../../env.js";
+
+export interface UploadResult {
+  uploadId: string;
+  status: string;
+  message: string;
+  totalTransacoes?: number;
+}
+
+export interface UploadStatus {
+  status: string;
+  total_transacoes: number;
+  transacoes_processadas: number;
+  error_message: string | null;
+}
+
+// Criar cliente admin local (para usar fora dos handlers Fastify)
+function createSupabaseAdmin(): SupabaseClient {
+  return createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+export async function processUpload(uploadId: string, userId: string, fileType: "csv" | "pdf"): Promise<void> {
+  const supabase = createSupabaseAdmin();
+  const claude = getClaudeService();
+
+  console.log(`🔄 Processando upload ${uploadId} (tipo: ${fileType})`);
+
+  try {
+    // 1. Buscar info do upload
+    const { data: upload, error: uploadError } = await supabase
+      .from("uploads")
+      .select("*")
+      .eq("id", uploadId)
+      .single();
+
+    if (uploadError || !upload) {
+      throw new Error("Upload não encontrado");
+    }
+
+    // 2. Baixar arquivo do Storage
+    const { data: fileData, error: downloadError } = await supabase.storage
+      .from("extratos")
+      .download(upload.file_path);
+
+    if (downloadError || !fileData) {
+      throw new Error(`Erro ao baixar arquivo: ${downloadError?.message}`);
+    }
+
+    // 3. Atualizar status para processing
+    await supabase
+      .from("uploads")
+      .update({ status: "processing" })
+      .eq("id", uploadId);
+
+    // 4. Parsear arquivo
+    const buffer = Buffer.from(await fileData.arrayBuffer());
+    let transacoes;
+
+    if (fileType === "csv") {
+      transacoes = await parseCSV(buffer);
+    } else {
+      transacoes = await parsePDF(buffer);
+    }
+
+    console.log(`📊 ${transacoes.length} transações parseadas`);
+
+    if (transacoes.length === 0) {
+      await supabase
+        .from("uploads")
+        .update({
+          status: "done",
+          total_transacoes: 0,
+          transacoes_processadas: 0,
+        })
+        .eq("id", uploadId);
+      return;
+    }
+
+    // 5. Buscar correções do usuário para few-shot
+    const { data: correcoes } = await supabase
+      .from("user_corrections")
+      .select("descricao_raw, categoria_correta, subcategoria_correta")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    const correcoesFormatadas = (correcoes || []).map((c) => ({
+      descricao_raw: c.descricao_raw,
+      categoria_correta: c.categoria_correta,
+      subcategoria_correta: c.subcategoria_correta,
+    }));
+
+    // 6. Inserir transações brutas na tabela
+    const transacoesParaInserir = transacoes.map((t) => ({
+      user_id: userId,
+      data: t.data,
+      valor: t.valor,
+      descricao_raw: t.descricao_raw,
+      tipo: t.tipo === "credito" ? "credito" : "debito",
+      status_revisao: "pendente",
+      upload_id: uploadId,
+      origem: fileType === "csv" ? "csv" : "pdf",
+    }));
+
+    const { data: insertedTransactions, error: insertError } = await supabase
+      .from("transactions")
+      .insert(transacoesParaInserir)
+      .select("id, descricao_raw");
+
+    if (insertError) {
+      throw new Error(`Erro ao inserir transações: ${insertError.message}`);
+    }
+
+    // 7. Categorizar em batches de 20
+    let processadas = 0;
+    const batchSize = 20;
+
+    for (let i = 0; i < transacoes.length; i += batchSize) {
+      const batch = transacoes.slice(i, i + batchSize);
+      const categorized = await claude.categorizarTransacoes(batch, correcoesFormatadas);
+
+      // Atualizar cada transação com a categoria
+      for (let j = 0; j < categorized.length; j++) {
+        const cat = categorized[j];
+        const transacaoOriginal = batch[j];
+        const transactionId = insertedTransactions?.[i + j]?.id;
+
+        if (transactionId) {
+          // Definir status baseado no score
+          let status: string;
+          if (cat.score >= 0.9) {
+            status = "aprovado";
+          } else if (cat.score >= 0.7) {
+            status = "revisar";
+          } else {
+            status = "pendente";
+          }
+
+          await supabase
+            .from("transactions")
+            .update({
+              categoria: cat.categoria,
+              subcategoria: cat.subcategoria,
+              score_confianca: cat.score,
+              is_recorrente: cat.is_recorrente,
+              status_revisao: status,
+            })
+            .eq("id", transactionId);
+        }
+
+        processadas++;
+      }
+
+      // Atualizar progresso
+      await supabase
+        .from("uploads")
+        .update({ transacoes_processadas: processadas })
+        .eq("id", uploadId);
+
+      console.log(`📝 Processado ${processadas}/${transacoes.length}`);
+    }
+
+    // 8. Marcar como concluído
+    await supabase
+      .from("uploads")
+      .update({
+        status: "done",
+        total_transacoes: transacoes.length,
+        transacoes_processadas: transacoes.length,
+      })
+      .eq("id", uploadId);
+
+    console.log(`✅ Upload ${uploadId} processado com sucesso!`);
+  } catch (error) {
+    console.error(`❌ Erro ao processar upload ${uploadId}:`, error);
+
+    // Marcar como erro
+    await supabase
+      .from("uploads")
+      .update({
+        status: "error",
+        error_message: error instanceof Error ? error.message : "Erro desconhecido",
+      })
+      .eq("id", uploadId);
+  }
+}

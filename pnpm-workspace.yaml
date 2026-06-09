@@ -6,5 +6,6 @@ allowBuilds:
   '1': sharp
   '2': unrs-resolver
   esbuild: true
+  msgpackr-extract: true
   sharp: true
   unrs-resolver: true
