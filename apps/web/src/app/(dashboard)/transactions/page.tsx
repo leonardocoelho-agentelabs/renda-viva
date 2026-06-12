@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { format, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { TransactionTable } from "./components/transaction-table";
 import { UploadZone } from "./components/upload-zone";
+import { createClient } from "@/lib/supabase/client";
 
 interface Transaction {
   id: string;
@@ -18,59 +19,12 @@ interface Transaction {
   status_revisao: string;
 }
 
-// Mock data - em produção virá do Supabase/API
-const mockTransactions: Transaction[] = [
-  {
-    id: "1",
-    data: "2026-06-05",
-    descricao_raw: "Supermercado Pão de Açúcar",
-    categoria: "Alimentação",
-    valor: -156.50,
-    tipo: "debito",
-    status_revisao: "aprovado",
-  },
-  {
-    id: "2",
-    data: "2026-06-04",
-    descricao_raw: "Uber",
-    categoria: "Transporte",
-    valor: -32.90,
-    tipo: "debito",
-    status_revisao: "aprovado",
-  },
-  {
-    id: "3",
-    data: "2026-06-03",
-    descricao_raw: "Salário",
-    categoria: "Receita",
-    valor: 5500.00,
-    tipo: "credito",
-    status_revisao: "aprovado",
-  },
-  {
-    id: "4",
-    data: "2026-06-02",
-    descricao_raw: "Farmácia Droga Raia",
-    categoria: "Saúde",
-    valor: -89.90,
-    tipo: "debito",
-    status_revisao: "revisar",
-  },
-  {
-    id: "5",
-    data: "2026-06-01",
-    descricao_raw: "Netflix",
-    categoria: "Lazer",
-    valor: -55.90,
-    tipo: "debito",
-    status_revisao: "aprovado",
-  },
-];
-
 export default function TransactionsPage() {
+  const supabase = createClient();
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
   const [showUpload, setShowUpload] = useState(false);
-  const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const months = Array.from({ length: 6 }, (_, i) => {
     const date = subMonths(new Date(), i);
@@ -80,14 +34,40 @@ export default function TransactionsPage() {
     };
   });
 
-  const handleUploadComplete = () => {
-    // Em produção, recarregaríamos os dados do Supabase
-    console.log("Upload completo!");
-  };
+  const fetchTransactions = useCallback(async (month: string) => {
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-  const filteredTransactions = transactions.filter((t) =>
-    t.data.startsWith(selectedMonth)
-  );
+      const inicioMes = `${month}-01`;
+      const [year, mon] = month.split("-").map(Number);
+      const fimMes = format(new Date(year, mon, 0), "yyyy-MM-dd");
+
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("id, data, descricao_raw, categoria, valor, tipo, status_revisao")
+        .eq("user_id", user.id)
+        .gte("data", inicioMes)
+        .lte("data", fimMes)
+        .order("data", { ascending: false });
+
+      if (!error && data) {
+        setTransactions(data);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [supabase]);
+
+  useEffect(() => {
+    fetchTransactions(selectedMonth);
+  }, [selectedMonth, fetchTransactions]);
+
+  const handleUploadComplete = () => {
+    setShowUpload(false);
+    fetchTransactions(selectedMonth);
+  };
 
   return (
     <DashboardLayout>
@@ -124,7 +104,7 @@ export default function TransactionsPage() {
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
             >
               {months.map((month) => (
                 <option key={month.value} value={month.value}>
@@ -135,7 +115,11 @@ export default function TransactionsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <TransactionTable transactions={filteredTransactions} />
+          {loading ? (
+            <div className="text-center py-12 text-gray-500">Carregando transações...</div>
+          ) : (
+            <TransactionTable transactions={transactions} />
+          )}
         </CardContent>
       </Card>
     </DashboardLayout>

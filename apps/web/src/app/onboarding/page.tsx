@@ -67,12 +67,13 @@ export default function OnboardingPage() {
 
       const { error: updateError } = await supabase
         .from("users")
-        .update({
+        .upsert({
+          id: user.id,
+          email: user.email,
           full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || "Usuário",
           renda_mensal: parseFloat(rendaMensal.replace(",", ".")) || 0,
           perfil_risco: perfilRisco,
-        })
-        .eq("id", user.id);
+        });
 
       if (updateError) {
         console.error("Erro ao atualizar perfil:", updateError);

@@ -53,7 +53,8 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       formData.append("file", file);
 
       // Upload
-      const uploadResponse = await fetch("http://localhost:3001/api/uploads", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+      const uploadResponse = await fetch(`${apiUrl}/uploads`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -72,7 +73,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       // Polling do status
       const pollStatus = async () => {
         const statusResponse = await fetch(
-          `http://localhost:3001/api/uploads/${data.upload_id}/status`,
+          `${apiUrl}/uploads/${data.upload_id}/status`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
