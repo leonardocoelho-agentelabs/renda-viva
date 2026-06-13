@@ -5,6 +5,7 @@ import { useDropzone } from "react-dropzone";
 import { Upload, File, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
 
 interface UploadZoneProps {
   onUploadComplete: () => void;
@@ -45,14 +46,22 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
     setError("");
 
     try {
-      // Obter token JWT
-      const tokenResponse = await fetch("/api/auth/token");
-      const { token } = await tokenResponse.json();
+      // Obter token diretamente do browser client — fonte confiável que gerencia
+      // refresh automático, evitando o server route que pode falhar com sessão expirada
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        setStatus("error");
+        setError("Sessão expirada. Faça login novamente.");
+        return;
+      }
+
+      const token = session.access_token;
 
       const formData = new FormData();
       formData.append("file", file);
 
-      // Upload
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
       const uploadResponse = await fetch(`${apiUrl}/uploads`, {
         method: "POST",
@@ -63,7 +72,8 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       });
 
       if (!uploadResponse.ok) {
-        throw new Error("Erro ao fazer upload");
+        const body = await uploadResponse.json().catch(() => ({}));
+        throw new Error(body?.error || `Erro ao fazer upload (${uploadResponse.status})`);
       }
 
       const { data } = await uploadResponse.json();
@@ -94,7 +104,6 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
         } else if (statusData.data.status === "error") {
           throw new Error(statusData.data.error_message || "Erro no processamento");
         } else {
-          // Atualizar progresso
           const prog = statusData.data.total_transacoes > 0
             ? Math.round((statusData.data.transacoes_processadas / statusData.data.total_transacoes) * 100)
             : 50;
