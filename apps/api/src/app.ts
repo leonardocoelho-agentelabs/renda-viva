@@ -47,6 +47,26 @@ async function buildApp() {
     secret: env.JWT_SECRET,
   });
 
+  // Aceitar requisições com Content-Type: application/json e corpo vazio
+  // (evita FST_ERR_CTP_EMPTY_JSON_BODY em endpoints de ação sem payload)
+  app.addContentTypeParser(
+    "application/json",
+    { parseAs: "string" },
+    (_req, body, done) => {
+      const text = (body as string).trim();
+      if (text.length === 0) {
+        done(null, {});
+        return;
+      }
+      try {
+        done(null, JSON.parse(text));
+      } catch (err) {
+        (err as FastifyError).statusCode = 400;
+        done(err as FastifyError, undefined);
+      }
+    }
+  );
+
   // Plugins personalizados
   await app.register(supabasePlugin);
   await app.register(authPlugin);

@@ -110,6 +110,7 @@ export default function BudgetPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({}),
       });
       if (!res.ok) throw new Error(`Erro ${res.status}`);
       // Recarrega com gasto_atual recalculado
