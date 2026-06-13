@@ -23,7 +23,11 @@ async function buildApp() {
 
   // Registrar plugins
   await app.register(cors, {
-    origin: env.NODE_ENV === "production" ? ["https://rendaviva.com"] : true,
+    origin: env.NODE_ENV === "production"
+      ? ["https://rendavivaapp.com", "https://rendaviva.com"]
+      : true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   });
 

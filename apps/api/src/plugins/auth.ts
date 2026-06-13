@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import fp from "fastify-plugin";
+import { supabaseAdmin } from "./supabase.js";
 
 export interface AuthUser {
   id: string;
@@ -7,11 +8,15 @@ export interface AuthUser {
 }
 
 async function authPlugin(fastify: FastifyInstance) {
-  // O decorator 'user' já está declarado na extensão de tipos abaixo
-  // Não precisamos decorá-lo aqui
+  fastify.decorate(
+    "authenticate",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await authHook(request, reply);
+    }
+  );
 }
 
-// Hook para validar JWT - usar como preHandler em rotas protegidas
+// Hook para validar JWT do Supabase — usar como preHandler em rotas protegidas
 export async function authHook(
   request: FastifyRequest,
   reply: FastifyReply
@@ -35,20 +40,36 @@ export async function authHook(
       });
     }
 
-    // Decodificar JWT usando jwtVerify do Fastify
-    const decoded = await request.server.jwtVerify();
+    const token = authHeader.replace("Bearer ", "");
 
-    // Injetar usuário na request
+    // Verificar token usando o Supabase (não jwtVerify — o secret é do Supabase)
+    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+
+    if (error || !user) {
+      request.log.error(
+        { error: error?.message, code: (error as any)?.code },
+        "Auth error"
+      );
+      return reply.status(401).send({
+        success: false,
+        error: "Invalid or expired token",
+        code: "INVALID_TOKEN",
+      });
+    }
+
     (request as FastifyRequest & { user: AuthUser }).user = {
-      id: decoded.sub as string,
-      email: decoded.email as string || "",
+      id: user.id,
+      email: user.email ?? "",
     };
-  } catch (err) {
-    request.log.error("Auth error:", err);
+  } catch (err: any) {
+    request.log.error(
+      { error: err?.message, details: err },
+      "Auth error inesperado"
+    );
     return reply.status(401).send({
       success: false,
-      error: "Invalid or expired token",
-      code: "INVALID_TOKEN",
+      error: "Erro de autenticação",
+      code: "AUTH_ERROR",
     });
   }
 }
@@ -59,6 +80,9 @@ export default fp(authPlugin, {
 
 // Extensão de tipos
 declare module "fastify" {
+  interface FastifyInstance {
+    authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+  }
   interface FastifyRequest {
     user: AuthUser | null;
   }
