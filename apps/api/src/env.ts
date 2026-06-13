@@ -13,6 +13,13 @@ const envSchema = z.object({
   // Secret para endpoints internos (n8n, jobs)
   API_SECRET: z.string().min(1).default("renda-viva-internal-secret-2026"),
 
+  // Evolution API (WhatsApp)
+  EVOLUTION_URL: z.string().url().default("http://localhost:8080"),
+  EVOLUTION_INSTANCE: z.string().min(1).default("Leonardo"),
+  EVOLUTION_API_KEY: z.string().min(1, "EVOLUTION_API_KEY é obrigatória").default("G6hJn4M6mEPryjQHpptXAesAdjnbahpW"),
+  // Número de teste para alertas (futuramente virá de users.telefone)
+  ALERTS_TEST_NUMBER: z.string().min(1).default("5511951474246"),
+
   // Redis
   REDIS_URL: z.string().url("REDIS_URL deve ser uma URL válida"),
 

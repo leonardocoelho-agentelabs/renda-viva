@@ -37,6 +37,29 @@ export const ocrWorker = new Worker<OcrJobData>(
       console.error("[OCR Worker] Erro ao recalcular score:", e);
     }
 
+    // Verificar gastos incomuns nas transações deste upload (gastos > R$ 50)
+    try {
+      const { supabaseAdmin } = await import("../plugins/supabase.js");
+      const { verificarGastoIncomum } = await import("../services/alerts.service.js");
+
+      const { data: novas } = await supabaseAdmin
+        .from("transactions")
+        .select("descricao_raw, valor, categoria")
+        .eq("upload_id", uploadId)
+        .lt("valor", -50);
+
+      for (const t of novas || []) {
+        if (!t.categoria) continue;
+        await verificarGastoIncomum(userId, {
+          descricao_raw: t.descricao_raw,
+          valor: Number(t.valor),
+          categoria: t.categoria,
+        });
+      }
+    } catch (e) {
+      console.error("[OCR Worker] Erro ao verificar gasto incomum:", e);
+    }
+
     return { success: true, uploadId };
   },
   {
