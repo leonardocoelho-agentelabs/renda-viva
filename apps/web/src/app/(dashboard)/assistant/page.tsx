@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { createClient } from "@/lib/supabase/client";
 import { Send, MessageCircle } from "lucide-react";
-import ReactMarkdown from "react-markdown";
 
 interface Message {
   role: "assistant" | "user";
@@ -16,6 +15,51 @@ const INITIAL_MESSAGE: Message = {
   content:
     "Olá! Sou o Viva, seu assistente financeiro pessoal. Tenho acesso aos seus dados financeiros reais. Como posso ajudar?",
 };
+
+function formatMessage(text: string): React.ReactNode {
+  const lines = text.split("\n");
+  return lines.map((line, i) => {
+    const parts = line.split(/\*\*(.*?)\*\*/g);
+    const formatted = parts.map((part, j) =>
+      j % 2 === 1 ? (
+        <strong key={j} className="font-semibold">
+          {part}
+        </strong>
+      ) : (
+        part
+      )
+    );
+
+    if (line.startsWith("- ") || line.startsWith("* ")) {
+      return (
+        <div key={i} className="flex gap-2 my-0.5">
+          <span className="text-green-600 font-bold mt-0.5">•</span>
+          <span>{formatted.map((p, j) => <span key={j}>{p}</span>)}</span>
+        </div>
+      );
+    }
+
+    if (/^\d+\./.test(line)) {
+      return (
+        <div key={i} className="my-0.5 pl-1">
+          {formatted.map((p, j) => (
+            <span key={j}>{p}</span>
+          ))}
+        </div>
+      );
+    }
+
+    if (line.trim() === "") return <div key={i} className="h-2" />;
+
+    return (
+      <div key={i} className="my-0.5">
+        {formatted.map((p, j) => (
+          <span key={j}>{p}</span>
+        ))}
+      </div>
+    );
+  });
+}
 
 export default function AssistantPage() {
   const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
@@ -49,21 +93,17 @@ export default function AssistantPage() {
         return;
       }
 
-      // últimas 10 mensagens como contexto
       const history = messages.slice(-10);
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-      const response = await fetch(
-        `${apiUrl}/assistant/chat`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ message: userMessage, history }),
-        }
-      );
+      const response = await fetch(`${apiUrl}/assistant/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ message: userMessage, history }),
+      });
 
       if (!response.ok) {
         throw new Error(`Erro ${response.status}`);
@@ -115,23 +155,7 @@ export default function AssistantPage() {
                     : "bg-gray-100 text-gray-800 rounded-tl-sm"
                 }`}
               >
-                {msg.role === "user" ? (
-                  msg.content
-                ) : (
-                  <div className="prose prose-sm max-w-none text-gray-800">
-                    <ReactMarkdown
-                      components={{
-                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                        ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
-                        ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
-                        li: ({ children }) => <li className="text-sm">{children}</li>,
-                      }}
-                    >
-                      {msg.content}
-                    </ReactMarkdown>
-                  </div>
-                )}
+                {msg.role === "user" ? msg.content : formatMessage(msg.content)}
               </div>
             </div>
           ))}
