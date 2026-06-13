@@ -27,7 +27,7 @@ export async function processUpload(uploadId: string, userId: string, fileType: 
   const supabase = createSupabaseAdmin();
   const claude = getClaudeService();
 
-  console.log(`🔄 Processando upload ${uploadId} (tipo: ${fileType})`);
+  console.log("[OCR Worker] Job iniciado:", { uploadId, userId, fileType });
 
   try {
     // 1. Buscar info do upload
@@ -38,10 +38,17 @@ export async function processUpload(uploadId: string, userId: string, fileType: 
       .single();
 
     if (uploadError || !upload) {
-      throw new Error("Upload não encontrado");
+      throw new Error(`Upload não encontrado: ${uploadError?.message ?? "registro ausente"}`);
     }
+    console.log("[OCR Worker] Upload localizado:", { file_path: upload.file_path });
 
-    // 2. Baixar arquivo do Storage
+    // 2. Atualizar status para processing (antes do download para refletir o início)
+    await supabase
+      .from("uploads")
+      .update({ status: "processing" })
+      .eq("id", uploadId);
+
+    // 3. Baixar arquivo do Storage
     const { data: fileData, error: downloadError } = await supabase.storage
       .from("extratos")
       .download(upload.file_path);
@@ -50,23 +57,18 @@ export async function processUpload(uploadId: string, userId: string, fileType: 
       throw new Error(`Erro ao baixar arquivo: ${downloadError?.message}`);
     }
 
-    // 3. Atualizar status para processing
-    await supabase
-      .from("uploads")
-      .update({ status: "processing" })
-      .eq("id", uploadId);
-
     // 4. Parsear arquivo
     const buffer = Buffer.from(await fileData.arrayBuffer());
-    let transacoes;
+    console.log("[OCR Worker] Arquivo baixado:", { bytes: buffer.length });
 
+    let transacoes;
     if (fileType === "csv") {
       transacoes = await parseCSV(buffer);
     } else {
       transacoes = await parsePDF(buffer);
     }
 
-    console.log(`📊 ${transacoes.length} transações parseadas`);
+    console.log("[OCR Worker] Transações parseadas:", { count: transacoes.length });
 
     if (transacoes.length === 0) {
       await supabase
@@ -75,12 +77,21 @@ export async function processUpload(uploadId: string, userId: string, fileType: 
           status: "done",
           total_transacoes: 0,
           transacoes_processadas: 0,
+          error_message: "Nenhuma transação encontrada no arquivo",
         })
         .eq("id", uploadId);
+      console.log("[OCR Worker] Nenhuma transação encontrada, finalizando.");
       return;
     }
 
-    // 5. Buscar correções do usuário para few-shot
+    // 5. Setar total_transacoes IMEDIATAMENTE após o parse.
+    // Sem isso, o frontend calcula progresso com total=0 e fica preso em 50%.
+    await supabase
+      .from("uploads")
+      .update({ total_transacoes: transacoes.length, transacoes_processadas: 0 })
+      .eq("id", uploadId);
+
+    // 6. Buscar correções do usuário para few-shot
     const { data: correcoes } = await supabase
       .from("user_corrections")
       .select("descricao_raw, categoria_correta, subcategoria_correta")
@@ -94,7 +105,7 @@ export async function processUpload(uploadId: string, userId: string, fileType: 
       subcategoria_correta: c.subcategoria_correta,
     }));
 
-    // 6. Inserir transações brutas na tabela
+    // 7. Inserir transações brutas na tabela
     const transacoesParaInserir = transacoes.map((t) => ({
       user_id: userId,
       data: t.data,
@@ -114,19 +125,29 @@ export async function processUpload(uploadId: string, userId: string, fileType: 
     if (insertError) {
       throw new Error(`Erro ao inserir transações: ${insertError.message}`);
     }
+    console.log("[OCR Worker] Transações inseridas no banco:", { count: insertedTransactions?.length ?? 0 });
 
-    // 7. Categorizar em batches de 20
+    // 8. Categorizar em batches de 20
     let processadas = 0;
     const batchSize = 20;
 
     for (let i = 0; i < transacoes.length; i += batchSize) {
       const batch = transacoes.slice(i, i + batchSize);
-      const categorized = await claude.categorizarTransacoes(batch, correcoesFormatadas);
+
+      // O claudeService já faz retry interno e tem fallback ("Outros"), mas
+      // protegemos o batch para que uma falha de categorização nunca trave o job.
+      let categorized: Awaited<ReturnType<typeof claude.categorizarTransacoes>> = [];
+      try {
+        categorized = await claude.categorizarTransacoes(batch, correcoesFormatadas);
+      } catch (claudeError) {
+        console.error("[OCR Worker] Erro no Claude (batch ignorado):", {
+          error: claudeError instanceof Error ? claudeError.message : claudeError,
+        });
+      }
 
       // Atualizar cada transação com a categoria
       for (let j = 0; j < categorized.length; j++) {
         const cat = categorized[j];
-        const transacaoOriginal = batch[j];
         const transactionId = insertedTransactions?.[i + j]?.id;
 
         if (transactionId) {
@@ -161,10 +182,10 @@ export async function processUpload(uploadId: string, userId: string, fileType: 
         .update({ transacoes_processadas: processadas })
         .eq("id", uploadId);
 
-      console.log(`📝 Processado ${processadas}/${transacoes.length}`);
+      console.log("[OCR Worker] Progresso:", { processadas, total: transacoes.length });
     }
 
-    // 8. Marcar como concluído
+    // 9. Marcar como concluído
     await supabase
       .from("uploads")
       .update({
@@ -174,9 +195,16 @@ export async function processUpload(uploadId: string, userId: string, fileType: 
       })
       .eq("id", uploadId);
 
-    console.log(`✅ Upload ${uploadId} processado com sucesso!`);
+    console.log("[OCR Worker] Job concluído com sucesso:", {
+      uploadId,
+      total: transacoes.length,
+    });
   } catch (error) {
-    console.error(`❌ Erro ao processar upload ${uploadId}:`, error);
+    console.error("[OCR Worker] ERRO FATAL:", {
+      uploadId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
 
     // Marcar como erro
     await supabase

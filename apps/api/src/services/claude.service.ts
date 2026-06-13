@@ -94,17 +94,23 @@ Retorne SOMENTE o JSON, sem explicações.`;
     // Retry 3 vezes
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        const response = await this.client.messages.create({
-          model: "claude-haiku-4-5-20250514",
-          max_tokens: 2000,
-          system: SYSTEM_PROMPT,
-          messages: [
-            {
-              role: "user",
-              content: userPrompt,
-            },
-          ],
-        });
+        const response = await this.client.messages.create(
+          {
+            model: "claude-haiku-4-5",
+            max_tokens: 2000,
+            system: SYSTEM_PROMPT,
+            messages: [
+              {
+                role: "user",
+                content: userPrompt,
+              },
+            ],
+          },
+          {
+            // Timeout explícito para não travar o worker se a API não responder
+            timeout: 30000,
+          }
+        );
 
         const content = response.content[0];
         if (content.type !== "text") {

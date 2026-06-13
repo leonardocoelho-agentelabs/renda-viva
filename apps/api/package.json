@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch src/app.ts",
-    "build": "tsup src/app.ts --format cjs --dts",
+    "build": "tsup src/app.ts src/queues/ocr.worker.ts --format cjs --dts",
     "start": "node dist/app.js",
-    "worker": "tsx src/queues/ocr.worker.ts",
+    "worker": "node dist/queues/ocr.worker.js",
+    "worker:tsx": "tsx src/queues/ocr.worker.ts",
     "worker:dev": "tsx watch src/queues/ocr.worker.ts",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit"
