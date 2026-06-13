@@ -10,6 +10,9 @@ const envSchema = z.object({
   // Claude
   CLAUDE_API_KEY: z.string().min(1, "CLAUDE_API_KEY é obrigatória"),
 
+  // Secret para endpoints internos (n8n, jobs)
+  API_SECRET: z.string().min(1).default("renda-viva-internal-secret-2026"),
+
   // Redis
   REDIS_URL: z.string().url("REDIS_URL deve ser uma URL válida"),
 

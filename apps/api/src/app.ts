@@ -17,6 +17,7 @@ import { assistantRoutes } from "./modules/assistant/routes.js";
 import { budgetRoutes } from "./modules/budget/routes.js";
 import { goalsRoutes } from "./modules/goals/routes.js";
 import { scoreRoutes } from "./modules/score/routes.js";
+import { reportsRoutes } from "./modules/reports/routes.js";
 
 async function buildApp() {
   const app = Fastify({
@@ -82,6 +83,7 @@ async function buildApp() {
   await app.register(budgetRoutes, { prefix: "/api/budget" });
   await app.register(goalsRoutes, { prefix: "/api/goals" });
   await app.register(scoreRoutes, { prefix: "/api/score" });
+  await app.register(reportsRoutes, { prefix: "/api/reports" });
 
   // Handler de erro global
   app.setErrorHandler((error: FastifyError, _request: FastifyRequest, reply: FastifyReply) => {

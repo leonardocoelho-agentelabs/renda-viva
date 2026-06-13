@@ -1,0 +1,245 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { createClient } from "@/lib/supabase/client";
+import { FileText, Sparkles, X } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+
+interface ReportItem {
+  mes_ano: string;
+  gerado_em: string | null;
+}
+
+function formatMesAno(mesAno: string): string {
+  const [ano, mes] = mesAno.split("-").map(Number);
+  const d = new Date(ano, mes - 1, 1);
+  const s = d.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function ReportMarkdown({ content }: { content: string }) {
+  return (
+    <div className="text-sm text-gray-700 leading-relaxed">
+      <ReactMarkdown
+        components={{
+          h1: ({ children }) => (
+            <h1 className="text-lg font-bold text-gray-900 mt-4 mb-2">{children}</h1>
+          ),
+          h2: ({ children }) => (
+            <h2 className="text-base font-semibold text-gray-900 mt-4 mb-1.5">{children}</h2>
+          ),
+          h3: ({ children }) => (
+            <h3 className="text-sm font-semibold text-gray-900 mt-3 mb-1">{children}</h3>
+          ),
+          p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
+          strong: ({ children }) => (
+            <strong className="font-semibold text-gray-900 block mt-4 mb-1">{children}</strong>
+          ),
+          ul: ({ children }) => <ul className="list-disc list-inside mb-3 space-y-1">{children}</ul>,
+          li: ({ children }) => <li>{children}</li>,
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
+  );
+}
+
+export default function ReportsPage() {
+  const supabase = createClient();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+
+  const [reports, setReports] = useState<ReportItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [openReport, setOpenReport] = useState<{ mes_ano: string; relatorio: string } | null>(null);
+  const [loadingReport, setLoadingReport] = useState(false);
+
+  const getToken = useCallback(async (): Promise<string | null> => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    return session?.access_token ?? null;
+  }, [supabase]);
+
+  const loadReports = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = await getToken();
+      if (!token) {
+        setError("Sessão expirada. Faça login novamente.");
+        return;
+      }
+      const res = await fetch(`${apiUrl}/reports/list`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      const data = await res.json();
+      setReports(Array.isArray(data) ? data : []);
+    } catch {
+      setError("Não foi possível carregar os relatórios.");
+    } finally {
+      setLoading(false);
+    }
+  }, [apiUrl, getToken]);
+
+  useEffect(() => {
+    loadReports();
+  }, [loadReports]);
+
+  const handleGenerate = async () => {
+    setGenerating(true);
+    setError(null);
+    try {
+      const token = await getToken();
+      if (!token) {
+        setError("Sessão expirada. Faça login novamente.");
+        return;
+      }
+      const res = await fetch(`${apiUrl}/reports/generate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      const data = await res.json();
+      setOpenReport({ mes_ano: data.mes_ano, relatorio: data.relatorio });
+      await loadReports();
+    } catch {
+      setError("Não foi possível gerar o relatório. Tente novamente.");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleOpen = async (mesAno: string) => {
+    setLoadingReport(true);
+    setOpenReport({ mes_ano: mesAno, relatorio: "" });
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const res = await fetch(`${apiUrl}/reports/${mesAno}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      const data = await res.json();
+      setOpenReport({ mes_ano: mesAno, relatorio: data.relatorio });
+    } catch {
+      setOpenReport(null);
+      setError("Não foi possível abrir o relatório.");
+    } finally {
+      setLoadingReport(false);
+    }
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Relatórios</h1>
+          <p className="text-gray-500">Seu resumo financeiro mensal, narrado pelo Viva</p>
+        </div>
+        {reports.length > 0 && (
+          <button
+            onClick={handleGenerate}
+            disabled={generating}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Sparkles className="h-4 w-4" />
+            {generating ? "Gerando..." : "Gerar Relatório do Mês"}
+          </button>
+        )}
+      </div>
+
+      {error && (
+        <div className="mb-6 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <div className="h-10 w-10 rounded-full border-2 border-green-500 border-t-transparent animate-spin mb-4" />
+          <p className="text-gray-400">Carregando relatórios...</p>
+        </div>
+      ) : reports.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <FileText className="h-16 w-16 text-gray-300 mb-4" />
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">
+            Nenhum relatório ainda
+          </h2>
+          <p className="text-gray-400 mb-8 max-w-sm">
+            Gere um relatório narrativo do mês passado com base nas suas transações reais.
+          </p>
+          <button
+            onClick={handleGenerate}
+            disabled={generating}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Sparkles className="h-4 w-4" />
+            {generating ? "Gerando relatório..." : "Gerar primeiro relatório"}
+          </button>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {reports.map((r) => (
+            <button
+              key={r.mes_ano}
+              onClick={() => handleOpen(r.mes_ano)}
+              className="text-left bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow"
+            >
+              <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-3">
+                <FileText className="h-5 w-5 text-green-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900">{formatMesAno(r.mes_ano)}</h3>
+              <p className="text-xs text-gray-400 mt-1">
+                {r.gerado_em
+                  ? `Gerado em ${new Date(r.gerado_em).toLocaleDateString("pt-BR")}`
+                  : "Relatório disponível"}
+              </p>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Modal do relatório */}
+      {openReport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-green-600" />
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {formatMesAno(openReport.mes_ano)}
+                </h2>
+              </div>
+              <button
+                onClick={() => setOpenReport(null)}
+                className="p-1 rounded hover:bg-gray-100 text-gray-400"
+                aria-label="Fechar"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="px-6 py-5 overflow-y-auto">
+              {loadingReport && !openReport.relatorio ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="h-8 w-8 rounded-full border-2 border-green-500 border-t-transparent animate-spin" />
+                </div>
+              ) : (
+                <ReportMarkdown content={openReport.relatorio} />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </DashboardLayout>
+  );
+}
