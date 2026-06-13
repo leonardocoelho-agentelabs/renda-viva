@@ -1,8 +1,7 @@
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { parseCSV } from "./parsers/csv.parser.js";
 import { parsePDF } from "./parsers/pdf.parser.js";
 import { getClaudeService } from "../../services/claude.service.js";
-import { env } from "../../env.js";
+import { supabaseAdmin } from "../../plugins/supabase.js";
 
 export interface UploadResult {
   uploadId: string;
@@ -18,13 +17,10 @@ export interface UploadStatus {
   error_message: string | null;
 }
 
-// Criar cliente admin local (para usar fora dos handlers Fastify)
-function createSupabaseAdmin(): SupabaseClient {
-  return createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
-}
-
 export async function processUpload(uploadId: string, userId: string, fileType: "csv" | "pdf"): Promise<void> {
-  const supabase = createSupabaseAdmin();
+  // Reusa o cliente compartilhado do plugin, que já tem o transport ws
+  // configurado (necessário no Node.js 20, sem WebSocket nativo).
+  const supabase = supabaseAdmin;
   const claude = getClaudeService();
 
   console.log("[OCR Worker] Job iniciado:", { uploadId, userId, fileType });
