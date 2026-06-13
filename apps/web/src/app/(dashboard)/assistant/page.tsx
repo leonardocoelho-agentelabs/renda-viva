@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { createClient } from "@/lib/supabase/client";
 import { Send, MessageCircle } from "lucide-react";
 
 interface Message {
@@ -11,24 +12,78 @@ interface Message {
 
 const INITIAL_MESSAGE: Message = {
   role: "assistant",
-  content: "Olá! Sou seu assistente financeiro. Como posso ajudar?",
+  content:
+    "Olá! Sou o Viva, seu assistente financeiro pessoal. Tenho acesso aos seus dados financeiros reais. Como posso ajudar?",
 };
 
 export default function AssistantPage() {
   const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const supabase = createClient();
 
-  const handleSend = () => {
-    const text = input.trim();
-    if (!text) return;
-    setMessages((prev) => [...prev, { role: "user", content: text }]);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const sendMessage = async () => {
+    const userMessage = input.trim();
+    if (!userMessage || loading) return;
+
     setInput("");
+    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    setLoading(true);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: "Sessão expirada. Por favor, faça login novamente." },
+        ]);
+        return;
+      }
+
+      // últimas 10 mensagens como contexto
+      const history = messages.slice(-10);
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+      const response = await fetch(
+        `${apiUrl}/assistant/chat`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ message: userMessage, history }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Erro ${response.status}`);
+      }
+
+      const data = await response.json();
+      setMessages((prev) => [...prev, { role: "assistant", content: data.response }]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Desculpe, ocorreu um erro. Tente novamente." },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      sendMessage();
     }
   };
 
@@ -36,7 +91,7 @@ export default function AssistantPage() {
     <DashboardLayout>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Assistente</h1>
-        <p className="text-gray-500">Tire dúvidas sobre suas finanças</p>
+        <p className="text-gray-500">Tire dúvidas sobre suas finanças com IA</p>
       </div>
 
       <div className="flex flex-col bg-white rounded-xl border border-gray-200 h-[calc(100vh-220px)]">
@@ -53,7 +108,7 @@ export default function AssistantPage() {
                 </div>
               )}
               <div
-                className={`max-w-[70%] px-4 py-2.5 rounded-2xl text-sm ${
+                className={`max-w-[70%] px-4 py-2.5 rounded-2xl text-sm whitespace-pre-wrap ${
                   msg.role === "user"
                     ? "bg-green-600 text-white rounded-tr-sm"
                     : "bg-gray-100 text-gray-800 rounded-tl-sm"
@@ -63,6 +118,17 @@ export default function AssistantPage() {
               </div>
             </div>
           ))}
+          {loading && (
+            <div className="flex gap-3 justify-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                <MessageCircle className="h-4 w-4 text-green-600" />
+              </div>
+              <div className="max-w-[70%] px-4 py-2.5 rounded-2xl rounded-tl-sm text-sm bg-gray-100 text-gray-500">
+                Viva está pensando...
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Input */}
@@ -73,11 +139,12 @@ export default function AssistantPage() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Digite sua mensagem..."
-            className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            disabled={loading}
+            className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-60"
           />
           <button
-            onClick={handleSend}
-            disabled={!input.trim()}
+            onClick={sendMessage}
+            disabled={loading || !input.trim()}
             className="px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <Send className="h-4 w-4" />
