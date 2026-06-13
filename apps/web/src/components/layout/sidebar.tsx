@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Home, ArrowLeftRight, PieChart, Target, MessageCircle, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -20,21 +20,49 @@ export function Sidebar() {
   const router = useRouter();
   const supabase = createClient();
 
+  const [nome, setNome] = useState("Usuário");
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!active || !user) return;
+      const fullName =
+        (user.user_metadata?.full_name as string | undefined) ||
+        user.email?.split("@")[0] ||
+        "Usuário";
+      setNome(fullName);
+      setEmail(user.email ?? "");
+    });
+    return () => {
+      active = false;
+    };
+  }, [supabase]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/login");
   };
 
+  const inicial = nome.charAt(0).toUpperCase();
+
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
+    <aside className="w-60 h-screen bg-[#0F1117] flex flex-col flex-shrink-0 sticky top-0">
       {/* Logo */}
-      <div className="p-6 border-b border-gray-200">
-        <h1 className="text-xl font-bold text-green-600">Renda Viva</h1>
-        <p className="text-sm text-gray-500">Gestão financeira inteligente</p>
+      <div className="px-6 py-5 border-b border-white/10">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-bold text-sm">RV</span>
+          </div>
+          <div className="min-w-0">
+            <span className="text-white font-semibold text-sm block leading-tight">Renda Viva</span>
+            <p className="text-white/40 text-xs leading-tight">Gestão inteligente</p>
+          </div>
+        </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 px-3 py-4 space-y-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -42,28 +70,37 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium border-l-2",
                 isActive
-                  ? "bg-green-50 text-green-700"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  ? "bg-green-600/20 text-green-400 border-green-500"
+                  : "text-white/60 hover:bg-white/5 hover:text-white border-transparent"
               )}
             >
-              <item.icon className={cn("h-5 w-5", isActive ? "text-green-600" : "text-gray-400")} />
+              <item.icon className={cn("h-[18px] w-[18px]", isActive ? "text-green-400" : "text-white/50")} />
               {item.label}
             </Link>
           );
         })}
       </nav>
 
-      {/* Logout */}
-      <div className="p-4 border-t border-gray-200">
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-        >
-          <LogOut className="h-5 w-5 text-gray-400" />
-          Sair
-        </button>
+      {/* Footer com usuário */}
+      <div className="px-4 py-4 border-t border-white/10">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <span className="text-white text-xs font-medium">{inicial}</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-xs font-medium truncate">{nome}</p>
+            <p className="text-white/40 text-xs truncate">{email}</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            aria-label="Sair"
+            className="text-white/40 hover:text-white/80 flex-shrink-0"
+          >
+            <LogOut className="h-[18px] w-[18px]" />
+          </button>
+        </div>
       </div>
     </aside>
   );

@@ -29,19 +29,19 @@ export function Badge({ children, variant = "default", className }: BadgeProps) 
 
 // Badge colorido para categorias financeiras
 const categoryColors: Record<string, string> = {
-  "Alimentação": "bg-orange-100 text-orange-700",
-  "Transporte": "bg-blue-100 text-blue-700",
-  "Saúde": "bg-red-100 text-red-700",
-  "Moradia": "bg-purple-100 text-purple-700",
-  "Lazer": "bg-pink-100 text-pink-700",
-  "Educação": "bg-indigo-100 text-indigo-700",
-  "Investimentos": "bg-emerald-100 text-emerald-700",
-  "Receita": "bg-green-100 text-green-700",
-  "Outros": "bg-gray-100 text-gray-700",
+  "Alimentação": "bg-orange-50 text-orange-700",
+  "Transporte": "bg-blue-50 text-blue-700",
+  "Saúde": "bg-red-50 text-red-700",
+  "Moradia": "bg-violet-50 text-violet-700",
+  "Lazer": "bg-purple-50 text-purple-700",
+  "Educação": "bg-cyan-50 text-cyan-700",
+  "Investimentos": "bg-indigo-50 text-indigo-700",
+  "Receita": "bg-green-50 text-green-700",
+  "Outros": "bg-gray-100 text-gray-600",
   // Status
-  "aprovado": "bg-green-100 text-green-700",
-  "revisar": "bg-yellow-100 text-yellow-700",
-  "pendente": "bg-gray-100 text-gray-700",
+  "aprovado": "bg-green-50 text-green-700",
+  "revisar": "bg-amber-50 text-amber-700",
+  "pendente": "bg-gray-100 text-gray-600",
 };
 
 export function CategoryBadge({ category, className }: { category: string; className?: string }) {

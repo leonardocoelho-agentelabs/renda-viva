@@ -265,8 +265,8 @@ export default function GoalsPage() {
                 key={g.id}
                 className={`bg-white rounded-xl border p-5 ${
                   g.status === "cancelada" || g.status === "pausada"
-                    ? "border-gray-200 opacity-70"
-                    : "border-gray-200"
+                    ? "border-gray-100 opacity-70"
+                    : "border-gray-100"
                 }`}
               >
                 <div className="flex items-start justify-between mb-3">
@@ -285,7 +285,7 @@ export default function GoalsPage() {
                       <MoreVertical className="h-4 w-4" />
                     </button>
                     {menuId === g.id && (
-                      <div className="absolute right-0 mt-1 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1 text-sm">
+                      <div className="absolute right-0 mt-1 w-36 bg-white border border-gray-100 rounded-lg shadow-lg z-10 py-1 text-sm">
                         {g.status !== "pausada" && g.status !== "concluida" && (
                           <button
                             onClick={() => handleStatus(g.id, "pausada")}

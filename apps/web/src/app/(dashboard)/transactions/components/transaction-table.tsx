@@ -62,26 +62,26 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
-        <thead>
-          <tr className="border-b border-gray-200">
-            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Data</th>
-            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Descrição</th>
-            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Categoria</th>
-            <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Valor</th>
-            <th className="text-center py-3 px-4 text-sm font-medium text-gray-500">Status</th>
+        <thead className="bg-gray-50">
+          <tr className="border-b border-gray-100">
+            <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Data</th>
+            <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Descrição</th>
+            <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Categoria</th>
+            <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Valor</th>
+            <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
           </tr>
         </thead>
         <tbody>
           {transactions.map((tx) => (
             <tr key={tx.id} className="border-b border-gray-100 hover:bg-gray-50">
-              <td className="py-3 px-4 text-sm text-gray-900">{formatDate(tx.data)}</td>
+              <td className="py-3 px-4 text-sm text-gray-600">{formatDate(tx.data)}</td>
               <td className="py-3 px-4 text-sm text-gray-900 max-w-[300px] truncate">
                 {tx.descricao_raw}
               </td>
               <td className="py-3 px-4">
                 <CategoryBadge category={tx.categoria || "Outros"} />
               </td>
-              <td className={`py-3 px-4 text-sm text-right font-medium ${tx.valor >= 0 ? "text-green-600" : "text-red-600"}`}>
+              <td className={`py-3 px-4 text-sm text-right font-medium ${tx.valor >= 0 ? "text-green-600" : "text-gray-900"}`}>
                 {tx.valor >= 0 ? "+" : "-"}
                 {formatCurrency(tx.valor)}
               </td>

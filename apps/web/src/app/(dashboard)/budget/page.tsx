@@ -221,7 +221,7 @@ export default function BudgetPage() {
       ) : (
         <div className="space-y-6">
           {/* Resumo geral */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-end justify-between mb-3">
               <div>
                 <p className="text-sm text-gray-500">Total gasto</p>
@@ -255,7 +255,7 @@ export default function BudgetPage() {
               return (
                 <div
                   key={b.id}
-                  className="bg-white rounded-xl border border-gray-200 p-5"
+                  className="bg-white rounded-xl border border-gray-100 shadow-sm p-5"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2 flex-wrap">

@@ -3,7 +3,15 @@
 import { useState, useRef, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { createClient } from "@/lib/supabase/client";
-import { Send, MessageCircle } from "lucide-react";
+import { Send } from "lucide-react";
+
+function VivaAvatar() {
+  return (
+    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 flex items-center justify-center">
+      <span className="text-white text-sm font-semibold">V</span>
+    </div>
+  );
+}
 
 interface Message {
   role: "assistant" | "user";
@@ -135,24 +143,20 @@ export default function AssistantPage() {
         <p className="text-gray-500">Tire dúvidas sobre suas finanças com IA</p>
       </div>
 
-      <div className="flex flex-col bg-white rounded-xl border border-gray-200 h-[calc(100vh-220px)]">
+      <div className="flex flex-col bg-white rounded-xl border border-gray-100 shadow-sm h-[calc(100vh-220px)] overflow-hidden">
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
           {messages.map((msg, i) => (
             <div
               key={i}
               className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
-              {msg.role === "assistant" && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                  <MessageCircle className="h-4 w-4 text-green-600" />
-                </div>
-              )}
+              {msg.role === "assistant" && <VivaAvatar />}
               <div
                 className={`max-w-[70%] px-4 py-2.5 rounded-2xl text-sm ${
                   msg.role === "user"
-                    ? "bg-green-600 text-white rounded-tr-sm whitespace-pre-wrap"
-                    : "bg-gray-100 text-gray-800 rounded-tl-sm"
+                    ? "bg-green-600 text-white rounded-br-sm whitespace-pre-wrap"
+                    : "bg-white border border-gray-100 shadow-sm text-gray-800 rounded-bl-sm"
                 }`}
               >
                 {msg.role === "user" ? msg.content : formatMessage(msg.content)}
@@ -161,10 +165,8 @@ export default function AssistantPage() {
           ))}
           {loading && (
             <div className="flex gap-3 justify-start">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                <MessageCircle className="h-4 w-4 text-green-600" />
-              </div>
-              <div className="max-w-[70%] px-4 py-2.5 rounded-2xl rounded-tl-sm text-sm bg-gray-100 text-gray-500">
+              <VivaAvatar />
+              <div className="max-w-[70%] px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm bg-white border border-gray-100 shadow-sm text-gray-500">
                 Viva está pensando...
               </div>
             </div>
