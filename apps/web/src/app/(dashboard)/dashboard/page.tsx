@@ -3,7 +3,6 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { SummaryCards } from "./components/summary-cards";
 import { CategoryChart } from "./components/category-chart";
 import { RecentTransactions } from "./components/recent-transactions";
-import { startOfMonth, endOfMonth, format } from "date-fns";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -21,17 +20,18 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single();
 
-  // Buscar transações do mês atual
-  const now = new Date();
-  const mesAtual = format(now, "yyyy-MM");
+  // Buscar transações do mês atual - usando gte/lte para filtro de data preciso
+  const hoje = new Date();
+  const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split("T")[0];
+  const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).toISOString().split("T")[0];
 
-  const { data: transactions } = await supabase
+  const { data: transactions, error } = await supabase
     .from("transactions")
     .select("id, data, descricao_raw, categoria, valor, tipo")
     .eq("user_id", user.id)
-    .like("data", `${mesAtual}%`)
-    .order("data", { ascending: false })
-    .limit(10);
+    .gte("data", inicioMes)
+    .lte("data", fimMes)
+    .order("data", { ascending: false });
 
   // Calcular totais
   const totalGastos = transactions
@@ -44,21 +44,16 @@ export default async function DashboardPage() {
 
   const saldo = totalReceitas - totalGastos;
 
-  // Buscar gastos por categoria
-  const { data: categoryData } = await supabase
-    .from("transactions")
-    .select("categoria, valor")
-    .eq("user_id", user.id)
-    .eq("tipo", "debito")
-    .like("data", `${mesAtual}%`);
+  // Agrupar gastos por categoria para o gráfico
+  const porCategoria = transactions
+    ?.filter((t) => t.valor < 0 && t.categoria)
+    .reduce((acc, t) => {
+      const cat = t.categoria || "Outros";
+      acc[cat] = (acc[cat] || 0) + Math.abs(t.valor);
+      return acc;
+    }, {} as Record<string, number>) || {};
 
-  const categoryTotals = categoryData?.reduce((acc, t) => {
-    const cat = t.categoria || "Outros";
-    acc[cat] = (acc[cat] || 0) + Math.abs(t.valor);
-    return acc;
-  }, {} as Record<string, number>);
-
-  const chartData = Object.entries(categoryTotals || {})
+  const chartData = Object.entries(porCategoria)
     .map(([categoria, total]) => ({ categoria, total }))
     .sort((a, b) => b.total - a.total)
     .slice(0, 5);

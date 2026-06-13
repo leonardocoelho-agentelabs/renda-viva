@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinanceIA Pro — Seu dinheiro, finalmente inteligente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0A0908;
+    --white: #F8F6F1;
+    --green: #0D6B47;
+    --green-mid: #1A9E6B;
+    --green-light: #D6F0E5;
+    --green-pale: #F0FAF5;
+    --stone: #EAE6DD;
+    --stone-mid: #C8C2B5;
+    --stone-dark: #8A8379;
+    --red-soft: #C44B35;
+    --serif: 'Instrument Serif', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--white);
+    color: var(--black);
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 48px;
+    background: rgba(248,246,241,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+  .nav-logo {
+    font-family: var(--serif);
+    font-size: 22px;
+    color: var(--black);
+    letter-spacing: -0.5px;
+  }
+  .nav-logo span { color: var(--green); }
+  .nav-cta {
+    background: var(--green);
+    color: var(--white);
+    border: none;
+    padding: 10px 24px;
+    border-radius: 100px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .nav-cta:hover { background: var(--green-mid); transform: translateY(-1px); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, #D6F0E5 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--green-light);
+    color: var(--green);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 32px;
+    border: 1px solid rgba(13,107,71,0.2);
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--green-mid);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50% { opacity:0.5; transform:scale(0.8); }
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(44px, 7vw, 88px);
+    line-height: 1.05;
+    letter-spacing: -2px;
+    color: var(--black);
+    max-width: 820px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--green);
+  }
+  .hero-sub {
+    font-size: clamp(16px, 2vw, 20px);
+    color: var(--stone-dark);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+    font-weight: 300;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+  .hero-ctas {
+    display: flex; gap: 14px; align-items: center; flex-wrap: wrap; justify-content: center;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+  .btn-primary {
+    background: var(--green);
+    color: var(--white);
+    padding: 16px 36px;
+    border-radius: 100px;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: var(--green-mid); transform: translateY(-2px); }
+  .btn-ghost {
+    color: var(--stone-dark);
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-ghost:hover { color: var(--black); }
+
+  .hero-proof {
+    margin-top: 64px;
+    display: flex; align-items: center; gap: 16px;
+    font-size: 13px; color: var(--stone-dark);
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+  .avatars { display: flex; }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 2px solid var(--white);
+    margin-left: -8px;
+    font-size: 11px; font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+  }
+  .avatars .avatar:first-child { margin-left: 0; }
+
+  /* PAIN */
+  .pain {
+    padding: 100px 24px;
+    max-width: 880px;
+    margin: 0 auto;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--stone-mid);
+    margin-bottom: 20px;
+  }
+  .pain h2 {
+    font-family: var(--serif);
+    font-size: clamp(32px, 5vw, 56px);
+    line-height: 1.15;
+    letter-spacing: -1px;
+    margin-bottom: 48px;
+  }
+  .pain h2 em { font-style: italic; color: var(--green); }
+  .pain-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--stone);
+    border: 1px solid var(--stone);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .pain-item {
+    background: var(--white);
+    padding: 32px;
+    display: flex; gap: 16px;
+  }
+  .pain-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: #FEF2F0;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+  .pain-item h3 {
+    font-size: 15px; font-weight: 500;
+    margin-bottom: 6px; color: var(--black);
+  }
+  .pain-item p { font-size: 14px; color: var(--stone-dark); line-height: 1.6; }
+
+  /* TRANSITION */
+  .transition-block {
+    text-align: center;
+    padding: 80px 24px;
+    background: var(--black);
+    color: var(--white);
+    position: relative;
+    overflow: hidden;
+  }
+  .transition-block::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 50% 100%, rgba(13,107,71,0.3) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .transition-block h2 {
+    font-family: var(--serif);
+    font-size: clamp(28px, 4.5vw, 52px);
+    line-height: 1.2;
+    letter-spacing: -1px;
+    max-width: 720px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .transition-block h2 em { font-style: italic; color: var(--green-mid); }
+
+  /* FEATURES */
+  .features {
+    padding: 100px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .features-header { text-align: center; margin-bottom: 72px; }
+  .features-header h2 {
+    font-family: var(--serif);
+    font-size: clamp(32px, 5vw, 54px);
+    line-height: 1.15;
+    letter-spacing: -1px;
+    margin-top: 16px;
+  }
+  .feat-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+    margin-bottom: 100px;
+  }
+  .feat-row.reverse { direction: rtl; }
+  .feat-row.reverse > * { direction: ltr; }
+  .feat-text .tag {
+    display: inline-block;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--green);
+    background: var(--green-pale);
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(13,107,71,0.15);
+  }
+  .feat-text h3 {
+    font-family: var(--serif);
+    font-size: clamp(24px, 3vw, 36px);
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+    margin-bottom: 16px;
+  }
+  .feat-text p { font-size: 16px; color: var(--stone-dark); line-height: 1.8; margin-bottom: 20px; font-weight: 300; }
+  .feat-text .quote {
+    background: var(--green-pale);
+    border-left: 3px solid var(--green-mid);
+    padding: 14px 20px;
+    border-radius: 0 8px 8px 0;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 15px;
+    color: var(--green);
+    margin-top: 16px;
+  }
+  .feat-visual {
+    background: var(--stone);
+    border-radius: 20px;
+    padding: 32px;
+    aspect-ratio: 4/3;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .feat-visual::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 80% at 80% 20%, rgba(13,107,71,0.08) 0%, transparent 70%);
+  }
+  .mini-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+    position: relative;
+  }
+  .mini-card:last-child { margin-bottom: 0; }
+  .mini-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .mini-label { font-size: 13px; font-weight: 500; flex: 1; }
+  .mini-val { font-size: 13px; color: var(--stone-dark); }
+  .mini-badge { font-size: 11px; padding: 2px 8px; border-radius: 100px; font-weight: 500; }
+
+  /* SOCIAL PROOF */
+  .proof {
+    background: var(--stone);
+    padding: 80px 24px;
+  }
+  .proof-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .proof-inner h2 {
+    font-family: var(--serif);
+    font-size: clamp(28px, 4vw, 44px);
+    letter-spacing: -0.5px;
+    margin-bottom: 48px;
+  }
+  .testimonials {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    text-align: left;
+  }
+  .tcard {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 28px;
+  }
+  .tcard-stars { color: #F0A500; font-size: 14px; margin-bottom: 14px; letter-spacing: 2px; }
+  .tcard p { font-size: 14px; color: var(--black); line-height: 1.7; margin-bottom: 20px; font-weight: 300; }
+  .tcard p strong { font-weight: 500; }
+  .tcard-author { display: flex; align-items: center; gap: 10px; }
+  .tcard-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    color: white; flex-shrink: 0;
+  }
+  .tcard-name { font-size: 13px; font-weight: 500; }
+  .tcard-role { font-size: 12px; color: var(--stone-dark); }
+
+  /* NUMBERS */
+  .numbers {
+    padding: 80px 24px;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .numbers h2 {
+    font-family: var(--serif);
+    font-size: clamp(28px, 4vw, 44px);
+    letter-spacing: -0.5px;
+    margin-bottom: 56px;
+  }
+  .numbers h2 em { font-style: italic; color: var(--green); }
+  .numbers-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--stone);
+    border: 1px solid var(--stone);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .num-item {
+    background: var(--white);
+    padding: 40px 24px;
+  }
+  .num-val {
+    font-family: var(--serif);
+    font-size: 52px;
+    color: var(--green);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .num-label { font-size: 14px; color: var(--stone-dark); }
+
+  /* PRICING */
+  .pricing {
+    padding: 100px 24px;
+    max-width: 540px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .pricing h2 {
+    font-family: var(--serif);
+    font-size: clamp(32px, 5vw, 52px);
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+  }
+  .pricing h2 em { font-style: italic; color: var(--green); }
+  .pricing-sub { font-size: 16px; color: var(--stone-dark); margin-bottom: 48px; font-weight: 300; }
+  .pricing-card {
+    background: var(--black);
+    color: var(--white);
+    border-radius: 24px;
+    padding: 48px 40px;
+    position: relative;
+    overflow: hidden;
+    text-align: left;
+  }
+  .pricing-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 100% 60% at 100% 0%, rgba(13,107,71,0.25) 0%, transparent 60%);
+  }
+  .pricing-card-label {
+    font-size: 12px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--green-mid);
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .price-row {
+    display: flex; align-items: baseline; gap: 6px;
+    margin-bottom: 8px; position: relative;
+  }
+  .price-currency { font-size: 24px; font-weight: 300; color: rgba(255,255,255,0.6); }
+  .price-val {
+    font-family: var(--serif);
+    font-size: 80px;
+    line-height: 1;
+    letter-spacing: -3px;
+  }
+  .price-period { font-size: 16px; color: rgba(255,255,255,0.5); align-self: flex-end; padding-bottom: 8px; }
+  .price-annual { font-size: 13px; color: var(--green-mid); margin-bottom: 36px; position: relative; }
+  .feat-list { list-style: none; margin-bottom: 40px; position: relative; }
+  .feat-list li {
+    display: flex; align-items: flex-start; gap: 12px;
+    font-size: 15px; font-weight: 300;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.85);
+  }
+  .feat-list li:last-child { border-bottom: none; }
+  .feat-check {
+    width: 20px; height: 20px;
+    background: rgba(13,107,71,0.3);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 11px;
+    color: var(--green-mid);
+  }
+  .cta-btn {
+    width: 100%;
+    background: var(--green);
+    color: var(--white);
+    border: none;
+    padding: 18px;
+    border-radius: 100px;
+    font-size: 17px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    font-family: var(--sans);
+    position: relative;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+  }
+  .cta-btn:hover { background: var(--green-mid); transform: translateY(-2px); }
+  .cta-note { font-size: 13px; color: rgba(255,255,255,0.4); text-align: center; margin-top: 16px; position: relative; }
+
+  /* GUARANTEE */
+  .guarantee {
+    padding: 64px 24px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .guarantee-badge {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: var(--green-pale);
+    border: 2px solid var(--green-light);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    font-size: 32px;
+  }
+  .guarantee h3 {
+    font-family: var(--serif);
+    font-size: 28px;
+    letter-spacing: -0.5px;
+    margin-bottom: 14px;
+  }
+  .guarantee p { font-size: 15px; color: var(--stone-dark); line-height: 1.8; font-weight: 300; }
+
+  /* FAQ */
+  .faq {
+    padding: 80px 24px;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .faq h2 {
+    font-family: var(--serif);
+    font-size: clamp(28px, 4vw, 42px);
+    letter-spacing: -0.5px;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  .faq-item {
+    border-top: 1px solid var(--stone);
+    padding: 24px 0;
+  }
+  .faq-item:last-child { border-bottom: 1px solid var(--stone); }
+  .faq-q {
+    font-size: 16px; font-weight: 500;
+    cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    user-select: none;
+  }
+  .faq-q span { font-size: 20px; color: var(--stone-dark); transition: transform 0.2s; }
+  .faq-item.open .faq-q span { transform: rotate(45deg); }
+  .faq-a {
+    font-size: 14px; color: var(--stone-dark); line-height: 1.8;
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    font-weight: 300;
+  }
+  .faq-item.open .faq-a { max-height: 300px; padding-top: 14px; }
+
+  /* FINAL CTA */
+  .final-cta {
+    background: var(--green);
+    padding: 100px 24px;
+    text-align: center;
+    color: var(--white);
+  }
+  .final-cta h2 {
+    font-family: var(--serif);
+    font-size: clamp(32px, 5vw, 60px);
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    max-width: 720px;
+    margin: 0 auto 20px;
+  }
+  .final-cta h2 em { font-style: italic; opacity: 0.75; }
+  .final-cta p { font-size: 17px; opacity: 0.75; margin-bottom: 40px; font-weight: 300; }
+  .final-btn {
+    background: var(--white);
+    color: var(--green);
+    padding: 18px 48px;
+    border-radius: 100px;
+    font-size: 17px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+    text-decoration: none;
+    transition: transform 0.15s, opacity 0.2s;
+  }
+  .final-btn:hover { transform: translateY(-2px); opacity: 0.92; }
+  .final-cta-note { font-size: 13px; opacity: 0.5; margin-top: 20px; }
+
+  /* FOOTER */
+  footer {
+    padding: 40px 48px;
+    border-top: 1px solid var(--stone);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; color: var(--stone-dark);
+  }
+  .footer-logo { font-family: var(--serif); font-size: 18px; color: var(--black); }
+  .footer-logo span { color: var(--green); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SCROLL REVEAL */
+  .reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    nav { padding: 14px 20px; }
+    .pain-grid, .testimonials, .numbers-grid, .feat-row { grid-template-columns: 1fr; }
+    .feat-row.reverse { direction: ltr; }
+    footer { flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Finance<span>IA</span></div>
+  <a href="#pricing" class="nav-cta">Começar por R$59/mês</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Lançamento · Plano Pro com 30% off nas primeiras 100 vagas</div>
+  <h1>Seu dinheiro merecia<br>ser <em>inteligente</em><br>desde sempre.</h1>
+  <p class="hero-sub">FinanceIA conecta suas contas, categoriza tudo sozinho, gera relatórios automáticos e ainda te avisa quando algo está errado — sem você precisar fazer nada.</p>
+  <div class="hero-ctas">
+    <a href="#pricing" class="btn-primary">Quero o Plano Pro →</a>
+    <a href="#features" class="btn-ghost">Ver como funciona ↓</a>
+  </div>
+  <div class="hero-proof">
+    <div class="avatars">
+      <div class="avatar" style="background:#0D6B47;">MB</div>
+      <div class="avatar" style="background:#534AB7;">RF</div>
+      <div class="avatar" style="background:#854F0B;">CL</div>
+      <div class="avatar" style="background:#993C1D;">JP</div>
+      <div class="avatar" style="background:#444441;">AS</div>
+    </div>
+    <span>+847 pessoas já organizaram as finanças com IA</span>
+  </div>
+</section>
+
+<!-- PAIN -->
+<section class="pain reveal">
+  <p class="section-label">O problema real</p>
+  <h2>Você não é desorganizado.<br>Você só nunca teve as<br>ferramentas <em>certas.</em></h2>
+  <div class="pain-grid">
+    <div class="pain-item">
+      <div class="pain-icon">📊</div>
+      <div>
+        <h3>Planilhas que ninguém atualiza</h3>
+        <p>Você cria, preenche duas semanas, abandona. E o ciclo recomeça todo mês com culpa renovada.</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-icon">🔍</div>
+      <div>
+        <h3>Dinheiro que desaparece sem explicação</h3>
+        <p>R$200, R$300 saindo por mês em cobranças que você nem lembra de ter assinado.</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-icon">📱</div>
+      <div>
+        <h3>Apps que só mostram o passado</h3>
+        <p>Ver o extrato do mês passado não te ajuda a evitar o erro de hoje. Você precisa de previsão, não de história.</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-icon">📉</div>
+      <div>
+        <h3>Investimentos sem estratégia</h3>
+        <p>Dinheiro parado na poupança rendendo menos que a inflação porque você não sabe onde aplicar com segurança.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRANSITION -->
+<section class="transition-block reveal">
+  <h2>E se uma IA cuidasse<br>de tudo isso por você —<br>enquanto você <em>vive a vida?</em></h2>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="features-header reveal">
+    <p class="section-label">O que o plano Pro faz por você</p>
+    <h2>Automação que você sente<br>no saldo do fim do mês.</h2>
+  </div>
+
+  <!-- Feature 1 -->
+  <div class="feat-row reveal">
+    <div class="feat-text">
+      <span class="tag">Captura automática</span>
+      <h3>Conecta uma vez. Nunca mais lança nada manualmente.</h3>
+      <p>Via Open Finance (padrão do Banco Central), o FinanceIA conecta com todos os seus bancos e cartões. Cada transação é capturada, categorizada e registrada automaticamente — em segundos, com precisão de 97%.</p>
+      <div class="quote">"Abri o app no dia 5 e já tinha o resumo completo do mês. Não tinha feito nada. Foi surreal."</div>
+    </div>
+    <div class="feat-visual">
+      <div class="mini-card"><div class="mini-dot" style="background:#0D6B47;"></div><span class="mini-label">iFood · Alimentação</span><span class="mini-val">−R$87,50</span></div>
+      <div class="mini-card"><div class="mini-dot" style="background:#534AB7;"></div><span class="mini-label">Netflix · Assinatura</span><span class="mini-val">−R$45,90</span></div>
+      <div class="mini-card"><div class="mini-dot" style="background:#854F0B;"></div><span class="mini-label">Shell · Transporte</span><span class="mini-val">−R$180,00</span></div>
+      <div class="mini-card" style="background:var(--green-pale); border: 1px solid #D6F0E5;"><div class="mini-dot" style="background:#0D6B47;"></div><span class="mini-label" style="color:#0D6B47;">3 novos lançamentos</span><span class="mini-badge" style="background:#D6F0E5; color:#0D6B47;">IA ✓</span></div>
+    </div>
+  </div>
+
+  <!-- Feature 2 -->
+  <div class="feat-row reverse reveal">
+    <div class="feat-text">
+      <span class="tag">Assistente conversacional</span>
+      <h3>Pergunte qualquer coisa sobre o seu dinheiro. Em português.</h3>
+      <p>O assistente do FinanceIA tem acesso a todo seu histórico financeiro real. Pergunte "posso parcelar essa TV?" e ele calcula o impacto nos próximos 6 meses antes de você decidir.</p>
+      <div class="quote">"Perguntei se consigo viajar em outubro. Ele disse que sim — e me mostrou exatamente quanto posso gastar."</div>
+    </div>
+    <div class="feat-visual" style="background:#0A0908;">
+      <div class="mini-card" style="background:rgba(255,255,255,0.05); margin-bottom:12px;">
+        <span style="font-size:12px; color:rgba(255,255,255,0.5);">Você</span>
+        <span style="font-size:13px; color:rgba(255,255,255,0.85); margin-left:8px;">Posso comprar um notebook de R$4.800 em 10x?</span>
+      </div>
+      <div style="background:rgba(13,107,71,0.15); border: 1px solid rgba(13,107,71,0.3); border-radius:12px; padding:14px 18px;">
+        <p style="font-size:12px; color:var(--green-mid); margin-bottom:6px;">FinanceIA</p>
+        <p style="font-size:13px; color:rgba(255,255,255,0.8); line-height:1.6;">Sim, mas com atenção. A parcela de R$480/mês vai comprometer 18% da sua renda. Você tem orçamento, mas vai atrasar a meta de viagem em 2 meses. Quer ver as alternativas?</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature 3 -->
+  <div class="feat-row reveal">
+    <div class="feat-text">
+      <span class="tag">Radar de investimentos</span>
+      <h3>Toda semana, as melhores oportunidades para o seu perfil.</h3>
+      <p>Todo domingo, a IA pesquisa Tesouro Direto, FIIs, CDBs e ações e seleciona as 3 melhores oportunidades da semana — já considerando sua reserva atual, seu prazo e seu perfil de risco.</p>
+      <div class="quote">"Descobri um CDB pagando 14,2% ao ano que eu nunca teria achado sozinho. Resgatei a grana da poupança no mesmo dia."</div>
+    </div>
+    <div class="feat-visual" style="background:var(--stone);">
+      <p style="font-size:11px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:var(--stone-dark); margin-bottom:16px;">Radar desta semana</p>
+      <div class="mini-card" style="border-left: 3px solid #0D6B47;">
+        <div>
+          <p style="font-size:13px; font-weight:500;">CDB Banco Inter · 14,2% a.a.</p>
+          <p style="font-size:12px; color:var(--stone-dark);">Venc. 12 meses · Mín. R$1.000 · Risco baixo</p>
+        </div>
+        <span class="mini-badge" style="background:#D6F0E5; color:#085041;">✓ ideal</span>
+      </div>
+      <div class="mini-card" style="margin-top:8px; border-left: 3px solid #534AB7;">
+        <div>
+          <p style="font-size:13px; font-weight:500;">FII XPML11 · DY 9,8%</p>
+          <p style="font-size:12px; color:var(--stone-dark);">Shoppings · P/VP 0,92 · boa entrada</p>
+        </div>
+        <span class="mini-badge" style="background:#EEEDFE; color:#3C3489;">analisar</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section class="proof reveal">
+  <div class="proof-inner">
+    <h2>Quem já usa não volta<br>para a planilha.</h2>
+    <div class="testimonials">
+      <div class="tcard">
+        <div class="tcard-stars">★★★★★</div>
+        <p>"No primeiro mês encontrei <strong>R$340 em cobranças que eu tinha esquecido</strong>. O app pagou o próprio custo em 6 dias."</p>
+        <div class="tcard-author">
+          <div class="tcard-avatar" style="background:#0D6B47;">MB</div>
+          <div>
+            <p class="tcard-name">Mariana B.</p>
+            <p class="tcard-role">Designer freelancer · SP</p>
+          </div>
+        </div>
+      </div>
+      <div class="tcard">
+        <div class="tcard-stars">★★★★★</div>
+        <p>"Perguntei se podia trocar de carro e o assistente calculou o impacto nos próximos 24 meses. <strong>Tomei a melhor decisão financeira da minha vida</strong> com base nisso."</p>
+        <div class="tcard-author">
+          <div class="tcard-avatar" style="background:#534AB7;">RF</div>
+          <div>
+            <p class="tcard-name">Rafael F.</p>
+            <p class="tcard-role">Engenheiro · BH</p>
+          </div>
+        </div>
+      </div>
+      <div class="tcard">
+        <div class="tcard-stars">★★★★★</div>
+        <p>"O relatório mensal que a IA escreve é melhor do que qualquer análise que eu tentei fazer sozinha. <strong>Finalmente entendo para onde vai o meu dinheiro.</strong>"</p>
+        <div class="tcard-author">
+          <div class="tcard-avatar" style="background:#854F0B;">CL</div>
+          <div>
+            <p class="tcard-name">Camila L.</p>
+            <p class="tcard-role">Médica · RJ</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NUMBERS -->
+<section class="numbers reveal">
+  <h2>O que acontece quando a IA<br>cuida das suas finanças por <em>um mês.</em></h2>
+  <div class="numbers-grid">
+    <div class="num-item">
+      <div class="num-val">R$340</div>
+      <div class="num-label">em cobranças esquecidas encontradas em média no 1º mês</div>
+    </div>
+    <div class="num-item">
+      <div class="num-val">97%</div>
+      <div class="num-label">de precisão na categorização automática das transações</div>
+    </div>
+    <div class="num-item">
+      <div class="num-val">0h</div>
+      <div class="num-label">de lançamento manual por mês após a configuração inicial</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="reveal">
+    <p class="section-label">Plano Pro</p>
+    <h2>Simples.<br><em>Sem surpresas.</em></h2>
+    <p class="pricing-sub">Um preço. Tudo incluso. Cancele quando quiser.</p>
+    <div class="pricing-card">
+      <p class="pricing-card-label">Plano Pro · Lançamento</p>
+      <div class="price-row">
+        <span class="price-currency">R$</span>
+        <span class="price-val">59</span>
+        <span class="price-period">/mês</span>
+      </div>
+      <p class="price-annual">ou R$590/ano — economia de R$118 (2 meses grátis)</p>
+      <ul class="feat-list">
+        <li><span class="feat-check">✓</span>Conexão ilimitada de contas (Open Finance)</li>
+        <li><span class="feat-check">✓</span>Categorização automática com IA (97% de precisão)</li>
+        <li><span class="feat-check">✓</span>Assistente financeiro IA (50 conversas/mês)</li>
+        <li><span class="feat-check">✓</span>Radar semanal de investimentos personalizado</li>
+        <li><span class="feat-check">✓</span>Relatório narrativo mensal gerado por IA</li>
+        <li><span class="feat-check">✓</span>Alertas proativos via WhatsApp</li>
+        <li><span class="feat-check">✓</span>Metas financeiras com acompanhamento automático</li>
+        <li><span class="feat-check">✓</span>Diagnóstico de cobranças invisíveis (mensal)</li>
+        <li><span class="feat-check">✓</span>Previsão de saldo para os próximos 30 dias</li>
+      </ul>
+      <a href="#" class="cta-btn">Começar meu Plano Pro agora →</a>
+      <p class="cta-note">Teste grátis por 14 dias · Sem cartão de crédito</p>
+    </div>
+  </div>
+</section>
+
+<!-- GUARANTEE -->
+<section class="guarantee reveal">
+  <div class="guarantee-badge">🛡️</div>
+  <h3>Garantia de 30 dias, sem perguntas.</h3>
+  <p>Se em 30 dias você não achar pelo menos R$100 que estavam saindo sem você perceber, ou não sentir que tem mais controle sobre o seu dinheiro — devolvemos tudo. Sem burocracia, sem formulário complicado, sem desculpa.</p>
+</section>
+
+<!-- FAQ -->
+<section class="faq reveal">
+  <h2>Dúvidas frequentes</h2>
+
+  <div class="faq-item">
+    <div class="faq-q">É seguro conectar meu banco?<span>+</span></div>
+    <div class="faq-a">Sim. Usamos o padrão Open Finance do Banco Central, o mesmo que os maiores bancos do Brasil utilizam. A conexão é somente leitura — nunca movemos dinheiro, nunca armazenamos senha. Seus dados são criptografados com AES-256.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Como funciona a categorização automática?<span>+</span></div>
+    <div class="faq-a">Uma IA analisa a descrição de cada transação e a categoriza automaticamente em categorias como Alimentação, Transporte, Lazer, Saúde, etc. A precisão inicial é de 94% e vai aumentando conforme você corrige eventuais erros — chegando a 97%+ em 30 dias.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Posso cancelar a qualquer momento?<span>+</span></div>
+    <div class="faq-a">Sim, sem fidelidade e sem taxa de cancelamento. Você cancela pelo próprio app em menos de 1 minuto. Seus dados ficam disponíveis por 30 dias após o cancelamento para você exportar.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">O assistente realmente tem acesso ao meu histórico?<span>+</span></div>
+    <div class="faq-a">Sim. Diferente de chatbots genéricos, o assistente do FinanceIA enxerga suas transações reais, seu orçamento, suas metas e seu histórico. Por isso as respostas são precisas e personalizadas — não genéricas.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Funciona com qual banco?<span>+</span></div>
+    <div class="faq-a">Com todos os bancos que participam do Open Finance: Itaú, Bradesco, Santander, Caixa, Banco do Brasil, Nubank, Inter, C6, XP e mais de 200 instituições. Se seu banco tem app, quase certamente está na lista.</div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <h2>Pare de tentar controlar<br>suas finanças no braço.<br><em>Deixa a IA fazer por você.</em></h2>
+  <p>14 dias grátis. Sem cartão. Cancele quando quiser.</p>
+  <a href="#pricing" class="final-btn">Começar agora — é grátis por 14 dias</a>
+  <p class="final-cta-note">Vagas com preço de lançamento se esgotam em breve.</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Finance<span>IA</span></div>
+  <span>© 2026 FinanceIA · Todos os direitos reservados · LGPD compliant</span>
+  <span>Privacidade · Termos · Suporte</span>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-item').forEach(item => {
+    item.querySelector('.faq-q').addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+</script>
+</body>
+</html>
