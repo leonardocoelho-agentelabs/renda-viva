@@ -5,6 +5,7 @@ allowBuilds:
   '0': esbuild
   '1': sharp
   '2': unrs-resolver
+  core-js: false
   esbuild: true
   msgpackr-extract: true
   sharp: true

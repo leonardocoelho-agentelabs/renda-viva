@@ -3,8 +3,92 @@
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { createClient } from "@/lib/supabase/client";
-import { FileText, Sparkles, X } from "lucide-react";
+import { FileText, Sparkles, X, Download } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import jsPDF from "jspdf";
+
+function baixarRelatorioPDF(relatorio: string, mesAno: string) {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+  const margemEsq = 20;
+  const margemDir = 20;
+  const larguraUtil = 210 - margemEsq - margemDir;
+  let y = 20;
+
+  // Cabeçalho
+  doc.setFillColor(22, 163, 74); // verde #16a34a
+  doc.rect(0, 0, 210, 35, "F");
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(20);
+  doc.setFont("helvetica", "bold");
+  doc.text("Renda Viva", margemEsq, 15);
+
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
+  const [ano, mes] = mesAno.split("-");
+  const nomeMes = new Date(Number(ano), Number(mes) - 1, 1).toLocaleDateString("pt-BR", {
+    month: "long",
+    year: "numeric",
+  });
+  doc.text(`Relatório Financeiro — ${nomeMes}`, margemEsq, 25);
+
+  y = 50;
+
+  doc.setTextColor(0, 0, 0);
+  const linhas = relatorio.split("\n");
+
+  for (const linha of linhas) {
+    if (y > 270) {
+      doc.addPage();
+      y = 20;
+    }
+
+    const semFences = linha.trim();
+    // Títulos com **texto**
+    if (semFences.startsWith("**") && semFences.endsWith("**") && semFences.length > 4) {
+      const titulo = semFences.replace(/\*\*/g, "");
+      doc.setFontSize(13);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(22, 163, 74);
+      y += 4;
+      doc.text(titulo, margemEsq, y);
+      y += 7;
+      doc.setTextColor(0, 0, 0);
+    } else if (semFences === "") {
+      y += 3;
+    } else {
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(55, 65, 81);
+
+      const textoLimpo = linha
+        .replace(/^#+\s*/, "")
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/\*(.*?)\*/g, "$1");
+
+      const linhasQuebradas = doc.splitTextToSize(textoLimpo, larguraUtil);
+      doc.text(linhasQuebradas, margemEsq, y);
+      y += linhasQuebradas.length * 5 + 2;
+    }
+  }
+
+  // Rodapé
+  const totalPaginas = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPaginas; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(156, 163, 175);
+    doc.text(
+      `Renda Viva — Relatório gerado em ${new Date().toLocaleDateString("pt-BR")} — Página ${i}/${totalPaginas}`,
+      105,
+      290,
+      { align: "center" }
+    );
+  }
+
+  doc.save(`relatorio-renda-viva-${mesAno}.pdf`);
+}
 
 interface ReportItem {
   mes_ano: string;
@@ -237,6 +321,23 @@ export default function ReportsPage() {
                 <ReportMarkdown content={openReport.relatorio} />
               )}
             </div>
+            {openReport.relatorio && (
+              <div className="flex gap-3 justify-end px-6 py-4 border-t border-gray-100">
+                <button
+                  onClick={() => baixarRelatorioPDF(openReport.relatorio, openReport.mes_ano)}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Baixar PDF
+                </button>
+                <button
+                  onClick={() => setOpenReport(null)}
+                  className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Fechar
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
