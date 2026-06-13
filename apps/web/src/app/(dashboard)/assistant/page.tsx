@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { createClient } from "@/lib/supabase/client";
 import { Send, MessageCircle } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   role: "assistant" | "user";
@@ -108,13 +109,29 @@ export default function AssistantPage() {
                 </div>
               )}
               <div
-                className={`max-w-[70%] px-4 py-2.5 rounded-2xl text-sm whitespace-pre-wrap ${
+                className={`max-w-[70%] px-4 py-2.5 rounded-2xl text-sm ${
                   msg.role === "user"
-                    ? "bg-green-600 text-white rounded-tr-sm"
+                    ? "bg-green-600 text-white rounded-tr-sm whitespace-pre-wrap"
                     : "bg-gray-100 text-gray-800 rounded-tl-sm"
                 }`}
               >
-                {msg.content}
+                {msg.role === "user" ? (
+                  msg.content
+                ) : (
+                  <div className="prose prose-sm max-w-none text-gray-800">
+                    <ReactMarkdown
+                      components={{
+                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                        ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+                        li: ({ children }) => <li className="text-sm">{children}</li>,
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
+                )}
               </div>
             </div>
           ))}
