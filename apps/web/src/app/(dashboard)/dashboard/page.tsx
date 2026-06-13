@@ -20,6 +20,26 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single();
 
+  // Buscar score atualizado via API (recalcula com base nos dados atuais).
+  // Fallback para o valor persistido caso a API não responda.
+  let scoreSaude = userData?.score_saude || 0;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+      const res = await fetch(`${apiUrl}/score/current`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (typeof data.score === "number") scoreSaude = data.score;
+      }
+    }
+  } catch {
+    // mantém o fallback
+  }
+
   // Buscar transações do mês atual - usando gte/lte para filtro de data preciso
   const hoje = new Date();
   const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split("T")[0];
@@ -69,7 +89,7 @@ export default async function DashboardPage() {
         saldo={saldo}
         totalGastos={totalGastos}
         totalReceitas={totalReceitas}
-        scoreSaude={userData?.score_saude || 0}
+        scoreSaude={scoreSaude}
         totalTransacoes={transactions?.length || 0}
       />
 

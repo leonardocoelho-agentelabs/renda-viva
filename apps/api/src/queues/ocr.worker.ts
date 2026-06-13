@@ -28,6 +28,15 @@ export const ocrWorker = new Worker<OcrJobData>(
 
     await processUpload(uploadId, userId, fileType);
 
+    // Recalcular score do usuário após processar o extrato
+    try {
+      const { calcularScore } = await import("../modules/score/service.js");
+      await calcularScore(userId);
+      console.log("[OCR Worker] Score recalculado para usuário:", userId);
+    } catch (e) {
+      console.error("[OCR Worker] Erro ao recalcular score:", e);
+    }
+
     return { success: true, uploadId };
   },
   {

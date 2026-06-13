@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ArrowLeftRight, PieChart, Target, MessageCircle } from "lucide-react";
+import { Home, ArrowLeftRight, PieChart, Target, Heart, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { href: "/transactions", icon: ArrowLeftRight, label: "Extratos" },
   { href: "/budget", icon: PieChart, label: "Orçamento" },
   { href: "/goals", icon: Target, label: "Metas" },
+  { href: "/score", icon: Heart, label: "Score" },
   { href: "/assistant", icon: MessageCircle, label: "Viva" },
 ];
 
@@ -26,7 +27,7 @@ export function MobileNav() {
               key={href}
               href={href}
               className={cn(
-                "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg",
+                "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg",
                 active ? "text-green-600" : "text-gray-400 hover:text-gray-600"
               )}
             >

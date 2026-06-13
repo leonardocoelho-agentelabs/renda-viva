@@ -36,6 +36,12 @@ export function SummaryCards({
     return "text-red-600";
   };
 
+  const getScoreLabel = (score: number) => {
+    if (score >= 70) return "Saúde excelente";
+    if (score >= 40) return "Em desenvolvimento";
+    return "Atenção necessária";
+  };
+
   const cards = [
     {
       label: "Saldo do Mês",
@@ -58,7 +64,7 @@ export function SummaryCards({
     {
       label: "Score de Saúde",
       value: String(scoreSaude),
-      sub: "de 100",
+      sub: getScoreLabel(scoreSaude),
       icon: Activity,
       iconBg: "bg-blue-50",
       iconColor: "text-blue-500",
