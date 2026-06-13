@@ -17,6 +17,8 @@
 #     n8n/workflows/beta/*.json já estão nesse formato (um workflow por arquivo).
 #   - O campo "active" é somente-leitura na criação. A ativação é feita em uma
 #     chamada separada: POST /api/v1/workflows/{id}/activate.
+#   - Este script usa apenas curl + grep/sed (sem dependência de python), para
+#     funcionar igual em Linux, macOS e Git Bash no Windows.
 
 set -euo pipefail
 
@@ -37,12 +39,17 @@ if [ -z "$N8N_API_KEY" ]; then
   exit 1
 fi
 
-# Escolhe python disponível
-PY="$(command -v python3 || command -v python || true)"
-if [ -z "$PY" ]; then
-  echo "ERRO: python3 (ou python) é necessário para processar as respostas JSON."
-  exit 1
-fi
+# Extrai o id do workflow (nanoid sem hífens) da resposta de criação.
+# Os ids de nós e de versão são UUIDs (contêm hífens), então o padrão
+# "id":"<alfanumérico sem hífen>" casa apenas com o id do workflow.
+extrair_workflow_id() {
+  grep -oE '"id":"[A-Za-z0-9]+"' | sed -E 's/"id":"([A-Za-z0-9]+)"/\1/' | head -1 || true
+}
+
+# Extrai o valor de "active" (true/false) de uma resposta.
+extrair_active() {
+  grep -oE '"active":(true|false)' | sed -E 's/"active"://' | head -1 || true
+}
 
 echo "=== Importando workflows no n8n ==="
 echo "n8n: $N8N_URL"
@@ -63,6 +70,8 @@ fi
 echo "OK (HTTP 200)."
 echo ""
 
+RESUMO=()
+
 importar_e_ativar() {
   local file="$1"
   local nome
@@ -73,43 +82,29 @@ importar_e_ativar() {
   resp="$(curl -s -X POST "$N8N_URL/api/v1/workflows" \
     -H "X-N8N-API-KEY: $N8N_API_KEY" \
     -H "Content-Type: application/json" \
-    --data-binary @"$file")"
+    --data-binary @"$file" || true)"
 
-  # Extrai o id do workflow criado (ou imprime o erro retornado)
   local id
-  id="$(printf '%s' "$resp" | "$PY" -c "
-import json, sys
-try:
-    d = json.load(sys.stdin)
-except Exception:
-    print('', end='')
-    sys.exit(0)
-print(d.get('id', '') if isinstance(d, dict) else '', end='')
-")"
+  id="$(printf '%s' "$resp" | extrair_workflow_id)"
 
   if [ -z "$id" ]; then
     echo "   FALHA ao importar $nome. Resposta da API:"
     echo "   $resp"
+    RESUMO+=("FALHA  $nome")
     return 1
   fi
 
   echo "   Importado. id=$id"
 
   echo "   Ativando..."
-  local act
+  local act ativo
   act="$(curl -s -X POST "$N8N_URL/api/v1/workflows/$id/activate" \
-    -H "X-N8N-API-KEY: $N8N_API_KEY")"
-  local ativo
-  ativo="$(printf '%s' "$act" | "$PY" -c "
-import json, sys
-try:
-    d = json.load(sys.stdin)
-except Exception:
-    print('?', end='')
-    sys.exit(0)
-print(d.get('active', '?') if isinstance(d, dict) else '?', end='')
-")"
+    -H "X-N8N-API-KEY: $N8N_API_KEY" || true)"
+  ativo="$(printf '%s' "$act" | extrair_active)"
+  [ -z "$ativo" ] && ativo="?"
   echo "   Ativo: $ativo"
+
+  RESUMO+=("OK     $nome (id=$id, active=$ativo)")
 }
 
 erros=0
@@ -119,15 +114,10 @@ for file in "$WORKFLOWS_DIR"/*.json; do
   echo ""
 done
 
-echo "=== Resumo ==="
-echo "Listando workflows no n8n:"
-curl -s "$N8N_URL/api/v1/workflows?limit=100" \
-  -H "X-N8N-API-KEY: $N8N_API_KEY" | "$PY" -c "
-import json, sys
-d = json.load(sys.stdin)
-for w in d.get('data', []):
-    print(f\"  ID: {w.get('id')} - Nome: {w.get('name')} - Ativo: {w.get('active')}\")
-"
+echo "=== Resumo desta execução ==="
+for linha in "${RESUMO[@]}"; do
+  echo "  $linha"
+done
 
 if [ "$erros" -gt 0 ]; then
   echo ""
