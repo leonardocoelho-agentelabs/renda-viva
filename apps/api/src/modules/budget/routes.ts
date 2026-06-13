@@ -10,6 +10,7 @@ interface AiBudget {
   limite: number;
   tipo?: string;
   justificativa?: string;
+  alerta?: unknown;
 }
 
 function mesAtualStr(): string {
@@ -21,6 +22,46 @@ function intervaloMes(mesAno: string): { inicio: string; fim: string } {
   const inicio = `${mesAno}-01`;
   const fim = new Date(ano, mes, 0).toISOString().split("T")[0]; // último dia do mês
   return { inicio, fim };
+}
+
+// O Claude às vezes envolve o JSON em ```json ... ``` e adiciona comentários
+// depois do array. Extrai o array de forma robusta cobrindo esses casos.
+function extractJsonFromResponse(text: string): AiBudget[] {
+  // 1. JSON dentro de bloco ```json ... ```
+  const jsonBlockMatch = text.match(/```json\s*([\s\S]*?)```/);
+  if (jsonBlockMatch) {
+    try {
+      return JSON.parse(jsonBlockMatch[1].trim());
+    } catch {
+      // continua
+    }
+  }
+
+  // 2. Primeiro array JSON encontrado no texto
+  const arrayMatch = text.match(/\[[\s\S]*\]/);
+  if (arrayMatch) {
+    try {
+      return JSON.parse(arrayMatch[0]);
+    } catch {
+      // continua
+    }
+  }
+
+  // 3. Limpa cercas de markdown e corta após o último ']'
+  try {
+    const clean = text
+      .replace(/```json\n?/g, "")
+      .replace(/```\n?/g, "")
+      .trim();
+    const endIndex = clean.lastIndexOf("]");
+    if (endIndex !== -1) {
+      return JSON.parse(clean.substring(0, endIndex + 1));
+    }
+  } catch {
+    // continua
+  }
+
+  throw new Error("Não foi possível extrair JSON válido da resposta");
 }
 
 const budgetRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
@@ -124,14 +165,10 @@ Seja realista baseado no histórico real, não apenas na regra teórica.`;
 
         const first = response.content[0];
         const responseText = first && first.type === "text" ? first.text : "[]";
-        const cleanJson = responseText
-          .replace(/```json\n?/g, "")
-          .replace(/```\n?/g, "")
-          .trim();
 
         let orcamentosIA: AiBudget[];
         try {
-          orcamentosIA = JSON.parse(cleanJson);
+          orcamentosIA = extractJsonFromResponse(responseText);
         } catch (parseErr) {
           fastify.log.error(
             { err: parseErr, responseText },
@@ -143,17 +180,28 @@ Seja realista baseado no histórico real, não apenas na regra teórica.`;
           });
         }
 
-        if (!Array.isArray(orcamentosIA) || orcamentosIA.length === 0) {
+        if (!Array.isArray(orcamentosIA)) {
           return reply.status(502).send({
             success: false,
             error: "Não foi possível gerar o orçamento. Tente novamente.",
           });
         }
 
+        // Filtrar apenas itens válidos (com categoria e limite numérico, sem alertas)
+        const orcamentosValidos = orcamentosIA.filter(
+          (o) => o && o.categoria && typeof o.limite === "number" && !o.alerta
+        );
+
+        if (orcamentosValidos.length === 0) {
+          return reply.status(502).send({
+            success: false,
+            error: "IA não retornou orçamentos válidos",
+          });
+        }
+
         // 6. Dedupe por categoria (constraint unique) e prepara insert
         const vistos = new Set<string>();
-        const orcamentosParaInserir = orcamentosIA
-          .filter((o) => o && o.categoria && typeof o.limite === "number")
+        const orcamentosParaInserir = orcamentosValidos
           .filter((o) => {
             const key = o.categoria.trim();
             if (vistos.has(key)) return false;
