@@ -3,6 +3,7 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { SummaryCards } from "./components/summary-cards";
 import { CategoryChart } from "./components/category-chart";
 import { RecentTransactions } from "./components/recent-transactions";
+import { ForecastChart } from "./components/forecast-chart";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -78,6 +79,16 @@ export default async function DashboardPage() {
     .sort((a, b) => b.total - a.total)
     .slice(0, 5);
 
+  // Previsão de saldo dos próximos 30 dias
+  const hojeStr = hoje.toISOString().split("T")[0];
+  const { data: previsoes } = await supabase
+    .from("forecasts")
+    .select("data_prevista, saldo_projetado, confianca")
+    .eq("user_id", user.id)
+    .gte("data_prevista", hojeStr)
+    .order("data_prevista", { ascending: true })
+    .limit(30);
+
   return (
     <DashboardLayout>
       <div className="mb-8">
@@ -92,6 +103,8 @@ export default async function DashboardPage() {
         scoreSaude={scoreSaude}
         totalTransacoes={transactions?.length || 0}
       />
+
+      <ForecastChart data={previsoes || []} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <CategoryChart data={chartData} />

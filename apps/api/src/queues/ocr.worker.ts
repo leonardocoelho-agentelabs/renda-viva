@@ -37,6 +37,15 @@ export const ocrWorker = new Worker<OcrJobData>(
       console.error("[OCR Worker] Erro ao recalcular score:", e);
     }
 
+    // Gerar previsão de saldo dos próximos 30 dias
+    try {
+      const { gerarPrevisaoSaldo } = await import("../services/forecast.service.js");
+      await gerarPrevisaoSaldo(userId);
+      console.log("[OCR Worker] Previsão de saldo gerada para usuário:", userId);
+    } catch (e) {
+      console.error("[OCR Worker] Erro ao gerar previsão:", e);
+    }
+
     // Verificar gastos incomuns nas transações deste upload (gastos > R$ 50)
     try {
       const { supabaseAdmin } = await import("../plugins/supabase.js");
