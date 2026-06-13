@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
+import ws from "ws";
 import { env } from "../env.js";
 
 // Cliente Supabase com service_role (bypassa RLS)
@@ -11,6 +12,9 @@ export const supabaseAdmin = createClient(
     auth: {
       autoRefreshToken: false,
       persistSession: false,
+    },
+    realtime: {
+      transport: ws,
     },
   }
 );
