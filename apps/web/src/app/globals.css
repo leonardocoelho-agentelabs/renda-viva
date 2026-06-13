@@ -15,6 +15,12 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Safe area para barra inferior em dispositivos com notch */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Scrollbar customizada */

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Home, ArrowLeftRight, PieChart, Target, MessageCircle, LogOut } from "lucide-react";
+import { Home, ArrowLeftRight, PieChart, Target, MessageCircle, LogOut, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
@@ -15,7 +15,11 @@ const navItems = [
   { href: "/assistant", label: "Assistente", icon: MessageCircle },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+export function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
@@ -47,17 +51,26 @@ export function Sidebar() {
   const inicial = nome.charAt(0).toUpperCase();
 
   return (
-    <aside className="w-60 h-screen bg-[#0F1117] flex flex-col flex-shrink-0 sticky top-0">
+    <aside className="w-60 h-screen bg-[#0F1117] flex flex-col flex-shrink-0">
       {/* Logo */}
       <div className="px-6 py-5 border-b border-white/10">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
             <span className="text-white font-bold text-sm">RV</span>
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <span className="text-white font-semibold text-sm block leading-tight">Renda Viva</span>
             <p className="text-white/40 text-xs leading-tight">Gestão inteligente</p>
           </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              aria-label="Fechar menu"
+              className="text-white/50 hover:text-white flex-shrink-0"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -69,6 +82,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onClose}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium border-l-2",
                 isActive

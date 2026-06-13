@@ -68,7 +68,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
             <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Descrição</th>
             <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Categoria</th>
             <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Valor</th>
-            <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
+            <th className="hidden md:table-cell text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
           </tr>
         </thead>
         <tbody>
@@ -85,7 +85,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                 {tx.valor >= 0 ? "+" : "-"}
                 {formatCurrency(tx.valor)}
               </td>
-              <td className="py-3 px-4 text-center">
+              <td className="hidden md:table-cell py-3 px-4 text-center">
                 {getStatusBadge(tx.status_revisao)}
               </td>
             </tr>

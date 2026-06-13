@@ -143,7 +143,7 @@ export default function AssistantPage() {
         <p className="text-gray-500">Tire dúvidas sobre suas finanças com IA</p>
       </div>
 
-      <div className="flex flex-col bg-white rounded-xl border border-gray-100 shadow-sm h-[calc(100vh-220px)] overflow-hidden">
+      <div className="flex flex-col bg-white rounded-xl border border-gray-100 shadow-sm h-[calc(100dvh-240px)] md:h-[calc(100vh-220px)] overflow-hidden">
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
           {messages.map((msg, i) => (
