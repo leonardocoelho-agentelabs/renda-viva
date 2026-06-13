@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ArrowLeftRight, PieChart, Target, Heart, FileText, MessageCircle } from "lucide-react";
+import { Home, ArrowLeftRight, PieChart, Target, Heart, FileText, TrendingUp, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
   { href: "/goals", icon: Target, label: "Metas" },
   { href: "/score", icon: Heart, label: "Score" },
   { href: "/reports", icon: FileText, label: "Relat." },
+  { href: "/investments", icon: TrendingUp, label: "Invest." },
   { href: "/assistant", icon: MessageCircle, label: "Viva" },
 ];
 
@@ -20,7 +21,7 @@ export function MobileNav() {
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 safe-area-pb">
-      <div className="flex items-center justify-around px-2 py-2">
+      <div className="flex items-center justify-between px-1 py-2 overflow-x-auto">
         {navItems.map(({ href, icon: Icon, label }) => {
           const active = pathname === href || pathname.startsWith(href);
           return (
@@ -28,14 +29,14 @@ export function MobileNav() {
               key={href}
               href={href}
               className={cn(
-                "flex flex-col items-center gap-0.5 px-1.5 py-1.5 rounded-lg",
+                "flex flex-col items-center gap-0.5 px-1 py-1.5 rounded-lg shrink-0 min-w-[44px]",
                 active ? "text-green-600" : "text-gray-400 hover:text-gray-600"
               )}
             >
               <Icon className={cn("w-5 h-5", active ? "stroke-[2.5]" : "stroke-2")} />
               <span
                 className={cn(
-                  "text-[10px] font-medium",
+                  "text-[10px] font-medium whitespace-nowrap",
                   active ? "text-green-600" : "text-gray-400"
                 )}
               >
