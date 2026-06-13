@@ -4,192 +4,115 @@ export interface ParsedTransaction {
   data: string; // YYYY-MM-DD
   valor: number;
   descricao_raw: string;
-  tipo: "debito" | "credito";
+  tipo: "debito" | "credito" | "pix" | "transferencia";
 }
 
-// Detectar formato do banco baseado nos headers
-function detectBankFormat(headers: string[]): string {
-  const h = headers.map((x) => x.toLowerCase().trim());
-
-  if (h.includes("categoria") && h.includes("título")) return "nubank";
-  if (h.includes("data lançamento") || h.includes("historico")) return "inter";
-  if (h.includes("itau") || (h.includes("data") && h.includes("historico") && h.includes("valor") && h.length === 3)) return "itau";
-  if (h.includes("data") && h.includes("descrição") || h.includes("descricao")) return "generico";
-
-  return "unknown";
+// Converte número brasileiro "1.234,56" / "-350,89" para 1234.56 / -350.89
+function parseBrazilianNumber(value: string): number {
+  if (!value) return 0;
+  const clean = value.replace(/[R$\s]/g, "").replace(/\./g, "").replace(",", ".");
+  return parseFloat(clean) || 0;
 }
 
-// Converter data brasileira para ISO
-function parseDate(dateStr: string): string | null {
-  if (!dateStr) return null;
+// Converte data DD/MM/YYYY para YYYY-MM-DD (mantém ISO se já estiver nesse formato)
+function parseBrazilianDate(dateStr: string): string {
+  const trimmed = dateStr.trim();
 
-  // Tentar DD/MM/YYYY
-  const brMatch = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if (brMatch) {
-    const [, day, month, year] = brMatch;
-    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  const parts = trimmed.split("/");
+  if (parts.length === 3) {
+    return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
   }
 
-  // Tentar YYYY-MM-DD (já ISO)
-  const isoMatch = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
-  if (isoMatch) {
-    return dateStr.slice(0, 10);
-  }
+  // Já em ISO (YYYY-MM-DD)
+  const isoMatch = trimmed.match(/^\d{4}-\d{2}-\d{2}/);
+  if (isoMatch) return trimmed.slice(0, 10);
 
-  return null;
+  return trimmed;
 }
 
-// Parsear valor brasileiro: 1.234,56 ou -1.234,56 ou R$ 1.234,56
-function parseValor(valorStr: string): { valor: number; tipo: "debito" | "credito" } {
-  if (!valorStr) return { valor: 0, tipo: "debito" };
-
-  // Remover R$, espaços, etc
-  let clean = valorStr.replace(/[R$\s]/g, "").trim();
-
-  // Detectar se é negativo
-  const isNegative = clean.startsWith("-") || clean.includes("(");
-  clean = clean.replace(/[()-]/g, "").trim();
-
-  // Remover pontos de milhar e trocar vírgula por ponto
-  clean = clean.replace(/\./g, "").replace(",", ".");
-
-  let valor = parseFloat(clean);
-  if (isNaN(valor)) return { valor: 0, tipo: "debito" };
-
-  // Débitos são negativos, créditos positivos
-  if (isNegative && valor > 0) {
-    valor = -valor;
-  }
-
-  return {
-    valor,
-    tipo: valor >= 0 ? "credito" : "debito",
-  };
-}
-
-// Parser Nubank: data, categoria, título, valor
-function parseNubank(rows: string[][]): ParsedTransaction[] {
-  const transactions: ParsedTransaction[] = [];
-
-  for (let i = 1; i < rows.length; i++) {
-    const [dataStr, , , , valorStr, descricao] = rows[i];
-    const data = parseDate(dataStr);
-    const { valor, tipo } = parseValor(valorStr);
-
-    if (data && descricao) {
-      transactions.push({
-        data,
-        valor,
-        descricao_raw: descricao.trim(),
-        tipo,
-      });
-    }
-  }
-
-  return transactions;
-}
-
-// Parser Inter: Data Lançamento, Histórico, Valor
-function parseInter(rows: string[][]): ParsedTransaction[] {
-  const transactions: ParsedTransaction[] = [];
-
-  for (let i = 1; i < rows.length; i++) {
-    const row = rows[i];
-    if (row.length < 3) continue;
-
-    const dataStr = row[0];
-    const historico = row[1];
-    const valorStr = row[row.length - 1]; // Pode ter mais colunas
-
-    const data = parseDate(dataStr);
-    const { valor, tipo } = parseValor(valorStr);
-
-    if (data && historico) {
-      transactions.push({
-        data,
-        valor,
-        descricao_raw: historico.trim(),
-        tipo,
-      });
-    }
-  }
-
-  return transactions;
-}
-
-// Parser Genérico: detecta colunas automaticamente
-function parseGeneric(rows: string[][]): ParsedTransaction[] {
-  if (rows.length < 2) return [];
-
-  const headers = rows[0].map((h) => h.toLowerCase().trim());
-  const dataIdx = headers.findIndex((h) => h.includes("data"));
-  const valorIdx = headers.findIndex((h) => h.includes("valor") || h.includes("value"));
-  const descIdx = headers.findIndex((h) =>
-    h.includes("descri") || h.includes("historico") || h.includes("titulo") || h.includes("title")
-  );
-
-  if (dataIdx === -1 || valorIdx === -1) return [];
-
-  const transactions: ParsedTransaction[] = [];
-
-  for (let i = 1; i < rows.length; i++) {
-    const row = rows[i];
-    const dataStr = row[dataIdx];
-    const valorStr = row[valorIdx];
-    const descricao = descIdx !== -1 ? row[descIdx] : row[0];
-
-    const data = parseDate(dataStr);
-    const { valor, tipo } = parseValor(valorStr);
-
-    if (data) {
-      transactions.push({
-        data,
-        valor,
-        descricao_raw: descricao?.trim() || "",
-        tipo,
-      });
-    }
-  }
-
-  return transactions;
+// Determina o tipo a partir do histórico e do sinal do valor
+function detectTipo(historico: string, valor: number): ParsedTransaction["tipo"] {
+  const h = (historico || "").toLowerCase();
+  if (h.includes("pix")) return "pix";
+  if (h.includes("transfer")) return "transferencia";
+  if (h.includes("compra")) return "debito";
+  if (valor > 0) return "credito";
+  return "debito";
 }
 
 export async function parseCSV(buffer: Buffer): Promise<ParsedTransaction[]> {
-  return new Promise((resolve, reject) => {
-    const text = buffer.toString("utf-8");
+  // Remove BOM (byte order mark) que alguns bancos colocam no início do arquivo
+  const content = buffer.toString("utf-8").replace(/^﻿/, "");
+  const lines = content.split("\n");
 
-    Papa.parse<string[]>(text, {
-      complete: (results) => {
-        const rows = results.data as string[][];
+  // Encontrar a linha de cabeçalho real: contém "data" e "valor".
+  // Bancos como o Inter colocam metadados nas primeiras linhas.
+  let headerIndex = -1;
+  for (let i = 0; i < Math.min(lines.length, 15); i++) {
+    const line = lines[i].toLowerCase();
+    if (
+      (line.includes("data") || line.includes("date")) &&
+      (line.includes("valor") || line.includes("value") || line.includes("amount"))
+    ) {
+      headerIndex = i;
+      break;
+    }
+  }
 
-        if (rows.length < 2) {
-          resolve([]);
-          return;
-        }
+  if (headerIndex === -1) {
+    console.error("[CSV Parser] Header não encontrado (procurando colunas 'data' e 'valor')");
+    return [];
+  }
 
-        const headers = rows[0];
-        const format = detectBankFormat(headers);
+  // Detectar separador a partir da linha de cabeçalho
+  const headerLine = lines[headerIndex];
+  const separator = headerLine.includes(";") ? ";" : ",";
 
-        let transactions: ParsedTransaction[] = [];
+  // Parsear a partir do cabeçalho (descartando metadados acima)
+  const csvContent = lines.slice(headerIndex).join("\n");
 
-        switch (format) {
-          case "nubank":
-            transactions = parseNubank(rows);
-            break;
-          case "inter":
-            transactions = parseInter(rows);
-            break;
-          default:
-            transactions = parseGeneric(rows);
-        }
-
-        console.log(`📊 CSV parseado: ${transactions.length} transações (formato: ${format})`);
-        resolve(transactions);
-      },
-      error: (error) => {
-        console.error("❌ Erro ao parsear CSV:", error.message);
-        reject(error);
-      },
-    });
+  const result = Papa.parse<Record<string, string>>(csvContent, {
+    header: true,
+    delimiter: separator,
+    skipEmptyLines: true,
+    transformHeader: (h) => h.trim(),
   });
+
+  const transactions: ParsedTransaction[] = [];
+
+  for (const row of result.data) {
+    // Identificar colunas por nome (case-insensitive nas variações comuns)
+    const dataRaw =
+      row["Data Lançamento"] || row["Data Lancamento"] || row["Data"] ||
+      row["DATA"] || row["date"];
+    const valorRaw =
+      row["Valor"] || row["VALOR"] || row["value"] || row["amount"];
+    const historico =
+      row["Histórico"] || row["Historico"] || row["historico"] || "";
+    const descricao =
+      row["Descrição"] || row["Descricao"] || row["descricao"] ||
+      row["title"] || "";
+
+    if (!dataRaw || !valorRaw) continue;
+
+    const valor = parseBrazilianNumber(String(valorRaw));
+    if (valor === 0) continue; // Ignorar linhas com valor zero (ex: saldo)
+
+    // descricao_raw = Histórico + ": " + Descrição quando ambos existirem
+    const h = historico.trim();
+    const d = descricao.trim();
+    const descricao_raw = h && d ? `${h}: ${d}` : h || d || "Transação";
+
+    transactions.push({
+      data: parseBrazilianDate(String(dataRaw)),
+      valor,
+      descricao_raw,
+      tipo: detectTipo(historico, valor),
+    });
+  }
+
+  console.log(
+    `[CSV Parser] ${transactions.length} transações parseadas (separador: '${separator}')`
+  );
+  return transactions;
 }

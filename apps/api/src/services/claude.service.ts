@@ -5,7 +5,7 @@ export interface ParsedTransaction {
   data: string;
   valor: number;
   descricao_raw: string;
-  tipo: "debito" | "credito";
+  tipo: "debito" | "credito" | "pix" | "transferencia";
 }
 
 export interface UserCorrection {
