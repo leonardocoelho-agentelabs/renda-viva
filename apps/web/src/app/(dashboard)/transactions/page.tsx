@@ -3,9 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { format, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Plus } from "lucide-react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { TransactionTable } from "./components/transaction-table";
+import { TransactionModal } from "./components/transaction-modal";
 import { UploadZone } from "./components/upload-zone";
 import { createClient } from "@/lib/supabase/client";
 
@@ -25,6 +27,10 @@ export default function TransactionsPage() {
   const [showUpload, setShowUpload] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalAberto, setModalAberto] = useState(false);
+  const [transacaoEditando, setTransacaoEditando] = useState<Transaction | null>(null);
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
   const months = Array.from({ length: 6 }, (_, i) => {
     const date = subMonths(new Date(), i);
@@ -69,6 +75,35 @@ export default function TransactionsPage() {
     fetchTransactions(selectedMonth);
   };
 
+  const abrirNova = () => {
+    setTransacaoEditando(null);
+    setModalAberto(true);
+  };
+
+  const abrirEdicao = (tx: Transaction) => {
+    setTransacaoEditando(tx);
+    setModalAberto(true);
+  };
+
+  const handleSuccess = () => {
+    fetchTransactions(selectedMonth);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Excluir esta transação?")) return;
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.access_token) return;
+    const res = await fetch(`${apiUrl}/transactions/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    if (res.ok) {
+      setTransactions((prev) => prev.filter((t) => t.id !== id));
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="mb-8">
@@ -77,12 +112,21 @@ export default function TransactionsPage() {
             <h1 className="text-2xl font-bold text-gray-900">Transações</h1>
             <p className="text-gray-500">Gerencie suas transações financeiras</p>
           </div>
-          <button
-            onClick={() => setShowUpload(!showUpload)}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          >
-            {showUpload ? "Ocultar upload" : "Importar extrato"}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={abrirNova}
+              className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Nova Transação
+            </button>
+            <button
+              onClick={() => setShowUpload(!showUpload)}
+              className="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+            >
+              {showUpload ? "Ocultar upload" : "Importar extrato"}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -118,10 +162,21 @@ export default function TransactionsPage() {
           {loading ? (
             <div className="text-center py-12 text-gray-500">Carregando transações...</div>
           ) : (
-            <TransactionTable transactions={transactions} />
+            <TransactionTable
+              transactions={transactions}
+              onEdit={abrirEdicao}
+              onDelete={handleDelete}
+            />
           )}
         </CardContent>
       </Card>
+
+      <TransactionModal
+        isOpen={modalAberto}
+        onClose={() => setModalAberto(false)}
+        onSuccess={handleSuccess}
+        transacao={transacaoEditando}
+      />
     </DashboardLayout>
   );
 }
