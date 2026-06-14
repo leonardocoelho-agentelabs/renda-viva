@@ -33,7 +33,6 @@ export default function LoginPage() {
       }
 
       if (data.user) {
-        // Verificar se é primeiro login (precisa de onboarding)
         const { data: profile } = await supabase
           .from("users")
           .select("full_name")
@@ -55,11 +54,11 @@ export default function LoginPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Entrar</h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC] mb-6">Entrar</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {error}
           </div>
         )}
@@ -87,9 +86,9 @@ export default function LoginPage() {
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-gray-600">
+      <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
         Não tem uma conta?{" "}
-        <Link href="/register" className="text-green-600 hover:text-green-700 font-medium">
+        <Link href="/register" className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium">
           Criar conta
         </Link>
       </p>

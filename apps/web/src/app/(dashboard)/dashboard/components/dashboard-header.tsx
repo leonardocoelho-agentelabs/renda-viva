@@ -39,10 +39,10 @@ export function DashboardHeader({
 
   return (
     <div className="mb-6">
-      <h1 className="text-2xl font-bold text-gray-900">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">
         {getGreeting()}, {primeiroNome} 👋
       </h1>
-      <p className="text-sm text-gray-500 mt-1">{mensagem}</p>
+      <p className="text-sm text-gray-500 dark:text-[#94A3B8] mt-1">{mensagem}</p>
     </div>
   );
 }

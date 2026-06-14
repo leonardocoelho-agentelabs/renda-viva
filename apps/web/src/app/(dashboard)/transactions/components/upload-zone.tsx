@@ -34,7 +34,7 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       "application/pdf": [".pdf"],
     },
     maxFiles: 1,
-    maxSize: 20 * 1024 * 1024, // 20MB
+    maxSize: 20 * 1024 * 1024,
   });
 
   const handleUpload = async () => {
@@ -46,8 +46,6 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
     setError("");
 
     try {
-      // Obter token diretamente do browser client — fonte confiável que gerencia
-      // refresh automático, evitando o server route que pode falhar com sessão expirada
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
 
@@ -80,7 +78,6 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
       setUploadId(data.upload_id);
       setStatus("processing");
 
-      // Polling do status
       const pollStatus = async () => {
         const statusResponse = await fetch(
           `${apiUrl}/uploads/${data.upload_id}/status`,
@@ -137,31 +134,31 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
           className={cn(
             "border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors",
             isDragActive
-              ? "border-green-500 bg-green-50"
-              : "border-gray-300 hover:border-green-400"
+              ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+              : "border-gray-300 dark:border-[#1E293B] hover:border-green-400"
           )}
         >
           <input {...getInputProps()} />
-          <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-600">
+          <Upload className="h-12 w-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">
             {isDragActive
               ? "Solte o arquivo aqui"
               : "Arraste um arquivo ou clique para selecionar"}
           </p>
-          <p className="text-sm text-gray-400 mt-2">
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
             Aceita: .csv, .pdf (máx. 20MB)
           </p>
         </div>
       ) : (
-        <div className="border rounded-xl p-4">
+        <div className="border border-gray-200 dark:border-[#1E293B] rounded-xl p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <File className="h-5 w-5 text-gray-600" />
+              <div className="p-2 bg-gray-100 dark:bg-[#1E293B] rounded-lg">
+                <File className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm font-medium text-gray-900 dark:text-[#F8FAFC]">{file.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   {(file.size / 1024 / 1024).toFixed(2)} MB
                 </p>
               </div>
@@ -170,50 +167,50 @@ export function UploadZone({ onUploadComplete }: UploadZoneProps) {
             {status === "idle" && (
               <button
                 onClick={handleRemove}
-                className="p-1 hover:bg-gray-100 rounded"
+                className="p-1 hover:bg-gray-100 dark:hover:bg-[#1E293B] rounded"
               >
-                <X className="h-5 w-5 text-gray-400" />
+                <X className="h-5 w-5 text-gray-400 dark:text-gray-500" />
               </button>
             )}
           </div>
 
           {status === "uploading" && (
             <div className="mt-4">
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-2 bg-gray-200 dark:bg-[#1E293B] rounded-full overflow-hidden">
                 <div
                   className="h-full bg-green-600 transition-all"
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <p className="text-sm text-gray-500 mt-2">Enviando...</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Enviando...</p>
             </div>
           )}
 
           {status === "processing" && (
             <div className="mt-4">
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-2 bg-gray-200 dark:bg-[#1E293B] rounded-full overflow-hidden">
                 <div
                   className="h-full bg-green-600 animate-pulse"
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 Processando transações... {progress}%
               </p>
             </div>
           )}
 
           {status === "done" && (
-            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm text-green-700">
+            <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+              <p className="text-sm text-green-700 dark:text-green-400">
                 ✅ Upload processado com sucesso!
               </p>
             </div>
           )}
 
           {status === "error" && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
             </div>
           )}
 

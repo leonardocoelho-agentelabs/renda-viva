@@ -37,28 +37,28 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
   return (
     <Card>
       <CardHeader>
-        <h3 className="font-semibold text-gray-900">Últimas transações</h3>
+        <h3 className="font-semibold text-gray-900 dark:text-[#F8FAFC]">Últimas transações</h3>
       </CardHeader>
       <CardContent>
         {transactions.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">Nenhuma transação ainda</p>
+          <p className="text-gray-500 dark:text-gray-400 text-center py-8">Nenhuma transação ainda</p>
         ) : (
           <div className="space-y-3">
             {transactions.map((tx) => (
               <div
                 key={tx.id}
-                className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+                className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-[#1E293B] last:border-0"
               >
                 <div className="flex items-center gap-3">
-                  <div className="text-sm text-gray-500 w-12">{formatDate(tx.data)}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 w-12">{formatDate(tx.data)}</div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">
+                    <p className="text-sm font-medium text-gray-900 dark:text-[#F8FAFC] truncate max-w-[200px]">
                       {tx.descricao_raw}
                     </p>
                     <CategoryBadge category={tx.categoria || "Outros"} />
                   </div>
                 </div>
-                <div className={tx.valor >= 0 ? "text-green-600" : "text-red-600"}>
+                <div className={tx.valor >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}>
                   {tx.valor >= 0 ? "+" : "-"}
                   {formatCurrency(tx.valor)}
                 </div>

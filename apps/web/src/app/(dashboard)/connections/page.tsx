@@ -24,10 +24,10 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  active: "bg-green-50 text-green-700",
-  updating: "bg-yellow-50 text-yellow-700",
-  error: "bg-red-50 text-red-700",
-  disconnected: "bg-gray-100 text-gray-600",
+  active: "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400",
+  updating: "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400",
+  error: "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400",
+  disconnected: "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400",
 };
 
 function formatDateTime(value: string | null): string {
@@ -52,7 +52,6 @@ export default function ConnectionsPage() {
   const [error, setError] = useState<string | null>(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
 
-  // Carregar o script do widget Pluggy
   useEffect(() => {
     if ((window as unknown as { PluggyConnect?: unknown }).PluggyConnect) {
       setScriptLoaded(true);
@@ -98,7 +97,6 @@ export default function ConnectionsPage() {
       const data = await res.json();
       setConnections(Array.isArray(data) ? data : []);
 
-      // Total de transações importadas automaticamente (origem open_finance)
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -230,8 +228,8 @@ export default function ConnectionsPage() {
     <DashboardLayout>
       <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Minhas Contas</h1>
-          <p className="text-gray-500">Conecte seus bancos e importe transações automaticamente</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">Minhas Contas</h1>
+          <p className="text-gray-500 dark:text-[#94A3B8]">Conecte seus bancos e importe transações automaticamente</p>
         </div>
         <button
           onClick={abrirWidget}
@@ -244,30 +242,30 @@ export default function ConnectionsPage() {
       </div>
 
       {error && (
-        <div className="mb-6 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+        <div className="mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">
           {error}
         </div>
       )}
 
       {/* Status geral */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+        <div className="bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm p-5">
+          <span className="text-xs font-medium text-gray-500 dark:text-[#94A3B8] uppercase tracking-wide">
             Bancos conectados
           </span>
-          <p className="text-2xl font-bold text-gray-900 mt-2">{connections.length}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC] mt-2">{connections.length}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+        <div className="bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm p-5">
+          <span className="text-xs font-medium text-gray-500 dark:text-[#94A3B8] uppercase tracking-wide">
             Última sincronização
           </span>
-          <p className="text-lg font-semibold text-gray-900 mt-2">{formatDateTime(ultimaSync ?? null)}</p>
+          <p className="text-lg font-semibold text-gray-900 dark:text-[#F8FAFC] mt-2">{formatDateTime(ultimaSync ?? null)}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+        <div className="bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm p-5">
+          <span className="text-xs font-medium text-gray-500 dark:text-[#94A3B8] uppercase tracking-wide">
             Importadas automaticamente
           </span>
-          <p className="text-2xl font-bold text-gray-900 mt-2">{totalImportadas}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC] mt-2">{totalImportadas}</p>
         </div>
       </div>
 
@@ -277,10 +275,10 @@ export default function ConnectionsPage() {
           <p className="text-gray-400">Carregando suas contas...</p>
         </div>
       ) : connections.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-xl border border-gray-100 shadow-sm">
-          <Building2 className="h-14 w-14 text-gray-300 mb-3" />
-          <h2 className="text-lg font-semibold text-gray-700 mb-1">Nenhum banco conectado</h2>
-          <p className="text-gray-400 mb-6 max-w-sm">
+        <div className="flex flex-col items-center justify-center py-20 text-center bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm">
+          <Building2 className="h-14 w-14 text-gray-300 dark:text-gray-600 mb-3" />
+          <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-1">Nenhum banco conectado</h2>
+          <p className="text-gray-400 dark:text-gray-500 mb-6 max-w-sm">
             Conecte seu banco com segurança via Open Finance e suas transações chegam sozinhas.
           </p>
           <button
@@ -297,20 +295,19 @@ export default function ConnectionsPage() {
           {connections.map((c) => (
             <div
               key={c.id}
-              className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-4"
+              className="bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm p-4 flex items-center gap-4"
             >
-              <div className="w-11 h-11 rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div className="w-11 h-11 rounded-lg bg-gray-50 dark:bg-[#1E293B] flex items-center justify-center overflow-hidden flex-shrink-0">
                 {c.institution_logo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img src={c.institution_logo} alt={c.institution_name} className="w-full h-full object-contain" />
                 ) : (
-                  <Landmark className="h-5 w-5 text-gray-400" />
+                  <Landmark className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                 )}
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-semibold text-gray-900 truncate">{c.institution_name}</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-[#F8FAFC] truncate">{c.institution_name}</h3>
                   <span
                     className={cn(
                       "text-xs font-medium px-2 py-0.5 rounded-full",
@@ -320,7 +317,7 @@ export default function ConnectionsPage() {
                     {STATUS_LABEL[c.status] || c.status}
                   </span>
                 </div>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                   Última sincronização: {formatDateTime(c.last_sync_at)}
                 </p>
               </div>
@@ -329,14 +326,14 @@ export default function ConnectionsPage() {
                 <button
                   onClick={() => sincronizar(c.pluggy_item_id)}
                   disabled={syncingId === c.pluggy_item_id}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 text-xs font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#1E293B] text-gray-700 dark:text-gray-300 text-xs font-medium hover:bg-gray-50 dark:hover:bg-[#1E293B] disabled:opacity-50 transition-colors"
                 >
                   <RefreshCw className={cn("h-3.5 w-3.5", syncingId === c.pluggy_item_id && "animate-spin")} />
                   Sincronizar
                 </button>
                 <button
                   onClick={() => desconectar(c.id)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-red-600 text-xs font-medium hover:bg-red-50 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#1E293B] text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   Desconectar

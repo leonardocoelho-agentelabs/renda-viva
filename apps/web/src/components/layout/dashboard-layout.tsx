@@ -13,7 +13,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#F8F9FB]">
+    <div className="min-h-screen bg-[#F8F9FB] dark:bg-[#0F172A]">
       {/* Sidebar desktop — fixa */}
       <div className="hidden md:block fixed inset-y-0 left-0 z-30">
         <Sidebar />
@@ -35,11 +35,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Conteúdo principal */}
       <div className="md:pl-60">
         {/* Header mobile */}
-        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-[#111827] border-b border-gray-200 dark:border-[#1E293B] sticky top-0 z-40">
           <button
             onClick={() => setSidebarOpen(true)}
             aria-label="Abrir menu"
-            className="p-2 -ml-2 rounded-lg text-gray-600 hover:bg-gray-100"
+            className="p-2 -ml-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#1E293B]"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -47,7 +47,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="w-6 h-6 bg-green-600 rounded flex items-center justify-center">
               <span className="text-white font-bold text-[10px]">RV</span>
             </div>
-            <span className="font-semibold text-gray-900 text-sm">Renda Viva</span>
+            <span className="font-semibold text-gray-900 dark:text-[#F8FAFC] text-sm">Renda Viva</span>
           </div>
           <div className="w-9" />
         </div>

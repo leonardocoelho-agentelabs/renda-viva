@@ -131,8 +131,8 @@ export default function TransactionsPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Transações</h1>
-            <p className="text-gray-500">Gerencie suas transações financeiras</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">Transações</h1>
+            <p className="text-gray-500 dark:text-[#94A3B8]">Gerencie suas transações financeiras</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -144,7 +144,7 @@ export default function TransactionsPage() {
             </button>
             <button
               onClick={() => setShowUpload(!showUpload)}
-              className="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 border border-gray-200 dark:border-[#1E293B] text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-[#1E293B] transition-colors"
             >
               {showUpload ? "Ocultar upload" : "Importar extrato"}
             </button>
@@ -155,7 +155,7 @@ export default function TransactionsPage() {
       {showUpload && (
         <Card className="mb-8">
           <CardHeader>
-            <h3 className="font-semibold">Importar extrato</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-[#F8FAFC]">Importar extrato</h3>
           </CardHeader>
           <CardContent>
             <UploadZone onUploadComplete={handleUploadComplete} />
@@ -166,11 +166,11 @@ export default function TransactionsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold">Todas as transações</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-[#F8FAFC]">Todas as transações</h3>
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
+              className="px-3 py-2 border border-gray-300 dark:border-[#1E293B] rounded-lg text-sm text-gray-900 dark:text-[#F8FAFC] dark:bg-[#1E293B]"
             >
               {months.map((month) => (
                 <option key={month.value} value={month.value}>
@@ -182,16 +182,16 @@ export default function TransactionsPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-12 text-gray-500">Carregando transações...</div>
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">Carregando transações...</div>
           ) : transactions.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">Nenhuma transação encontrada</p>
-              <p className="text-sm text-gray-400 mt-2">
+              <p className="text-gray-500 dark:text-gray-400">Nenhuma transação encontrada</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
                 Adicione uma transação ou importe um extrato para começar
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-gray-100 dark:divide-[#1E293B]">
               {transactions.map((tx) => (
                 <TransactionRow
                   key={tx.id}

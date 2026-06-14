@@ -88,39 +88,39 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 dark:from-[#0F172A] dark:to-[#111827] flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-green-600">Renda Viva</h1>
-          <p className="text-gray-600 mt-2">Vamos configurar sua conta</p>
+          <h1 className="text-3xl font-bold text-green-600 dark:text-green-400">Renda Viva</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Vamos configurar sua conta</p>
         </div>
 
         {/* Progress */}
         <div className="flex gap-2 mb-8">
-          <div className={cn("flex-1 h-2 rounded-full", step >= 1 ? "bg-green-600" : "bg-gray-200")} />
-          <div className={cn("flex-1 h-2 rounded-full", step >= 2 ? "bg-green-600" : "bg-gray-200")} />
+          <div className={cn("flex-1 h-2 rounded-full", step >= 1 ? "bg-green-600 dark:bg-green-400" : "bg-gray-200 dark:bg-[#1E293B]")} />
+          <div className={cn("flex-1 h-2 rounded-full", step >= 2 ? "bg-green-600 dark:bg-green-400" : "bg-gray-200 dark:bg-[#1E293B]")} />
         </div>
 
         <Card className="p-8">
           {/* Step 1: Renda */}
           {step === 1 && (
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-[#F8FAFC] mb-2">
                 Qual sua renda mensal?
               </h2>
-              <p className="text-gray-500 mb-6">
+              <p className="text-gray-500 dark:text-[#94A3B8] mb-6">
                 Isso nos ajuda a entender melhor seu perfil financeiro.
               </p>
 
               {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
                   {error}
                 </div>
               )}
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Renda mensal (R$)
                 </label>
                 <Input
@@ -140,15 +140,15 @@ export default function OnboardingPage() {
           {/* Step 2: Perfil de Risco */}
           {step === 2 && (
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-[#F8FAFC] mb-2">
                 Qual seu perfil de investidor?
               </h2>
-              <p className="text-gray-500 mb-6">
+              <p className="text-gray-500 dark:text-[#94A3B8] mb-6">
                 Escolha o perfil que mais combina com você.
               </p>
 
               {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
                   {error}
                 </div>
               )}
@@ -162,15 +162,15 @@ export default function OnboardingPage() {
                     className={cn(
                       "w-full p-4 rounded-lg border-2 text-left transition-all",
                       perfilRisco === profile.value
-                        ? "border-green-500 bg-green-50"
-                        : "border-gray-200 hover:border-gray-300"
+                        ? "border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/20"
+                        : "border-gray-200 dark:border-[#1E293B] hover:border-gray-300 dark:hover:border-gray-600"
                     )}
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{profile.icon}</span>
                       <div>
-                        <p className="font-medium text-gray-900">{profile.label}</p>
-                        <p className="text-sm text-gray-500">{profile.description}</p>
+                        <p className="font-medium text-gray-900 dark:text-[#F8FAFC]">{profile.label}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{profile.description}</p>
                       </div>
                     </div>
                   </button>

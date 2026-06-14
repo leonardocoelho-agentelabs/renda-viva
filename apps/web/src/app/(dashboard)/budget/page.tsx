@@ -29,9 +29,9 @@ const TIPO_POR_CATEGORIA: Record<string, Tipo> = {
 };
 
 const TIPO_BADGE: Record<Tipo, string> = {
-  necessidade: "bg-blue-100 text-blue-700",
-  desejo: "bg-purple-100 text-purple-700",
-  investimento: "bg-emerald-100 text-emerald-700",
+  necessidade: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
+  desejo: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
+  investimento: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
 };
 
 function getTipo(categoria: string): Tipo {
@@ -113,7 +113,6 @@ export default function BudgetPage() {
         body: JSON.stringify({}),
       });
       if (!res.ok) throw new Error(`Erro ${res.status}`);
-      // Recarrega com gasto_atual recalculado
       await loadBudgets();
     } catch {
       setError("Não foi possível gerar o orçamento. Tente novamente.");
@@ -173,8 +172,8 @@ export default function BudgetPage() {
     <DashboardLayout>
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Orçamentos</h1>
-          <p className="text-gray-500">Gerencie seus limites de gastos por categoria</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">Orçamentos</h1>
+          <p className="text-gray-500 dark:text-[#94A3B8]">Gerencie seus limites de gastos por categoria</p>
         </div>
         {budgets.length > 0 && (
           <button
@@ -189,7 +188,7 @@ export default function BudgetPage() {
       </div>
 
       {error && (
-        <div className="mb-6 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+        <div className="mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">
           {error}
         </div>
       )}
@@ -201,11 +200,11 @@ export default function BudgetPage() {
         </div>
       ) : budgets.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <PieChart className="h-16 w-16 text-gray-300 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-700 mb-2">
+          <PieChart className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
+          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Nenhum orçamento para este mês
           </h2>
-          <p className="text-gray-400 mb-8 max-w-sm">
+          <p className="text-gray-400 dark:text-gray-500 mb-8 max-w-sm">
             Gere um orçamento inteligente baseado no seu histórico de gastos e na regra
             50/30/20 adaptada à sua realidade.
           </p>
@@ -221,23 +220,23 @@ export default function BudgetPage() {
       ) : (
         <div className="space-y-6">
           {/* Resumo geral */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+          <div className="bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm p-6">
             <div className="flex items-end justify-between mb-3">
               <div>
-                <p className="text-sm text-gray-500">Total gasto</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-gray-500 dark:text-[#94A3B8]">Total gasto</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">
                   {formatCurrency(totalGasto)}
-                  <span className="text-base font-normal text-gray-400">
+                  <span className="text-base font-normal text-gray-400 dark:text-gray-500">
                     {" "}
                     de {formatCurrency(totalOrcado)}
                   </span>
                 </p>
               </div>
-              <span className="text-lg font-semibold text-gray-700">
+              <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">
                 {percentualGeral.toFixed(0)}%
               </span>
             </div>
-            <div className="h-3 w-full rounded-full bg-gray-100 overflow-hidden">
+            <div className="h-3 w-full rounded-full bg-gray-100 dark:bg-[#1E293B] overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all ${corBarra(percentualGeral)}`}
                 style={{ width: `${Math.min(percentualGeral, 100)}%` }}
@@ -255,39 +254,39 @@ export default function BudgetPage() {
               return (
                 <div
                   key={b.id}
-                  className="bg-white rounded-xl border border-gray-100 shadow-sm p-5"
+                  className="bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm p-5"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-gray-900">{b.categoria}</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-[#F8FAFC]">{b.categoria}</h3>
                       <span
                         className={`text-xs font-medium px-2 py-0.5 rounded-full ${TIPO_BADGE[tipo]}`}
                       >
                         {tipo}
                       </span>
                       {b.status === "sugerido" && (
-                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
                           sugerido
                         </span>
                       )}
                     </div>
-                    <span className="text-sm font-semibold text-gray-600">
+                    <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
                       {percentual.toFixed(0)}%
                     </span>
                   </div>
 
-                  <div className="h-2.5 w-full rounded-full bg-gray-100 overflow-hidden mb-2">
+                  <div className="h-2.5 w-full rounded-full bg-gray-100 dark:bg-[#1E293B] overflow-hidden mb-2">
                     <div
                       className={`h-full rounded-full transition-all ${corBarra(percentual)}`}
                       style={{ width: `${Math.min(percentual, 100)}%` }}
                     />
                   </div>
 
-                  <p className="text-sm text-gray-500 mb-4">
+                  <p className="text-sm text-gray-500 dark:text-[#94A3B8] mb-4">
                     {formatCurrency(gasto)} gastos de{" "}
                     {editingId === b.id ? (
                       <span className="inline-flex items-center gap-1">
-                        <span className="text-gray-400">R$</span>
+                        <span className="text-gray-400 dark:text-gray-500">R$</span>
                         <input
                           type="number"
                           step="0.01"
@@ -298,17 +297,17 @@ export default function BudgetPage() {
                             if (e.key === "Escape") setEditingId(null);
                           }}
                           autoFocus
-                          className="w-24 border border-gray-300 rounded px-2 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
+                          className="w-24 border border-gray-300 dark:border-[#1E293B] rounded px-2 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 dark:bg-[#0F172A] dark:text-[#F8FAFC]"
                         />
                         <button
                           onClick={() => handleSaveLimit(b.id)}
-                          className="text-green-600 text-xs font-medium hover:underline"
+                          className="text-green-600 dark:text-green-400 text-xs font-medium hover:underline"
                         >
                           Salvar
                         </button>
                       </span>
                     ) : (
-                      <span className="font-medium text-gray-700">
+                      <span className="font-medium text-gray-700 dark:text-gray-300">
                         {formatCurrency(limite)}
                       </span>
                     )}
@@ -325,7 +324,7 @@ export default function BudgetPage() {
                       </button>
                       <button
                         onClick={() => startEdit(b)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 text-xs font-medium hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-[#1E293B] text-gray-600 dark:text-gray-400 text-xs font-medium hover:bg-gray-50 dark:hover:bg-[#1E293B] transition-colors"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                         Editar limite

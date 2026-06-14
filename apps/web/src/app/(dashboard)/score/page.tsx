@@ -19,9 +19,9 @@ interface ScoreData {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 70) return "text-green-600";
-  if (score >= 40) return "text-yellow-600";
-  return "text-red-600";
+  if (score >= 70) return "text-green-600 dark:text-green-400";
+  if (score >= 40) return "text-yellow-600 dark:text-yellow-400";
+  return "text-red-600 dark:text-red-400";
 }
 
 function scoreRingColor(score: number): string {
@@ -54,6 +54,7 @@ function ScoreRing({ score }: { score: number }) {
       <svg height={radius * 2} width={radius * 2} className="-rotate-90">
         <circle
           stroke="#e5e7eb"
+          className="dark:stroke-[#1E293B]"
           fill="transparent"
           strokeWidth={stroke}
           r={normalizedRadius}
@@ -74,7 +75,7 @@ function ScoreRing({ score }: { score: number }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className={cn("text-4xl font-bold", scoreColor(score))}>{score}</span>
-        <span className="text-xs text-gray-400">de 100</span>
+        <span className="text-xs text-gray-400 dark:text-gray-500">de 100</span>
       </div>
     </div>
   );
@@ -140,7 +141,6 @@ export default function ScorePage() {
     }
   };
 
-  // Dimensão com menor aproveitamento (para a dica personalizada)
   const piorDimensao = data?.dimensoes.length
     ? [...data.dimensoes].sort((a, b) => a.pontos / a.max - b.pontos / b.max)[0]
     : null;
@@ -149,8 +149,8 @@ export default function ScorePage() {
     <DashboardLayout>
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Score de Saúde Financeira</h1>
-          <p className="text-gray-500">Uma nota de 0 a 100 sobre a sua saúde financeira</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">Score de Saúde Financeira</h1>
+          <p className="text-gray-500 dark:text-[#94A3B8]">Uma nota de 0 a 100 sobre a sua saúde financeira</p>
         </div>
         <button
           onClick={handleRecalculate}
@@ -163,7 +163,7 @@ export default function ScorePage() {
       </div>
 
       {error && (
-        <div className="mb-6 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+        <div className="mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">
           {error}
         </div>
       )}
@@ -176,7 +176,7 @@ export default function ScorePage() {
       ) : data ? (
         <div className="space-y-6">
           {/* Score geral */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 flex flex-col sm:flex-row items-center gap-6">
+          <div className="bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm p-6 flex flex-col sm:flex-row items-center gap-6">
             <ScoreRing score={data.score} />
             <div className="text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
@@ -185,7 +185,7 @@ export default function ScorePage() {
                   {scoreLabel(data.score)}
                 </span>
               </div>
-              <p className="text-sm text-gray-500 max-w-md">
+              <p className="text-sm text-gray-500 dark:text-[#94A3B8] max-w-md">
                 Seu score é calculado a partir de 6 dimensões da sua vida financeira.
                 Quanto mais completo e saudável seu histórico, maior a nota.
               </p>
@@ -194,13 +194,13 @@ export default function ScorePage() {
 
           {/* Dica personalizada */}
           {piorDimensao && piorDimensao.pontos < piorDimensao.max && (
-            <div className="flex gap-3 rounded-xl bg-amber-50 border border-amber-100 p-4">
+            <div className="flex gap-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 p-4">
               <Lightbulb className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-amber-800">
+                <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
                   Onde você mais pode melhorar: {piorDimensao.nome}
                 </p>
-                <p className="text-sm text-amber-700 mt-0.5">{piorDimensao.descricao}</p>
+                <p className="text-sm text-amber-700 dark:text-amber-400 mt-0.5">{piorDimensao.descricao}</p>
               </div>
             </div>
           )}
@@ -212,22 +212,22 @@ export default function ScorePage() {
               return (
                 <div
                   key={dim.nome}
-                  className="bg-white rounded-xl border border-gray-100 shadow-sm p-5"
+                  className="bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm p-5"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-gray-900">{dim.nome}</h3>
-                    <span className="text-sm font-semibold text-gray-600">
+                    <h3 className="font-semibold text-gray-900 dark:text-[#F8FAFC]">{dim.nome}</h3>
+                    <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
                       {dim.pontos}
-                      <span className="text-gray-400">/{dim.max}</span>
+                      <span className="text-gray-400 dark:text-gray-500">/{dim.max}</span>
                     </span>
                   </div>
-                  <div className="h-1.5 w-full rounded-full bg-gray-100 overflow-hidden mb-3">
+                  <div className="h-1.5 w-full rounded-full bg-gray-100 dark:bg-[#1E293B] overflow-hidden mb-3">
                     <div
                       className={cn("h-full rounded-full transition-all", barColor(pct))}
                       style={{ width: `${pct * 100}%` }}
                     />
                   </div>
-                  <p className="text-sm text-gray-500">{dim.descricao}</p>
+                  <p className="text-sm text-gray-500 dark:text-[#94A3B8]">{dim.descricao}</p>
                 </div>
               );
             })}

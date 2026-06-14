@@ -15,8 +15,7 @@ function baixarRelatorioPDF(relatorio: string, mesAno: string) {
   const larguraUtil = 210 - margemEsq - margemDir;
   let y = 20;
 
-  // Cabeçalho
-  doc.setFillColor(22, 163, 74); // verde #16a34a
+  doc.setFillColor(22, 163, 74);
   doc.rect(0, 0, 210, 35, "F");
 
   doc.setTextColor(255, 255, 255);
@@ -45,7 +44,6 @@ function baixarRelatorioPDF(relatorio: string, mesAno: string) {
     }
 
     const semFences = linha.trim();
-    // Títulos com **texto**
     if (semFences.startsWith("**") && semFences.endsWith("**") && semFences.length > 4) {
       const titulo = semFences.replace(/\*\*/g, "");
       doc.setFontSize(13);
@@ -73,7 +71,6 @@ function baixarRelatorioPDF(relatorio: string, mesAno: string) {
     }
   }
 
-  // Rodapé
   const totalPaginas = doc.getNumberOfPages();
   for (let i = 1; i <= totalPaginas; i++) {
     doc.setPage(i);
@@ -104,21 +101,21 @@ function formatMesAno(mesAno: string): string {
 
 function ReportMarkdown({ content }: { content: string }) {
   return (
-    <div className="text-sm text-gray-700 leading-relaxed">
+    <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
       <ReactMarkdown
         components={{
           h1: ({ children }) => (
-            <h1 className="text-lg font-bold text-gray-900 mt-4 mb-2">{children}</h1>
+            <h1 className="text-lg font-bold text-gray-900 dark:text-[#F8FAFC] mt-4 mb-2">{children}</h1>
           ),
           h2: ({ children }) => (
-            <h2 className="text-base font-semibold text-gray-900 mt-4 mb-1.5">{children}</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-[#F8FAFC] mt-4 mb-1.5">{children}</h2>
           ),
           h3: ({ children }) => (
-            <h3 className="text-sm font-semibold text-gray-900 mt-3 mb-1">{children}</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-[#F8FAFC] mt-3 mb-1">{children}</h3>
           ),
           p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
           strong: ({ children }) => (
-            <strong className="font-semibold text-gray-900 block mt-4 mb-1">{children}</strong>
+            <strong className="font-semibold text-gray-900 dark:text-[#F8FAFC] block mt-4 mb-1">{children}</strong>
           ),
           ul: ({ children }) => <ul className="list-disc list-inside mb-3 space-y-1">{children}</ul>,
           li: ({ children }) => <li>{children}</li>,
@@ -227,8 +224,8 @@ export default function ReportsPage() {
     <DashboardLayout>
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Relatórios</h1>
-          <p className="text-gray-500">Seu resumo financeiro mensal, narrado pelo Viva</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">Relatórios</h1>
+          <p className="text-gray-500 dark:text-[#94A3B8]">Seu resumo financeiro mensal, narrado pelo Viva</p>
         </div>
         {reports.length > 0 && (
           <button
@@ -243,7 +240,7 @@ export default function ReportsPage() {
       </div>
 
       {error && (
-        <div className="mb-6 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+        <div className="mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">
           {error}
         </div>
       )}
@@ -255,11 +252,11 @@ export default function ReportsPage() {
         </div>
       ) : reports.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <FileText className="h-16 w-16 text-gray-300 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-700 mb-2">
+          <FileText className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
+          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Nenhum relatório ainda
           </h2>
-          <p className="text-gray-400 mb-8 max-w-sm">
+          <p className="text-gray-400 dark:text-gray-500 mb-8 max-w-sm">
             Gere um relatório narrativo do mês passado com base nas suas transações reais.
           </p>
           <button
@@ -277,13 +274,13 @@ export default function ReportsPage() {
             <button
               key={r.mes_ano}
               onClick={() => handleOpen(r.mes_ano)}
-              className="text-left bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow"
+              className="text-left bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm p-5 hover:shadow-md transition-shadow"
             >
-              <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-3">
-                <FileText className="h-5 w-5 text-green-600" />
+              <div className="w-10 h-10 rounded-lg bg-green-50 dark:bg-green-900/20 flex items-center justify-center mb-3">
+                <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
-              <h3 className="font-semibold text-gray-900">{formatMesAno(r.mes_ano)}</h3>
-              <p className="text-xs text-gray-400 mt-1">
+              <h3 className="font-semibold text-gray-900 dark:text-[#F8FAFC]">{formatMesAno(r.mes_ano)}</h3>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                 {r.gerado_em
                   ? `Gerado em ${new Date(r.gerado_em).toLocaleDateString("pt-BR")}`
                   : "Relatório disponível"}
@@ -296,17 +293,17 @@ export default function ReportsPage() {
       {/* Modal do relatório */}
       {openReport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div className="bg-white dark:bg-[#111827] rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-[#1E293B]">
               <div className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-green-600" />
-                <h2 className="text-lg font-semibold text-gray-900">
+                <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-[#F8FAFC]">
                   {formatMesAno(openReport.mes_ano)}
                 </h2>
               </div>
               <button
                 onClick={() => setOpenReport(null)}
-                className="p-1 rounded hover:bg-gray-100 text-gray-400"
+                className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#1E293B] text-gray-400 dark:text-gray-500"
                 aria-label="Fechar"
               >
                 <X className="h-5 w-5" />
@@ -322,7 +319,7 @@ export default function ReportsPage() {
               )}
             </div>
             {openReport.relatorio && (
-              <div className="flex gap-3 justify-end px-6 py-4 border-t border-gray-100">
+              <div className="flex gap-3 justify-end px-6 py-4 border-t border-gray-100 dark:border-[#1E293B]">
                 <button
                   onClick={() => baixarRelatorioPDF(openReport.relatorio, openReport.mes_ano)}
                   className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
@@ -332,7 +329,7 @@ export default function ReportsPage() {
                 </button>
                 <button
                   onClick={() => setOpenReport(null)}
-                  className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 border border-gray-200 dark:border-[#1E293B] text-gray-600 dark:text-gray-400 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-[#1E293B] transition-colors"
                 >
                   Fechar
                 </button>

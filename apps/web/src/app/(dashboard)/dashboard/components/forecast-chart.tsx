@@ -13,6 +13,7 @@ import {
   ReferenceDot,
 } from 'recharts';
 import { createClient } from '@/lib/supabase/client';
+import { useTheme } from '@/components/theme/ThemeProvider';
 
 type Periodo = '7d' | '30d' | '90d' | '12m';
 
@@ -40,6 +41,7 @@ export function ForecastChart() {
   const [pontos, setPontos] = useState<Ponto[]>([]);
   const [marcadores, setMarcadores] = useState<Marcador[]>([]);
   const [loading, setLoading] = useState(true);
+  const { theme } = useTheme();
   const supabase = createClient();
 
   useEffect(() => {
@@ -68,22 +70,26 @@ export function ForecastChart() {
     }
   };
 
+  const isDark = theme === 'dark';
+  const gridColor = isDark ? '#1E293B' : '#F3F4F6';
+  const axisColor = isDark ? '#64748B' : '#9CA3AF';
+
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
-        <div className="h-64 bg-gray-50 rounded-xl animate-pulse" />
+      <div className="bg-white dark:bg-[#111827] rounded-2xl border border-gray-100 dark:border-[#1E293B] shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
+        <div className="h-64 bg-gray-50 dark:bg-[#1E293B] rounded-xl animate-pulse" />
       </div>
     );
   }
 
   if (pontos.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
+      <div className="bg-white dark:bg-[#111827] rounded-2xl border border-gray-100 dark:border-[#1E293B] shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-gray-900">Evolução do saldo</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-[#F8FAFC]">Evolução do saldo</h3>
           <PeriodoSelector periodo={periodo} setPeriodo={setPeriodo} />
         </div>
-        <p className="text-sm text-gray-400 text-center py-12">Sem dados suficientes para este período</p>
+        <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-12">Sem dados suficientes para este período</p>
       </div>
     );
   }
@@ -103,11 +109,11 @@ export function ForecastChart() {
   const isProjecao = periodo === '7d' || periodo === '30d';
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
+    <div className="bg-white dark:bg-[#111827] rounded-2xl border border-gray-100 dark:border-[#1E293B] shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900">{tituloPeriodo}</h3>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-[#F8FAFC]">{tituloPeriodo}</h3>
+          <p className="text-xs text-gray-500 dark:text-[#94A3B8] mt-0.5">
             {isProjecao ? 'Baseado no seu histórico financeiro' : 'Saldo acumulado real'}
           </p>
         </div>
@@ -122,16 +128,16 @@ export function ForecastChart() {
               <stop offset="100%" stopColor="#16a34a" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
           <XAxis
             dataKey="data"
-            tick={{ fontSize: 11, fill: '#9CA3AF' }}
+            tick={{ fontSize: 11, fill: axisColor }}
             tickLine={false}
             axisLine={false}
             interval={Math.floor(chartData.length / 6)}
           />
           <YAxis
-            tick={{ fontSize: 11, fill: '#9CA3AF' }}
+            tick={{ fontSize: 11, fill: axisColor }}
             tickLine={false}
             axisLine={false}
             tickFormatter={(v: number) =>
@@ -140,12 +146,13 @@ export function ForecastChart() {
           />
           <Tooltip
             formatter={(value: number) => [`R$ ${value.toFixed(2)}`, 'Saldo']}
-            labelStyle={{ fontSize: 12, fontWeight: 500 }}
+            labelStyle={{ fontSize: 12, fontWeight: 500, color: isDark ? '#F8FAFC' : '#111827' }}
             contentStyle={{
               borderRadius: '12px',
-              border: '1px solid #E5E7EB',
+              border: isDark ? '1px solid #1E293B' : '1px solid #E5E7EB',
               fontSize: 12,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+              backgroundColor: isDark ? '#111827' : '#ffffff',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
             }}
           />
           {minSaldo < 0 && (
@@ -170,9 +177,9 @@ export function ForecastChart() {
       </ResponsiveContainer>
 
       {marcadores.length > 0 && (
-        <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-gray-100">
+        <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-[#1E293B]">
           {marcadores.map((m, i) => {
-            const cor = m.tipo === 'negativo' ? 'text-red-600' : m.tipo === 'positivo' ? 'text-green-600' : 'text-gray-500';
+            const cor = m.tipo === 'negativo' ? 'text-red-600 dark:text-red-400' : m.tipo === 'positivo' ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400';
             const dataF = new Date(m.data + 'T00:00:00').toLocaleDateString('pt-BR', {
               day: '2-digit',
               month: 'short',
@@ -185,7 +192,7 @@ export function ForecastChart() {
                   }`}
                 />
                 <span className={`font-medium ${cor}`}>{m.label}</span>
-                <span className="text-gray-400">· {dataF}</span>
+                <span className="text-gray-400 dark:text-gray-500">· {dataF}</span>
               </div>
             );
           })}
@@ -203,15 +210,15 @@ function PeriodoSelector({
   setPeriodo: (p: Periodo) => void;
 }) {
   return (
-    <div className="flex bg-gray-100 rounded-lg p-1">
+    <div className="flex bg-gray-100 dark:bg-[#1E293B] rounded-lg p-1">
       {PERIODOS.map((p) => (
         <button
           key={p.valor}
           onClick={() => setPeriodo(p.valor)}
           className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
             periodo === p.valor
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-white dark:bg-[#111827] text-gray-900 dark:text-[#F8FAFC] shadow-sm'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           }`}
         >
           {p.label}

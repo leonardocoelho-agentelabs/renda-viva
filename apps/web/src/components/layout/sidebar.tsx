@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Home, ArrowLeftRight, PieChart, Target, Heart, FileText, TrendingUp, Building2, MessageCircle, LogOut, X } from "lucide-react";
+import { Home, ArrowLeftRight, PieChart, Target, Heart, FileText, TrendingUp, Building2, MessageCircle, LogOut, X, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { useTheme } from "@/components/theme/ThemeProvider";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -27,6 +28,7 @@ export function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const { theme, toggleTheme } = useTheme();
 
   const [nome, setNome] = useState("Usuário");
   const [email, setEmail] = useState("");
@@ -101,7 +103,7 @@ export function Sidebar({ onClose }: SidebarProps) {
         })}
       </nav>
 
-      {/* Footer com usuário */}
+      {/* Footer com usuário e toggle de tema */}
       <div className="px-4 py-4 border-t border-white/10">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
@@ -111,6 +113,13 @@ export function Sidebar({ onClose }: SidebarProps) {
             <p className="text-white text-xs font-medium truncate">{nome}</p>
             <p className="text-white/40 text-xs truncate">{email}</p>
           </div>
+          <button
+            onClick={toggleTheme}
+            className="text-white/40 hover:text-white/80 flex-shrink-0 p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+            title={theme === 'light' ? 'Modo escuro' : 'Modo claro'}
+          >
+            {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
           <button
             onClick={handleLogout}
             aria-label="Sair"

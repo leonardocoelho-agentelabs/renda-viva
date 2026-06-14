@@ -15,11 +15,11 @@ interface CategoryDonutChartProps {
 export function CategoryDonutChart({ data }: CategoryDonutChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <h3 className="text-sm font-semibold text-gray-900 mb-1">Gastos por categoria</h3>
-        <p className="text-xs text-gray-500 mb-8">Este mês</p>
+      <div className="bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm p-6">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-[#F8FAFC] mb-1">Gastos por categoria</h3>
+        <p className="text-xs text-gray-500 dark:text-[#94A3B8] mb-8">Este mês</p>
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <p className="text-sm text-gray-400">Nenhum gasto registrado este mês</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">Nenhum gasto registrado este mês</p>
         </div>
       </div>
     );
@@ -35,10 +35,10 @@ export function CategoryDonutChart({ data }: CategoryDonutChartProps) {
   }));
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+    <div className="bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm p-6">
       <div className="mb-6">
-        <h3 className="text-sm font-semibold text-gray-900">Gastos por categoria</h3>
-        <p className="text-xs text-gray-500 mt-0.5">Este mês</p>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-[#F8FAFC]">Gastos por categoria</h3>
+        <p className="text-xs text-gray-500 dark:text-[#94A3B8] mt-0.5">Este mês</p>
       </div>
 
       <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -74,8 +74,8 @@ export function CategoryDonutChart({ data }: CategoryDonutChartProps) {
           </ResponsiveContainer>
           {/* Total no centro */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-xs text-gray-400">Total</span>
-            <span className="text-lg font-bold text-gray-900">R$ {total.toFixed(0)}</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500">Total</span>
+            <span className="text-lg font-bold text-gray-900 dark:text-[#F8FAFC]">R$ {total.toFixed(0)}</span>
           </div>
         </div>
 
@@ -88,11 +88,11 @@ export function CategoryDonutChart({ data }: CategoryDonutChartProps) {
                   className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                   style={{ backgroundColor: item.color }}
                 />
-                <span className="text-sm text-gray-700 truncate">{item.name}</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{item.name}</span>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
-                <span className="text-xs text-gray-400">{item.percentual.toFixed(0)}%</span>
-                <span className="text-sm font-medium text-gray-900 tabular-nums">
+                <span className="text-xs text-gray-400 dark:text-gray-500">{item.percentual.toFixed(0)}%</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-[#F8FAFC] tabular-nums">
                   R$ {item.value.toFixed(2)}
                 </span>
               </div>

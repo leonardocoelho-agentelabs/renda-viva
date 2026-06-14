@@ -41,15 +41,15 @@ function formatMessage(text: string): React.ReactNode {
     if (line.startsWith("- ") || line.startsWith("* ")) {
       return (
         <div key={i} className="flex gap-2 my-0.5">
-          <span className="text-green-600 font-bold mt-0.5">•</span>
-          <span>{formatted.map((p, j) => <span key={j}>{p}</span>)}</span>
+          <span className="text-green-600 dark:text-green-400 font-bold mt-0.5">•</span>
+          <span className="dark:text-gray-300">{formatted.map((p, j) => <span key={j}>{p}</span>)}</span>
         </div>
       );
     }
 
     if (/^\d+\./.test(line)) {
       return (
-        <div key={i} className="my-0.5 pl-1">
+        <div key={i} className="my-0.5 pl-1 dark:text-gray-300">
           {formatted.map((p, j) => (
             <span key={j}>{p}</span>
           ))}
@@ -60,7 +60,7 @@ function formatMessage(text: string): React.ReactNode {
     if (line.trim() === "") return <div key={i} className="h-2" />;
 
     return (
-      <div key={i} className="my-0.5">
+      <div key={i} className="my-0.5 dark:text-gray-300">
         {formatted.map((p, j) => (
           <span key={j}>{p}</span>
         ))}
@@ -139,13 +139,13 @@ export default function AssistantPage() {
   return (
     <DashboardLayout>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Assistente</h1>
-        <p className="text-gray-500">Tire dúvidas sobre suas finanças com IA</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">Assistente</h1>
+        <p className="text-gray-500 dark:text-[#94A3B8]">Tire dúvidas sobre suas finanças com IA</p>
       </div>
 
-      <div className="flex flex-col bg-white rounded-xl border border-gray-100 shadow-sm h-[calc(100dvh-240px)] md:h-[calc(100vh-220px)] overflow-hidden">
+      <div className="flex flex-col bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm h-[calc(100dvh-240px)] md:h-[calc(100vh-220px)] overflow-hidden">
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 dark:bg-[#0F172A]">
           {messages.map((msg, i) => (
             <div
               key={i}
@@ -156,7 +156,7 @@ export default function AssistantPage() {
                 className={`max-w-[70%] px-4 py-2.5 rounded-2xl text-sm ${
                   msg.role === "user"
                     ? "bg-green-600 text-white rounded-br-sm whitespace-pre-wrap"
-                    : "bg-white border border-gray-100 shadow-sm text-gray-800 rounded-bl-sm"
+                    : "bg-white dark:bg-[#111827] border border-gray-100 dark:border-[#1E293B] shadow-sm text-gray-800 dark:text-gray-200 rounded-bl-sm"
                 }`}
               >
                 {msg.role === "user" ? msg.content : formatMessage(msg.content)}
@@ -166,7 +166,7 @@ export default function AssistantPage() {
           {loading && (
             <div className="flex gap-3 justify-start">
               <VivaAvatar />
-              <div className="max-w-[70%] px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm bg-white border border-gray-100 shadow-sm text-gray-500">
+              <div className="max-w-[70%] px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm bg-white dark:bg-[#111827] border border-gray-100 dark:border-[#1E293B] shadow-sm text-gray-500 dark:text-gray-400">
                 Viva está pensando...
               </div>
             </div>
@@ -175,7 +175,7 @@ export default function AssistantPage() {
         </div>
 
         {/* Input */}
-        <div className="border-t border-gray-200 p-4 flex gap-3">
+        <div className="border-t border-gray-200 dark:border-[#1E293B] p-4 flex gap-3">
           <input
             type="text"
             value={input}
@@ -183,7 +183,7 @@ export default function AssistantPage() {
             onKeyDown={handleKeyDown}
             placeholder="Digite sua mensagem..."
             disabled={loading}
-            className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-60"
+            className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-[#1E293B] rounded-lg text-sm text-gray-900 dark:text-[#F8FAFC] dark:bg-[#0F172A] placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-60"
           />
           <button
             onClick={sendMessage}
