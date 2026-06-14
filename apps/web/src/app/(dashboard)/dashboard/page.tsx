@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { SummaryCards } from "./components/summary-cards";
-import { CategoryChart } from "./components/category-chart";
+import { CategoryDonutChart } from "./components/category-donut-chart";
 import { RecentTransactions } from "./components/recent-transactions";
 import { ForecastChart } from "./components/forecast-chart";
 
@@ -74,10 +74,9 @@ export default async function DashboardPage() {
       return acc;
     }, {} as Record<string, number>) || {};
 
-  const chartData = Object.entries(porCategoria)
-    .map(([categoria, total]) => ({ categoria, total }))
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 5);
+  const categoryData = Object.entries(porCategoria)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
 
   // Previsão de saldo dos próximos 30 dias
   const hojeStr = hoje.toISOString().split("T")[0];
@@ -107,7 +106,7 @@ export default async function DashboardPage() {
       <ForecastChart data={previsoes || []} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CategoryChart data={chartData} />
+        <CategoryDonutChart data={categoryData} />
         <RecentTransactions transactions={transactions || []} />
       </div>
     </DashboardLayout>
