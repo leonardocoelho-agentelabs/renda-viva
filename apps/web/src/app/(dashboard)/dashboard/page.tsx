@@ -1,9 +1,20 @@
+import { Wallet, TrendingDown, Heart, ArrowLeftRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { SummaryCards } from "./components/summary-cards";
+import { DashboardHeader } from "./components/dashboard-header";
+import { SummaryCard } from "./components/summary-card";
 import { CategoryDonutChart } from "./components/category-donut-chart";
 import { RecentTransactions } from "./components/recent-transactions";
 import { ForecastChart } from "./components/forecast-chart";
+
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+}
+
+function calcularVariacao(atual: number, anterior: number): number | null {
+  if (anterior === 0) return null;
+  return ((atual - anterior) / Math.abs(anterior)) * 100;
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -17,7 +28,7 @@ export default async function DashboardPage() {
   // Buscar dados do usuário
   const { data: userData } = await supabase
     .from("users")
-    .select("score_saude, renda_mensal")
+    .select("score_saude, renda_mensal, full_name")
     .eq("id", user.id)
     .single();
 
@@ -65,6 +76,40 @@ export default async function DashboardPage() {
 
   const saldo = totalReceitas - totalGastos;
 
+  // Dados do mês anterior (para variação)
+  const mesAnteriorInicio = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1)
+    .toISOString()
+    .split("T")[0];
+  const mesAnteriorFim = new Date(hoje.getFullYear(), hoje.getMonth(), 0)
+    .toISOString()
+    .split("T")[0];
+
+  const { data: transacoesAnterior } = await supabase
+    .from("transactions")
+    .select("valor, categoria")
+    .eq("user_id", user.id)
+    .gte("data", mesAnteriorInicio)
+    .lte("data", mesAnteriorFim);
+
+  const saldoAnterior = transacoesAnterior?.reduce((s, t) => s + t.valor, 0) || 0;
+  const gastosAnterior =
+    transacoesAnterior?.filter((t) => t.valor < 0).reduce((s, t) => s + Math.abs(t.valor), 0) || 0;
+
+  // Média de gastos dos últimos 3 meses (para a mensagem do cabeçalho)
+  const tresMesesInicio = new Date(hoje.getFullYear(), hoje.getMonth() - 3, 1)
+    .toISOString()
+    .split("T")[0];
+  const { data: transacoesTresMeses } = await supabase
+    .from("transactions")
+    .select("valor")
+    .eq("user_id", user.id)
+    .gte("data", tresMesesInicio)
+    .lt("data", inicioMes);
+
+  const gastosTresMeses =
+    transacoesTresMeses?.filter((t) => t.valor < 0).reduce((s, t) => s + Math.abs(t.valor), 0) || 0;
+  const gastosMediaTresMeses = gastosTresMeses / 3;
+
   // Agrupar gastos por categoria para o gráfico
   const porCategoria = transactions
     ?.filter((t) => t.valor < 0 && t.categoria)
@@ -90,18 +135,46 @@ export default async function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500">Visão geral das suas finanças</p>
-      </div>
-
-      <SummaryCards
-        saldo={saldo}
-        totalGastos={totalGastos}
-        totalReceitas={totalReceitas}
-        scoreSaude={scoreSaude}
-        totalTransacoes={transactions?.length || 0}
+      <DashboardHeader
+        nome={userData?.full_name || ""}
+        saldoAtual={saldo}
+        gastosAtual={totalGastos}
+        gastosMediaTresMeses={gastosMediaTresMeses}
       />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <SummaryCard
+          label="Saldo do mês"
+          value={formatCurrency(saldo)}
+          variacao={calcularVariacao(saldo, saldoAnterior)}
+          icon={Wallet}
+          iconBg="bg-green-50"
+          iconColor="text-green-600"
+        />
+        <SummaryCard
+          label="Total de gastos"
+          value={formatCurrency(totalGastos)}
+          variacao={calcularVariacao(totalGastos, gastosAnterior)}
+          icon={TrendingDown}
+          iconBg="bg-red-50"
+          iconColor="text-red-500"
+          variacaoInvertida
+        />
+        <SummaryCard
+          label="Score de saúde"
+          value={`${scoreSaude}/100`}
+          icon={Heart}
+          iconBg="bg-pink-50"
+          iconColor="text-pink-500"
+        />
+        <SummaryCard
+          label="Transações"
+          value={`${transactions?.length || 0}`}
+          icon={ArrowLeftRight}
+          iconBg="bg-blue-50"
+          iconColor="text-blue-600"
+        />
+      </div>
 
       <ForecastChart data={previsoes || []} />
 
