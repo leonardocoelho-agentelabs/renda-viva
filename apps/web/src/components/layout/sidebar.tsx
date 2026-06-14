@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Home, ArrowLeftRight, PieChart, Target, Heart, FileText, TrendingUp, MessageCircle, LogOut, X } from "lucide-react";
+import { Home, ArrowLeftRight, PieChart, Target, Heart, FileText, TrendingUp, Building2, MessageCircle, LogOut, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/transactions", label: "Transações", icon: ArrowLeftRight },
+  { href: "/connections", label: "Contas", icon: Building2 },
   { href: "/budget", label: "Orçamentos", icon: PieChart },
   { href: "/goals", label: "Metas", icon: Target },
   { href: "/score", label: "Score", icon: Heart },

@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ArrowLeftRight, PieChart, Target, Heart, FileText, TrendingUp, MessageCircle } from "lucide-react";
+import { Home, ArrowLeftRight, Building2, PieChart, Target, Heart, FileText, TrendingUp, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", icon: Home, label: "Início" },
   { href: "/transactions", icon: ArrowLeftRight, label: "Extratos" },
+  { href: "/connections", icon: Building2, label: "Contas" },
   { href: "/budget", icon: PieChart, label: "Orçam." },
   { href: "/goals", icon: Target, label: "Metas" },
   { href: "/score", icon: Heart, label: "Score" },
