@@ -50,15 +50,28 @@ export default function ConnectionsPage() {
   const [syncingId, setSyncingId] = useState<string | null>(null);
   const [totalImportadas, setTotalImportadas] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
 
   // Carregar o script do widget Pluggy
   useEffect(() => {
+    if ((window as unknown as { PluggyConnect?: unknown }).PluggyConnect) {
+      setScriptLoaded(true);
+      return;
+    }
+
     const id = "pluggy-connect-script";
-    if (document.getElementById(id)) return;
+    const existing = document.getElementById(id) as HTMLScriptElement | null;
+    if (existing) {
+      existing.addEventListener("load", () => setScriptLoaded(true));
+      return;
+    }
+
     const script = document.createElement("script");
     script.id = id;
-    script.src = "https://cdn.pluggy.ai/pluggy-connect/v2/pluggy-connect.js";
+    script.src = "https://cdn.pluggy.ai/pluggy-connect/latest/pluggy-connect.js";
     script.async = true;
+    script.onload = () => setScriptLoaded(true);
+    script.onerror = () => console.error("Erro ao carregar script Pluggy Connect");
     document.body.appendChild(script);
   }, []);
 
@@ -129,6 +142,10 @@ export default function ConnectionsPage() {
   );
 
   const abrirWidget = async () => {
+    if (!scriptLoaded) {
+      setError("O widget de conexão ainda está carregando. Tente novamente em instantes.");
+      return;
+    }
     setConnecting(true);
     setError(null);
     try {
@@ -218,11 +235,11 @@ export default function ConnectionsPage() {
         </div>
         <button
           onClick={abrirWidget}
-          disabled={connecting}
+          disabled={connecting || !scriptLoaded}
           className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <Plus className="h-4 w-4" />
-          {connecting ? "Abrindo..." : "Conectar banco"}
+          {!scriptLoaded ? "Carregando..." : connecting ? "Abrindo..." : "Conectar banco"}
         </button>
       </div>
 
@@ -268,11 +285,11 @@ export default function ConnectionsPage() {
           </p>
           <button
             onClick={abrirWidget}
-            disabled={connecting}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+            disabled={connecting || !scriptLoaded}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Plus className="h-4 w-4" />
-            Conectar banco
+            {!scriptLoaded ? "Carregando..." : "Conectar banco"}
           </button>
         </div>
       ) : (
