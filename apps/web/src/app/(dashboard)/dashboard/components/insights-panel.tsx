@@ -72,7 +72,7 @@ export function InsightsPanel() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6 mb-6">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
         <div className="h-4 w-40 bg-gray-100 rounded animate-pulse mb-4" />
         <div className="space-y-3">
           <div className="h-10 bg-gray-50 rounded-xl animate-pulse" />
@@ -86,7 +86,7 @@ export function InsightsPanel() {
   if (insights.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6 mb-6">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-green-600" />
