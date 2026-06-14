@@ -30,6 +30,7 @@ interface UpdateBody {
   descricao_raw?: string;
   categoria?: string;
   tipo?: TipoEntrada;
+  is_recorrente?: boolean;
 }
 
 // Mapeia o tipo de entrada (despesa/receita) para a coluna `tipo` da tabela
@@ -152,6 +153,7 @@ const transactionsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
         if (body.data !== undefined) update.data = body.data;
         if (body.descricao_raw !== undefined) update.descricao_raw = body.descricao_raw.trim();
         if (body.categoria !== undefined) update.categoria = body.categoria || null;
+        if (body.is_recorrente !== undefined) update.is_recorrente = body.is_recorrente;
 
         // Tipo efetivo: o enviado, ou o derivado do sinal atual
         const tipoEfetivo: TipoEntrada =
@@ -185,6 +187,58 @@ const transactionsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
       } catch (error) {
         fastify.log.error({ err: error }, "Erro em PATCH /transactions/:id");
         return reply.status(500).send({ success: false, error: "Erro ao atualizar transação" });
+      }
+    }
+  );
+
+  // POST /transactions/:id/duplicate - duplica uma transação (com a data de hoje)
+  fastify.post<{ Params: { id: string } }>(
+    "/:id/duplicate",
+    { preHandler: [authHook] },
+    async (request, reply) => {
+      try {
+        const userId = request.user!.id;
+        const { id } = request.params;
+
+        const { data: original } = await fastify.supabaseAdmin
+          .from("transactions")
+          .select("valor, descricao_raw, categoria, tipo")
+          .eq("id", id)
+          .eq("user_id", userId)
+          .single();
+
+        if (!original) {
+          return reply.status(404).send({ success: false, error: "Transação não encontrada" });
+        }
+
+        const hoje = new Date().toISOString().split("T")[0];
+
+        const { data: copia, error } = await fastify.supabaseAdmin
+          .from("transactions")
+          .insert({
+            user_id: userId,
+            data: hoje,
+            valor: original.valor,
+            descricao_raw: original.descricao_raw,
+            categoria: original.categoria,
+            tipo: original.tipo,
+            origem: "manual",
+            status_revisao: "aprovado",
+            score_confianca: 1.0,
+          })
+          .select()
+          .single();
+
+        if (error || !copia) {
+          fastify.log.error({ err: error }, "Erro ao duplicar transação");
+          return reply.status(500).send({ success: false, error: "Erro ao duplicar transação" });
+        }
+
+        await recalcularScore(userId);
+        return reply.status(201).send({ transaction: copia });
+      } catch (error) {
+        fastify.log.error({ err: error }, "Erro em POST /transactions/:id/duplicate");
+        return reply.status(500).send({ success: false, error: "Erro ao duplicar transação" });
       }
     }
   );

@@ -6,20 +6,12 @@ import { ptBR } from "date-fns/locale";
 import { Plus } from "lucide-react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { TransactionTable } from "./components/transaction-table";
+import { TransactionRow, type Transacao } from "./components/transaction-row";
 import { TransactionModal } from "./components/transaction-modal";
 import { UploadZone } from "./components/upload-zone";
 import { createClient } from "@/lib/supabase/client";
 
-interface Transaction {
-  id: string;
-  data: string;
-  descricao_raw: string;
-  categoria: string | null;
-  valor: number;
-  tipo: string;
-  status_revisao: string;
-}
+type Transaction = Transacao;
 
 export default function TransactionsPage() {
   const supabase = createClient();
@@ -52,7 +44,7 @@ export default function TransactionsPage() {
 
       const { data, error } = await supabase
         .from("transactions")
-        .select("id, data, descricao_raw, categoria, valor, tipo, status_revisao")
+        .select("id, data, descricao_raw, categoria, valor, tipo, status_revisao, is_recorrente")
         .eq("user_id", user.id)
         .gte("data", inicioMes)
         .lte("data", fimMes)
@@ -102,6 +94,36 @@ export default function TransactionsPage() {
     if (res.ok) {
       setTransactions((prev) => prev.filter((t) => t.id !== id));
     }
+  };
+
+  const handleDuplicate = async (id: string) => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.access_token) return;
+    await fetch(`${apiUrl}/transactions/${id}/duplicate`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    fetchTransactions(selectedMonth);
+  };
+
+  const handleToggleRecorrente = async (id: string, atual: boolean) => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.access_token) return;
+    await fetch(`${apiUrl}/transactions/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ is_recorrente: !atual }),
+    });
+    setTransactions((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, is_recorrente: !atual } : t))
+    );
   };
 
   return (
@@ -161,12 +183,26 @@ export default function TransactionsPage() {
         <CardContent>
           {loading ? (
             <div className="text-center py-12 text-gray-500">Carregando transações...</div>
+          ) : transactions.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Nenhuma transação encontrada</p>
+              <p className="text-sm text-gray-400 mt-2">
+                Adicione uma transação ou importe um extrato para começar
+              </p>
+            </div>
           ) : (
-            <TransactionTable
-              transactions={transactions}
-              onEdit={abrirEdicao}
-              onDelete={handleDelete}
-            />
+            <div className="divide-y divide-gray-50">
+              {transactions.map((tx) => (
+                <TransactionRow
+                  key={tx.id}
+                  transacao={tx}
+                  onEdit={abrirEdicao}
+                  onDuplicate={handleDuplicate}
+                  onToggleRecorrente={handleToggleRecorrente}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>
