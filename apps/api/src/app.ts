@@ -23,6 +23,7 @@ import { investmentsRoutes } from "./modules/investments/routes.js";
 import { forecastRoutes } from "./modules/forecast/routes.js";
 import { openfinanceRoutes } from "./modules/openfinance/routes.js";
 import { transactionsRoutes } from "./modules/transactions/routes.js";
+import { insightsRoutes } from "./modules/insights/routes.js";
 
 async function buildApp() {
   const app = Fastify({
@@ -94,6 +95,7 @@ async function buildApp() {
   await app.register(forecastRoutes, { prefix: "/api/forecast" });
   await app.register(openfinanceRoutes, { prefix: "/api/openfinance" });
   await app.register(transactionsRoutes, { prefix: "/api/transactions" });
+  await app.register(insightsRoutes, { prefix: "/api/insights" });
 
   // Handler de erro global
   app.setErrorHandler((error: FastifyError, _request: FastifyRequest, reply: FastifyReply) => {

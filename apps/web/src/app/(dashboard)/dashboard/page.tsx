@@ -6,6 +6,7 @@ import { SummaryCard } from "./components/summary-card";
 import { CategoryDonutChart } from "./components/category-donut-chart";
 import { RecentTransactions } from "./components/recent-transactions";
 import { ForecastChart } from "./components/forecast-chart";
+import { InsightsPanel } from "./components/insights-panel";
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -177,6 +178,8 @@ export default async function DashboardPage() {
       </div>
 
       <ForecastChart data={previsoes || []} />
+
+      <InsightsPanel />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <CategoryDonutChart data={categoryData} />
