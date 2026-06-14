@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
 import { authHook } from "../../plugins/auth.js";
 import { gerarPrevisaoSaldo } from "../../services/forecast.service.js";
+import { gerarDadosGrafico } from "./chart.service.js";
 
 const forecastRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // GET /forecast - Previsões dos próximos 30 dias (gera se não houver)
@@ -53,6 +54,29 @@ const forecastRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         return reply.status(500).send({
           success: false,
           error: "Erro ao gerar previsão de saldo",
+        });
+      }
+    }
+  );
+
+  // GET /forecast/chart - Dados para o gráfico com marcadores inteligentes
+  fastify.get<{ Querystring: { periodo?: string } }>(
+    "/chart",
+    { preHandler: [authHook] },
+    async (request, reply) => {
+      try {
+        const { periodo } = request.query;
+        const periodoValido = ['7d', '30d', '90d', '12m'].includes(periodo || '')
+          ? (periodo as '7d' | '30d' | '90d' | '12m')
+          : '30d';
+
+        const resultado = await gerarDadosGrafico(request.user!.id, periodoValido);
+        return reply.send(resultado);
+      } catch (error) {
+        fastify.log.error({ err: error }, "Erro em GET /forecast/chart");
+        return reply.status(500).send({
+          success: false,
+          error: "Erro ao buscar dados do gráfico",
         });
       }
     }

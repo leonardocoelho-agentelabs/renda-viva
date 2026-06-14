@@ -178,7 +178,7 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <ForecastChart data={previsoes || []} />
+      <ForecastChart />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 items-start">
         <InsightsPanel />
