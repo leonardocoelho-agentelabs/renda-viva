@@ -7,15 +7,6 @@ export interface AuthUser {
   email: string;
 }
 
-async function authPlugin(fastify: FastifyInstance) {
-  fastify.decorate(
-    "authenticate",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      await authHook(request, reply);
-    }
-  );
-}
-
 // Hook para validar JWT do Supabase — usar como preHandler em rotas protegidas
 export async function authHook(
   request: FastifyRequest,
@@ -74,6 +65,47 @@ export async function authHook(
   }
 }
 
+// Hook para verificar assinatura ativa — usar como preHandler em rotas protegidas
+export async function requireActiveSubscription(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  const userId = (request as FastifyRequest & { user: AuthUser }).user?.id;
+  if (!userId) {
+    return reply.status(401).send({ error: "subscription_required" });
+  }
+
+  const { data } = await supabaseAdmin
+    .from("subscriptions")
+    .select("status")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const statusComAcesso = ["active", "overdue"];
+
+  if (!data || !statusComAcesso.includes(data.status)) {
+    return reply.status(403).send({ error: "subscription_required" });
+  }
+}
+
+async function authPlugin(fastify: FastifyInstance) {
+  fastify.decorate(
+    "authenticate",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await authHook(request, reply);
+    }
+  );
+
+  fastify.decorate(
+    "requireActiveSubscription",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireActiveSubscription(request, reply);
+    }
+  );
+}
+
 export default fp(authPlugin, {
   name: "auth",
 });
@@ -82,6 +114,7 @@ export default fp(authPlugin, {
 declare module "fastify" {
   interface FastifyInstance {
     authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    requireActiveSubscription: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
   }
   interface FastifyRequest {
     user: AuthUser | null;

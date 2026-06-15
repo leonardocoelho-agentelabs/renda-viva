@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginAsync, FastifyRequest } from "fastify";
-import { authHook } from "../../plugins/auth.js";
+import { authHook, requireActiveSubscription } from "../../plugins/auth.js";
 import { Queue } from "bullmq";
 import { env } from "../../env.js";
 
@@ -27,7 +27,7 @@ const uploadsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // POST /uploads - Upload de arquivo
   fastify.post<{ Body: UploadBody }>(
     "/",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -149,7 +149,7 @@ const uploadsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // GET /uploads/:id/status - Status do upload
   fastify.get<{ Params: { id: string } }>(
     "/:id/status",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -191,7 +191,7 @@ const uploadsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // GET /uploads - Listar uploads do usuário
   fastify.get(
     "/",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;

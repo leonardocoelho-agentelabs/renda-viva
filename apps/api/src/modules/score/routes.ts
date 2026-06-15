@@ -1,12 +1,12 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
-import { authHook } from "../../plugins/auth.js";
+import { authHook, requireActiveSubscription } from "../../plugins/auth.js";
 import { calcularScore } from "./service.js";
 
 const scoreRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // POST /score/calculate - Recalcula e persiste o score
   fastify.post(
     "/calculate",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -25,7 +25,7 @@ const scoreRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // GET /score/current - Retorna o score com detalhamento (recalculado)
   fastify.get(
     "/current",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;

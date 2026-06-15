@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
 import Anthropic from "@anthropic-ai/sdk";
-import { authHook } from "../../plugins/auth.js";
+import { authHook, requireActiveSubscription } from "../../plugins/auth.js";
 import { env } from "../../env.js";
 
 const anthropic = new Anthropic({ apiKey: env.CLAUDE_API_KEY });
@@ -68,7 +68,7 @@ const budgetRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // POST /budget/generate - Gera (ou retorna existente) orçamento do mês atual
   fastify.post(
     "/generate",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -248,7 +248,7 @@ Seja realista baseado no histórico real, não apenas na regra teórica.`;
   // GET /budget/current - Orçamento do mês com gasto_atual recalculado
   fastify.get(
     "/current",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -312,7 +312,7 @@ Seja realista baseado no histórico real, não apenas na regra teórica.`;
   // PATCH /budget/:id/approve - Aprova um orçamento sugerido
   fastify.patch<{ Params: { id: string } }>(
     "/:id/approve",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -347,7 +347,7 @@ Seja realista baseado no histórico real, não apenas na regra teórica.`;
   // PATCH /budget/:id/limit - Atualiza o limite de um orçamento
   fastify.patch<{ Params: { id: string }; Body: { limite: number } }>(
     "/:id/limit",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;

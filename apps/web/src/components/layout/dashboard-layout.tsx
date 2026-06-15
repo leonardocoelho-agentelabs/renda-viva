@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, type ReactNode, useEffect } from "react";
 import { Menu } from "lucide-react";
 import { Sidebar } from "./sidebar";
 import { MobileNav } from "./mobile-nav";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter, usePathname } from "next/navigation";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -11,6 +13,31 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  const supabase = createClient();
+
+  useEffect(() => {
+    verificarAssinatura();
+  }, []);
+
+  const verificarAssinatura = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return;
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscriptions/me`, {
+      headers: { 'Authorization': `Bearer ${session.access_token}` }
+    });
+    const json = await res.json();
+    const status = json.subscription?.status;
+    const temAcesso = status === 'active' || status === 'overdue';
+
+    if (!temAcesso && pathname !== '/assinar' && pathname !== '/settings') {
+      router.push('/assinar');
+    } else if (temAcesso && pathname === '/assinar') {
+      router.push('/dashboard');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F8F9FB] dark:bg-[#0F172A]">

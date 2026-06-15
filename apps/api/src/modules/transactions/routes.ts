@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
-import { authHook } from "../../plugins/auth.js";
+import { authHook, requireActiveSubscription } from "../../plugins/auth.js";
 
 const CATEGORIAS_PADRAO = [
   "Alimentação",
@@ -56,7 +56,7 @@ const transactionsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
   // GET /transactions/categories - categorias padrão + as já usadas pelo usuário
   fastify.get(
     "/categories",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       const { data: usadas } = await fastify.supabaseAdmin
         .from("transactions")
@@ -78,7 +78,7 @@ const transactionsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
   // POST /transactions - cria transação manual
   fastify.post<{ Body: CreateBody }>(
     "/",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -130,7 +130,7 @@ const transactionsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
   // PATCH /transactions/:id - edita transação
   fastify.patch<{ Params: { id: string }; Body: UpdateBody }>(
     "/:id",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -194,7 +194,7 @@ const transactionsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
   // POST /transactions/:id/duplicate - duplica uma transação (com a data de hoje)
   fastify.post<{ Params: { id: string } }>(
     "/:id/duplicate",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -246,7 +246,7 @@ const transactionsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
   // DELETE /transactions/:id - remove transação
   fastify.delete<{ Params: { id: string } }>(
     "/:id",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;

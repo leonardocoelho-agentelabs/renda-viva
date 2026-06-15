@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
-import { authHook } from "../../plugins/auth.js";
+import { authHook, requireActiveSubscription } from "../../plugins/auth.js";
 import { criarConnectToken, buscarItem } from "../../services/pluggy.service.js";
 import { sincronizarItem } from "../../services/openfinance.service.js";
 
@@ -18,7 +18,7 @@ const openfinanceRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
   // POST /openfinance/connect-token - Token para abrir o widget Pluggy
   fastify.post(
     "/connect-token",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const connectToken = await criarConnectToken(request.user!.id);
@@ -36,7 +36,7 @@ const openfinanceRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
   // POST /openfinance/connections - Salva a conexão após o widget (onSuccess) e sincroniza
   fastify.post<{ Body: ConnectBody }>(
     "/connections",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -91,7 +91,7 @@ const openfinanceRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
   // GET /openfinance/connections - Lista as conexões do usuário
   fastify.get(
     "/connections",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       const { data, error } = await fastify.supabaseAdmin
         .from("bank_connections")
@@ -109,7 +109,7 @@ const openfinanceRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
   // DELETE /openfinance/connections/:id - Desconecta um banco
   fastify.delete<{ Params: { id: string } }>(
     "/connections/:id",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       const { error } = await fastify.supabaseAdmin
         .from("bank_connections")
@@ -127,7 +127,7 @@ const openfinanceRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
   // POST /openfinance/sync/:itemId - Sincronização manual
   fastify.post<{ Params: { itemId: string } }>(
     "/sync/:itemId",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;

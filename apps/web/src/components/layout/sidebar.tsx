@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Home, ArrowLeftRight, PieChart, Target, Heart, FileText, TrendingUp, Building2, MessageCircle, LogOut, X, Sun, Moon, Settings } from "lucide-react";
+import { Home, ArrowLeftRight, PieChart, Target, Heart, FileText, TrendingUp, Building2, MessageCircle, LogOut, X, Sun, Moon, Settings, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -18,6 +18,7 @@ const navItems = [
   { href: "/reports", label: "Relatórios", icon: FileText },
   { href: "/investments", label: "Investimentos", icon: TrendingUp },
   { href: "/assistant", label: "Assistente", icon: MessageCircle },
+  { href: "/assinar", label: "Assinatura", icon: CreditCard },
   { href: "/settings", label: "Configurações", icon: Settings },
 ];
 

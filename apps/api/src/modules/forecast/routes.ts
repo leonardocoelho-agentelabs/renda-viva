@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
-import { authHook } from "../../plugins/auth.js";
+import { authHook, requireActiveSubscription } from "../../plugins/auth.js";
 import { gerarPrevisaoSaldo } from "../../services/forecast.service.js";
 import { gerarDadosGrafico } from "./chart.service.js";
 
@@ -7,7 +7,7 @@ const forecastRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // GET /forecast - Previsões dos próximos 30 dias (gera se não houver)
   fastify.get(
     "/",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -44,7 +44,7 @@ const forecastRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // POST /forecast/generate - Recalcula a previsão
   fastify.post(
     "/generate",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const total = await gerarPrevisaoSaldo(request.user!.id);
@@ -62,7 +62,7 @@ const forecastRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // GET /forecast/chart - Dados para o gráfico com marcadores inteligentes
   fastify.get<{ Querystring: { periodo?: string } }>(
     "/chart",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const { periodo } = request.query;

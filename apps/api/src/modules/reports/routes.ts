@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
-import { authHook } from "../../plugins/auth.js";
+import { authHook, requireActiveSubscription } from "../../plugins/auth.js";
 import { env } from "../../env.js";
 import {
   gerarRelatorioMensal,
@@ -15,7 +15,7 @@ const reportsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // POST /reports/generate - Gera e salva o relatório do mês (default: mês anterior)
   fastify.post<{ Body: GenerateBody }>(
     "/generate",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -37,7 +37,7 @@ const reportsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // GET /reports/list - Lista relatórios disponíveis do usuário
   fastify.get(
     "/list",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -75,7 +75,7 @@ const reportsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // GET /reports/:mes_ano - Busca o conteúdo de um relatório específico
   fastify.get<{ Params: { mes_ano: string } }>(
     "/:mes_ano",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;

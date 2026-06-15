@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
 import Anthropic from "@anthropic-ai/sdk";
-import { authHook } from "../../plugins/auth.js";
+import { authHook, requireActiveSubscription } from "../../plugins/auth.js";
 import { env } from "../../env.js";
 
 const anthropic = new Anthropic({ apiKey: env.CLAUDE_API_KEY });
@@ -48,7 +48,7 @@ const goalsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // GET /goals - Lista metas do usuário, ordenadas por prioridade
   fastify.get(
     "/",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -89,7 +89,7 @@ const goalsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // POST /goals - Cria meta com plano gerado pela IA
   fastify.post<{ Body: CreateGoalBody }>(
     "/",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -226,7 +226,7 @@ Retorne JSON:
   // PATCH /goals/:id/deposit - Registra aporte
   fastify.patch<{ Params: { id: string }; Body: { valor: number } }>(
     "/:id/deposit",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -292,7 +292,7 @@ Retorne JSON:
     Body: { status: "ativa" | "pausada" | "cancelada" };
   }>(
     "/:id/status",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -336,7 +336,7 @@ Retorne JSON:
   // DELETE /goals/:id - Remove meta
   fastify.delete<{ Params: { id: string } }>(
     "/:id",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;

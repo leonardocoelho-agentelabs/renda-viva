@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
-import { authHook } from "../../plugins/auth.js";
+import { authHook, requireActiveSubscription } from "../../plugins/auth.js";
 import { gerarInsights } from "../../services/insights.service.js";
 
 const CACHE_TTL = 6 * 60 * 60; // 6 horas
@@ -8,7 +8,7 @@ const insightsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // GET /insights - retorna insights (cache de 6h no Redis)
   fastify.get(
     "/",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -33,7 +33,7 @@ const insightsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // POST /insights/refresh - regenera e atualiza o cache
   fastify.post(
     "/refresh",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;

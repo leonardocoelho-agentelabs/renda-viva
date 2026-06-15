@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
 import Anthropic from "@anthropic-ai/sdk";
-import { authHook } from "../../plugins/auth.js";
+import { authHook, requireActiveSubscription } from "../../plugins/auth.js";
 import { env } from "../../env.js";
 
 const anthropic = new Anthropic({ apiKey: env.CLAUDE_API_KEY });
@@ -19,7 +19,7 @@ const assistantRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => 
   // POST /assistant/chat - Conversa com o assistente financeiro "Viva"
   fastify.post<{ Body: ChatBody }>(
     "/chat",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;

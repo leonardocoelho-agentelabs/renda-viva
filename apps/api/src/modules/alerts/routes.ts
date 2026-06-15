@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
-import { authHook } from "../../plugins/auth.js";
+import { authHook, requireActiveSubscription } from "../../plugins/auth.js";
 import { env } from "../../env.js";
 import { enviarMensagemWhatsApp } from "../../services/whatsapp.service.js";
 import {
@@ -16,7 +16,7 @@ const alertsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // POST /alerts/test - Mensagem de teste para validar a integração
   fastify.post(
     "/test",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (_request, reply) => {
       const ok = await enviarMensagemWhatsApp(
         env.ALERTS_TEST_NUMBER,
@@ -29,7 +29,7 @@ const alertsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // POST /alerts/check-budget - Verifica alertas de orçamento do usuário logado
   fastify.post(
     "/check-budget",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         await verificarAlertasOrcamento(request.user!.id);
@@ -44,7 +44,7 @@ const alertsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   // POST /alerts/weekly-summary - Envia resumo semanal ao usuário logado
   fastify.post(
     "/weekly-summary",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         await enviarResumoSemanal(request.user!.id);

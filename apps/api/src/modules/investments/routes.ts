@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
-import { authHook } from "../../plugins/auth.js";
+import { authHook, requireActiveSubscription } from "../../plugins/auth.js";
 import { env } from "../../env.js";
 import {
   gerarRadarSemanal,
@@ -15,7 +15,7 @@ const investmentsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
   // GET /investments/radar - Curadoria + dados de mercado (cache de 1h)
   fastify.get<{ Querystring: { refresh?: string } }>(
     "/radar",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const userId = request.user!.id;
@@ -42,7 +42,7 @@ const investmentsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
   // POST /investments/radar/send-whatsapp - Envia o radar via WhatsApp
   fastify.post(
     "/radar/send-whatsapp",
-    { preHandler: [authHook] },
+    { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
         const enviado = await enviarRadarWhatsApp(request.user!.id);
