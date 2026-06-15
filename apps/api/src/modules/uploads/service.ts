@@ -87,7 +87,7 @@ export async function processUpload(uploadId: string, userId: string, fileType: 
       .update({ total_transacoes: transacoes.length, transacoes_processadas: 0 })
       .eq("id", uploadId);
 
-    // 6. Buscar correções do usuário para few-shot
+    // 7. Buscar correções do usuário para few-shot
     const { data: correcoes } = await supabase
       .from("user_corrections")
       .select("descricao_raw, categoria_correta, subcategoria_correta")
@@ -101,7 +101,19 @@ export async function processUpload(uploadId: string, userId: string, fileType: 
       subcategoria_correta: c.subcategoria_correta,
     }));
 
-    // 7. Inserir transações brutas na tabela
+    // 6. Limpar transações de tentativas anteriores deste mesmo upload.
+    // Isso garante que retries não dupliquem dados — cada tentativa começa do zero.
+    const { error: deleteError } = await supabase
+      .from("transactions")
+      .delete()
+      .eq("upload_id", uploadId);
+
+    if (deleteError) {
+      console.warn("[OCR Worker] Aviso ao limpar transações anteriores:", deleteError.message);
+    }
+    console.log("[OCR Worker] Transações anteriores limpas para upload:", uploadId);
+
+    // 8. Inserir transações brutas na tabela
     const transacoesParaInserir = transacoes.map((t) => ({
       user_id: userId,
       data: t.data,
@@ -123,7 +135,7 @@ export async function processUpload(uploadId: string, userId: string, fileType: 
     }
     console.log("[OCR Worker] Transações inseridas no banco:", { count: insertedTransactions?.length ?? 0 });
 
-    // 8. Categorizar em batches de 20
+    // 9. Categorizar em batches de 20
     let processadas = 0;
     const batchSize = 20;
 
@@ -181,7 +193,7 @@ export async function processUpload(uploadId: string, userId: string, fileType: 
       console.log("[OCR Worker] Progresso:", { processadas, total: transacoes.length });
     }
 
-    // 9. Marcar como concluído
+    // 10. Marcar como concluído
     await supabase
       .from("uploads")
       .update({

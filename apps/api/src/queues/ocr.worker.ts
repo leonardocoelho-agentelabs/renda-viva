@@ -15,8 +15,25 @@ const connection = {
   password: new URL(env.REDIS_URL).password || undefined,
 };
 
-// Criar fila
-export const ocrQueue = new Queue<OcrJobData>("ocr-queue", { connection });
+// Criar fila com retry padrão configurado
+export const ocrQueue = new Queue<OcrJobData>("ocr-queue", {
+  connection,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: "exponential",
+      delay: 10000, // 10s, 20s, 40s
+    },
+    removeOnComplete: {
+      age: 3600, // Remove jobs completados após 1 hora
+      count: 100, // Mantém no máximo 100 jobs completados
+    },
+    removeOnFail: {
+      age: 86400, // Remove jobs falhados após 24 horas
+      count: 500, // Mantém no máximo 500 jobs falhados
+    },
+  },
+});
 
 // Criar worker
 export const ocrWorker = new Worker<OcrJobData>(
