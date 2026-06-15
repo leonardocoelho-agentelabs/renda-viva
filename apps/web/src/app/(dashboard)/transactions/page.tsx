@@ -44,7 +44,7 @@ export default function TransactionsPage() {
 
       const { data, error } = await supabase
         .from("transactions")
-        .select("id, data, descricao_raw, categoria, valor, tipo, status_revisao, is_recorrente")
+        .select("id, data, descricao_raw, categoria, valor, tipo, status_revisao, is_recorrente, registrado_por")
         .eq("user_id", user.id)
         .gte("data", inicioMes)
         .lte("data", fimMes)

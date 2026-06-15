@@ -83,14 +83,14 @@ const whatsappWebhookRoutes: FastifyPluginAsync = async (fastify) => {
 
       if (!texto) return
 
-      // Buscar usuário pelo telefone normalizado
-      const { data: usuario } = await supabaseAdmin
-        .from('users')
-        .select('id, full_name')
+      // Buscar contato pelo telefone normalizado
+      const { data: contato } = await supabaseAdmin
+        .from('whatsapp_contacts')
+        .select('user_id, nome')
         .eq('telefone', numeroRemetenteNormalizado)
         .maybeSingle()
 
-      if (!usuario) {
+      if (!contato) {
         await enviarMensagemWhatsApp(
           numeroRemetenteRaw,
           '👋 Olá! Para registrar transações por aqui, primeiro vincule este número no seu perfil do Renda Viva em rendavivaapp.com/settings'
@@ -115,7 +115,7 @@ const whatsappWebhookRoutes: FastifyPluginAsync = async (fastify) => {
       const { data: transacao, error } = await supabaseAdmin
         .from('transactions')
         .insert({
-          user_id: usuario.id,
+          user_id: contato.user_id,
           data: hoje,
           valor: valorComSinal,
           descricao_raw: extraido.descricao_raw,
@@ -123,7 +123,8 @@ const whatsappWebhookRoutes: FastifyPluginAsync = async (fastify) => {
           tipo: extraido.tipo === 'receita' ? 'credito' : 'debito',
           status_revisao: 'aprovado',
           score_confianca: 1.0,
-          origem: 'whatsapp'
+          origem: 'whatsapp',
+          registrado_por: contato.nome
         })
         .select()
         .single()
@@ -137,7 +138,7 @@ const whatsappWebhookRoutes: FastifyPluginAsync = async (fastify) => {
       // Recalcular score
       try {
         const { calcularScore } = await import('../score/service')
-        await calcularScore(usuario.id)
+        await calcularScore(contato.user_id)
       } catch (e) {
         console.error('[WhatsApp Webhook] Erro ao recalcular score:', e)
       }
@@ -149,7 +150,8 @@ const whatsappWebhookRoutes: FastifyPluginAsync = async (fastify) => {
         `✅ *Registrado!*\n\n` +
         `${emoji} ${extraido.descricao_raw}\n` +
         `${sinal}R$ ${extraido.valor.toFixed(2)} · ${extraido.categoria}\n` +
-        `📅 Hoje\n\n` +
+        `📅 Hoje\n` +
+        `👤 Registrado por: ${contato.nome}\n\n` +
         `_Acesse rendavivaapp.com para ver e editar_`
 
       await enviarMensagemWhatsApp(numeroRemetenteRaw, mensagemResposta)

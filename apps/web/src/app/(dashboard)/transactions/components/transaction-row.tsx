@@ -14,6 +14,7 @@ export interface Transacao {
   tipo: string;
   status_revisao: string;
   is_recorrente?: boolean;
+  registrado_por?: string;
 }
 
 interface TransactionRowProps {
@@ -66,6 +67,9 @@ export function TransactionRow({
             {transacao.categoria || "Sem categoria"}
           </span>
           <span className="text-xs text-gray-400 dark:text-gray-500">{dataFormatada}</span>
+          {transacao.registrado_por && (
+            <span className="text-xs text-gray-400 dark:text-gray-500">· via WhatsApp ({transacao.registrado_por})</span>
+          )}
         </div>
       </div>
 

@@ -3,18 +3,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
-import { MessageCircle, Check, AlertCircle } from "lucide-react";
+import { MessageCircle, Plus, Trash2, Check, AlertCircle } from "lucide-react";
 
-interface UserProfile {
+interface Contato {
   id: string;
-  full_name: string | null;
-  email: string | null;
-  telefone: string | null;
-  renda_mensal: number | null;
-  perfil_risco: string | null;
+  telefone: string;
+  nome: string;
+  created_at?: string;
 }
 
 function formatarTelefoneMascarado(telefone: string | null): string {
@@ -31,13 +28,13 @@ function formatarTelefoneMascarado(telefone: string | null): string {
 
 export default function SettingsPage() {
   const supabase = createClient();
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [telefone, setTelefone] = useState("");
+  const [contatos, setContatos] = useState<Contato[]>([]);
+  const [novoNome, setNovoNome] = useState("");
+  const [novoTelefone, setNovoTelefone] = useState("");
+  const [adicionando, setAdicionando] = useState(false);
+  const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
@@ -48,63 +45,85 @@ export default function SettingsPage() {
     return session?.access_token ?? null;
   }, [supabase]);
 
-  const loadProfile = useCallback(async () => {
+  const carregarContatos = useCallback(async () => {
     setLoading(true);
-    setError(null);
+    setErro("");
     try {
       const token = await getToken();
       if (!token) {
-        setError("Sessão expirada. Faça login novamente.");
+        setErro("Sessão expirada. Faça login novamente.");
         return;
       }
-      const res = await fetch(`${apiUrl}/users/me`, {
+      const res = await fetch(`${apiUrl}/whatsapp-contacts`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error(`Erro ${res.status}`);
       const data = await res.json();
-      setUser(data.user);
-      if (data.user?.telefone) {
-        setTelefone(data.user.telefone);
-      }
+      setContatos(data.contatos || []);
     } catch {
-      setError("Não foi possível carregar o perfil.");
+      setErro("Não foi possível carregar os contatos.");
     } finally {
       setLoading(false);
     }
   }, [apiUrl, getToken]);
 
   useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
+    carregarContatos();
+  }, [carregarContatos]);
 
-  const handleSave = async () => {
+  const adicionarContato = async () => {
+    setErro("");
+    if (!novoNome.trim() || !novoTelefone.trim()) {
+      setErro("Preencha nome e telefone");
+      return;
+    }
+
     setSaving(true);
-    setError(null);
-    setSuccess(false);
     try {
       const token = await getToken();
       if (!token) {
-        setError("Sessão expirada. Faça login novamente.");
+        setErro("Sessão expirada. Faça login novamente.");
         return;
       }
-      const res = await fetch(`${apiUrl}/users/me`, {
-        method: "PATCH",
+
+      const res = await fetch(`${apiUrl}/whatsapp-contacts`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ telefone }),
+        body: JSON.stringify({ telefone: novoTelefone, nome: novoNome }),
       });
-      if (!res.ok) throw new Error(`Erro ${res.status}`);
-      const data = await res.json();
-      setUser(data.user);
-      setIsEditing(false);
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+
+      if (!res.ok) {
+        const json = await res.json();
+        setErro(json.error || "Erro ao adicionar número");
+        return;
+      }
+
+      setNovoNome("");
+      setNovoTelefone("");
+      setAdicionando(false);
+      carregarContatos();
     } catch {
-      setError("Não foi possível salvar. Tente novamente.");
+      setErro("Erro ao adicionar número");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const removerContato = async (id: string) => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      await fetch(`${apiUrl}/whatsapp-contacts/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      carregarContatos();
+    } catch {
+      setErro("Erro ao remover contato");
     }
   };
 
@@ -115,17 +134,10 @@ export default function SettingsPage() {
         <p className="text-gray-500 dark:text-[#94A3B8]">Gerencie suas preferências e integrações</p>
       </div>
 
-      {error && (
+      {erro && (
         <div className="mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400 flex items-center gap-2">
           <AlertCircle className="h-4 w-4" />
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="mb-6 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 px-4 py-3 text-sm text-green-700 dark:text-green-400 flex items-center gap-2">
-          <Check className="h-4 w-4" />
-          Salvo com sucesso!
+          {erro}
         </div>
       )}
 
@@ -137,73 +149,90 @@ export default function SettingsPage() {
       ) : (
         <div className="space-y-6 max-w-2xl">
           {/* Card WhatsApp */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
-                  <MessageCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6 dark:bg-[#111827] dark:border-[#1E293B]">
+            <div className="flex items-center gap-2 mb-1">
+              <MessageCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-[#F8FAFC]">Números vinculados ao WhatsApp</h3>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-[#94A3B8] mb-4">
+              Qualquer pessoa da família pode registrar transações pelo WhatsApp enviando
+              mensagens de texto ou áudio para o número do Renda Viva. Adicione os números
+              de quem você confia.
+            </p>
+
+            <div className="space-y-2 mb-4">
+              {contatos.map((c) => (
+                <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#1E293B]">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-[#F8FAFC]">{c.nome}</p>
+                    <p className="text-xs text-gray-500 dark:text-[#94A3B8]">{formatarTelefoneMascarado(c.telefone)}</p>
+                  </div>
+                  <button
+                    onClick={() => removerContato(c.id)}
+                    className="text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              {contatos.length === 0 && (
+                <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">Nenhum número vinculado ainda</p>
+              )}
+            </div>
+
+            {adicionando ? (
+              <div className="space-y-3 p-3 rounded-xl border border-gray-200 dark:border-[#1E293B]">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nome/apelido</label>
+                  <input
+                    type="text"
+                    value={novoNome}
+                    onChange={(e) => setNovoNome(e.target.value)}
+                    placeholder="Ex: Maria"
+                    className="w-full border border-gray-300 dark:border-[#374151] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-[#F8FAFC] placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white dark:bg-[#1E293B]"
+                  />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-[#F8FAFC]">
-                    WhatsApp
-                  </h2>
-                  <p className="text-sm text-gray-500 dark:text-[#94A3B8] mt-1">
-                    Vincule seu WhatsApp para registrar transações por mensagem. Envie algo como
-                    "Gastei R$30 no almoço" e a transação é criada automaticamente.
-                  </p>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Número do WhatsApp</label>
+                  <input
+                    type="text"
+                    value={novoTelefone}
+                    onChange={(e) => setNovoTelefone(e.target.value.replace(/\D/g, ""))}
+                    placeholder="11999998888"
+                    maxLength={11}
+                    className="w-full border border-gray-300 dark:border-[#374151] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-[#F8FAFC] placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white dark:bg-[#1E293B]"
+                  />
+                </div>
+                {erro && <p className="text-xs text-red-600 dark:text-red-400">{erro}</p>}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setAdicionando(false);
+                      setErro("");
+                    }}
+                    className="flex-1 border border-gray-200 dark:border-[#374151] text-gray-600 dark:text-gray-300 rounded-lg py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-[#1E293B]"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={adicionarContato}
+                    disabled={saving}
+                    className="flex-1 bg-green-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {saving ? "Adicionando..." : "Adicionar"}
+                  </button>
                 </div>
               </div>
-
-              {user?.telefone && !isEditing ? (
-                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    <div>
-                      <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                        WhatsApp vinculado
-                      </p>
-                      <p className="text-lg font-semibold text-gray-900 dark:text-[#F8FAFC]">
-                        {formatarTelefoneMascarado(user.telefone)}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    Alterar
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <Input
-                    label="Número de WhatsApp"
-                    placeholder="11999998888"
-                    value={telefone}
-                    onChange={(e) => setTelefone(e.target.value.replace(/\D/g, ""))}
-                    maxLength={11}
-                  />
-                  <div className="flex gap-2">
-                    <Button onClick={handleSave} loading={saving}>
-                      Salvar
-                    </Button>
-                    {isEditing && (
-                      <Button
-                        variant="secondary"
-                        onClick={() => {
-                          setIsEditing(false);
-                          setTelefone(user?.telefone || "");
-                        }}
-                      >
-                        Cancelar
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            ) : (
+              <button
+                onClick={() => setAdicionando(true)}
+                className="w-full flex items-center justify-center gap-2 border border-dashed border-gray-300 dark:border-[#374151] rounded-xl py-3 text-sm font-medium text-gray-500 dark:text-gray-400 hover:border-green-400 hover:text-green-600 dark:hover:border-green-400 dark:hover:text-green-400 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Adicionar número
+              </button>
+            )}
+          </div>
         </div>
       )}
     </DashboardLayout>
