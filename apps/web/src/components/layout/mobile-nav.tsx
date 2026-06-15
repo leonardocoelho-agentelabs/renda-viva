@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ArrowLeftRight, Building2, PieChart, Target, Heart, FileText, TrendingUp, MessageCircle } from "lucide-react";
+import { Home, ArrowLeftRight, Building2, PieChart, Target, Heart, FileText, TrendingUp, MessageCircle, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -15,6 +15,7 @@ const navItems = [
   { href: "/reports", icon: FileText, label: "Relat." },
   { href: "/investments", icon: TrendingUp, label: "Invest." },
   { href: "/assistant", icon: MessageCircle, label: "Viva" },
+  { href: "/settings", icon: Settings, label: "Config." },
 ];
 
 export function MobileNav() {

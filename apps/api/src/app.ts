@@ -24,6 +24,8 @@ import { forecastRoutes } from "./modules/forecast/routes.js";
 import { openfinanceRoutes } from "./modules/openfinance/routes.js";
 import { transactionsRoutes } from "./modules/transactions/routes.js";
 import { insightsRoutes } from "./modules/insights/routes.js";
+import usersRoutes from "./modules/users/routes.js";
+import whatsappWebhookRoutes from "./modules/whatsapp/webhook.routes.js";
 
 async function buildApp() {
   const app = Fastify({
@@ -96,6 +98,8 @@ async function buildApp() {
   await app.register(openfinanceRoutes, { prefix: "/api/openfinance" });
   await app.register(transactionsRoutes, { prefix: "/api/transactions" });
   await app.register(insightsRoutes, { prefix: "/api/insights" });
+  await app.register(usersRoutes, { prefix: "/api" });
+  await app.register(whatsappWebhookRoutes, { prefix: "/api" });
 
   // Handler de erro global
   app.setErrorHandler((error: FastifyError, _request: FastifyRequest, reply: FastifyReply) => {
