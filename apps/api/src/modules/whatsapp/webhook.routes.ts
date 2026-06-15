@@ -18,6 +18,11 @@ const whatsappWebhookRoutes: FastifyPluginAsync = async (fastify) => {
       const data = body?.data
       if (!data) return
 
+      // DEBUG: investigar estrutura do payload
+      console.log('[WhatsApp DEBUG] key:', JSON.stringify(data.key, null, 2))
+      console.log('[WhatsApp DEBUG] pushName:', data.pushName)
+      console.log('[WhatsApp DEBUG] message keys:', Object.keys(data.message || {}))
+
       // Ignorar mensagens enviadas pelo próprio bot
       if (data.key?.fromMe) return
 
