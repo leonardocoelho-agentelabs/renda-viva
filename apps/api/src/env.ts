@@ -10,6 +10,9 @@ const envSchema = z.object({
   // Claude
   CLAUDE_API_KEY: z.string().min(1, "CLAUDE_API_KEY é obrigatória"),
 
+  // OpenAI (Whisper)
+  OPENAI_API_KEY: z.string().min(1, "OPENAI_API_KEY é obrigatória"),
+
   // Secret para endpoints internos (n8n, jobs)
   API_SECRET: z.string().min(1).default("renda-viva-internal-secret-2026"),
 

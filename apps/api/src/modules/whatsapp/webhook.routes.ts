@@ -3,6 +3,8 @@ import { supabaseAdmin } from '../../plugins/supabase'
 import { enviarMensagemWhatsApp } from '../../services/whatsapp.service'
 import { extrairTransacaoDeMensagem } from '../../services/whatsapp-parser.service'
 import { normalizarTelefone } from '../../lib/phone'
+import { baixarMidiaWhatsApp } from '../../services/evolution-media.service'
+import { transcreverAudio } from '../../services/audio-transcription.service'
 
 const whatsappWebhookRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post('/whatsapp/webhook', async (request, reply) => {
@@ -46,17 +48,37 @@ const whatsappWebhookRoutes: FastifyPluginAsync = async (fastify) => {
       const numeroRemetenteNormalizado = normalizarTelefone(numeroRemetenteRaw)
 
       // Extrair texto da mensagem
-      const texto = data.message?.conversation
-        || data.message?.extendedTextMessage?.text
-        || null
+      let texto: string | null =
+        data.message?.conversation ||
+        data.message?.extendedTextMessage?.text ||
+        null
 
-      // Se for áudio, avisar que ainda não suportamos (Fase B)
+      let prefixoResposta = ''
+
+      // Se for áudio, transcrever via Whisper
       if (!texto && data.message?.audioMessage) {
-        await enviarMensagemWhatsApp(
-          numeroRemetenteRaw,
-          '🎤 Recebi seu áudio! Por enquanto eu só entendo mensagens de texto, mas em breve vou conseguir ouvir também. Pode me escrever o que você fez? Ex: "Gastei R$30 no almoço"'
-        )
-        return
+        const midia = await baixarMidiaWhatsApp(data.key)
+
+        if (!midia) {
+          await enviarMensagemWhatsApp(
+            numeroRemetenteRaw,
+            '❌ Não consegui processar o áudio. Tente enviar como texto, ex: "Gastei R$30 no almoço"'
+          )
+          return
+        }
+
+        const transcricao = await transcreverAudio(midia.base64, midia.mimetype)
+
+        if (!transcricao) {
+          await enviarMensagemWhatsApp(
+            numeroRemetenteRaw,
+            '❌ Não consegui entender o áudio. Pode tentar de novo ou escrever a mensagem?'
+          )
+          return
+        }
+
+        texto = transcricao
+        prefixoResposta = `🎤 _Entendi: "${transcricao}"_\n\n`
       }
 
       if (!texto) return
@@ -122,7 +144,9 @@ const whatsappWebhookRoutes: FastifyPluginAsync = async (fastify) => {
 
       const emoji = extraido.tipo === 'receita' ? '💰' : '💸'
       const sinal = extraido.tipo === 'receita' ? '+' : '-'
-      const mensagemResposta = `✅ *Registrado!*\n\n` +
+      const mensagemResposta =
+        prefixoResposta +
+        `✅ *Registrado!*\n\n` +
         `${emoji} ${extraido.descricao_raw}\n` +
         `${sinal}R$ ${extraido.valor.toFixed(2)} · ${extraido.categoria}\n` +
         `📅 Hoje\n\n` +
