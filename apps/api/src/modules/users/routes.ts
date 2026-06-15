@@ -8,7 +8,7 @@ const usersRoutes: FastifyPluginAsync = async (fastify) => {
   }, async (request, reply) => {
     const { data, error } = await supabaseAdmin
       .from('users')
-      .select('id, full_name, email, telefone, renda_mensal, perfil_risco')
+      .select('id, full_name, email, cpf, telefone, renda_mensal, perfil_risco')
       .eq('id', request.user.id)
       .single()
 

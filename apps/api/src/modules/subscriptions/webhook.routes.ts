@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify'
-import { supabaseAdminAdmin } from '../../plugins/supabaseAdmin'
+import { supabaseAdmin } from '../../plugins/supabase'
 import { env } from '../../env'
 
 const STATUS_ATIVO = ['PAYMENT_CONFIRMED', 'PAYMENT_RECEIVED']

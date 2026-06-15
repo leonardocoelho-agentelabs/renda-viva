@@ -5,18 +5,20 @@ import { createClient } from '@/lib/supabase/client'
 
 export default function AssinarPage() {
   const [ciclo, setCiclo] = useState<'MONTHLY' | 'YEARLY'>('MONTHLY')
+  const [nome, setNome] = useState('')
+  const [email, setEmail] = useState('')
+  const [telefone, setTelefone] = useState('')
   const [cpf, setCpf] = useState('')
-  const [precisaCpf, setPrecisaCpf] = useState(false)
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
   const [aguardandoPagamento, setAguardandoPagamento] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
-    verificarCpf()
+    buscarDadosUsuario()
   }, [])
 
-  const verificarCpf = async () => {
+  const buscarDadosUsuario = async () => {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session?.access_token) return
 
@@ -24,13 +26,49 @@ export default function AssinarPage() {
       headers: { 'Authorization': `Bearer ${session.access_token}` }
     })
     const json = await res.json()
-    setPrecisaCpf(!json.user?.cpf)
+    if (json.user) {
+      setNome(json.user.full_name || '')
+      setEmail(json.user.email || '')
+      setTelefone(json.user.telefone || '')
+      setCpf(json.user.cpf || '')
+    }
   }
+
+  const formatarCpf = (valor: string) => {
+    const digits = valor.replace(/\D/g, '')
+    if (digits.length <= 3) return digits
+    if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`
+    if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9, 11)}`
+  }
+
+  const formatarTelefone = (valor: string) => {
+    const digits = valor.replace(/\D/g, '')
+    if (digits.length <= 2) return digits
+    if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+    if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`
+  }
+
+  const cpfDigits = cpf.replace(/\D/g, '')
+  const telefoneDigits = telefone.replace(/\D/g, '')
+  const podeAssinar = nome.trim().length > 0 && cpfDigits.length === 11 && telefoneDigits.length >= 10
 
   const iniciarCheckout = async () => {
     setErro('')
-    if (precisaCpf && cpf.replace(/\D/g, '').length !== 11) {
-      setErro('Informe um CPF válido (11 dígitos)')
+    if (!podeAssinar) {
+      if (!nome.trim()) {
+        setErro('Informe seu nome completo')
+        return
+      }
+      if (cpfDigits.length !== 11) {
+        setErro('Informe um CPF válido (11 dígitos)')
+        return
+      }
+      if (telefoneDigits.length < 10) {
+        setErro('Informe um WhatsApp válido')
+        return
+      }
       return
     }
 
@@ -45,7 +83,12 @@ export default function AssinarPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ ciclo, cpf: cpf.replace(/\D/g, '') })
+        body: JSON.stringify({
+          ciclo,
+          cpf: cpfDigits,
+          nome: nome.trim(),
+          telefone: telefoneDigits
+        })
       })
 
       if (!res.ok) {
@@ -159,20 +202,62 @@ export default function AssinarPage() {
           ))}
         </ul>
 
-        {precisaCpf && (
-          <div className="mb-4">
+        <div className="space-y-4 mb-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Nome completo
+            </label>
+            <input
+              type="text"
+              value={nome}
+              onChange={e => setNome(e.target.value)}
+              placeholder="Seu nome completo"
+              className="w-full border border-gray-300 dark:border-[#1E293B] dark:bg-[#0F172A] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              readOnly
+              disabled
+              placeholder="seu@email.com"
+              className="w-full border border-gray-300 dark:border-[#1E293B] dark:bg-[#1E293B] rounded-lg px-3 py-2 text-sm text-gray-500 dark:text-gray-400 placeholder:text-gray-400 cursor-not-allowed opacity-75"
+            />
+            <p className="text-[10px] text-gray-400 mt-1">Email de login — não pode ser alterado aqui</p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              WhatsApp
+            </label>
+            <input
+              type="tel"
+              value={telefone}
+              onChange={e => setTelefone(formatarTelefone(e.target.value))}
+              placeholder="(11) 99999-8888"
+              className="w-full border border-gray-300 dark:border-[#1E293B] dark:bg-[#0F172A] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          <div>
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
               CPF (necessário para gerar a cobrança)
             </label>
             <input
               type="text"
               value={cpf}
-              onChange={e => setCpf(e.target.value)}
+              onChange={e => setCpf(formatarCpf(e.target.value))}
               placeholder="000.000.000-00"
+              maxLength={14}
               className="w-full border border-gray-300 dark:border-[#1E293B] dark:bg-[#0F172A] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
-        )}
+        </div>
 
         {erro && <p className="text-sm text-red-600 mb-3">{erro}</p>}
 
@@ -189,8 +274,8 @@ export default function AssinarPage() {
         ) : (
           <button
             onClick={iniciarCheckout}
-            disabled={loading}
-            className="w-full bg-green-600 text-white rounded-lg py-3 text-sm font-semibold hover:bg-green-700 disabled:opacity-50 transition-colors"
+            disabled={loading || !podeAssinar}
+            className="w-full bg-green-600 text-white rounded-lg py-3 text-sm font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? 'Processando...' : 'Assinar agora'}
           </button>

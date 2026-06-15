@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify'
-import { supabaseAdminAdmin } from '../../plugins/supabaseAdmin'
+import { supabaseAdmin } from '../../plugins/supabase'
 import { criarClienteAsaas, criarAssinaturaAsaas, buscarLinkPagamento } from '../../services/asaas.service'
 
 const subscriptionsRoutes: FastifyPluginAsync = async (fastify) => {
@@ -22,7 +22,12 @@ const subscriptionsRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post('/subscriptions/checkout', {
     preHandler: [fastify.authenticate]
   }, async (request, reply) => {
-    const body = request.body as { ciclo: 'MONTHLY' | 'YEARLY', cpf: string }
+    const body = request.body as {
+      ciclo: 'MONTHLY' | 'YEARLY',
+      cpf: string,
+      nome: string,
+      telefone: string
+    }
 
     if (!body.ciclo || !['MONTHLY', 'YEARLY'].includes(body.ciclo)) {
       return reply.status(400).send({ error: 'Ciclo inválido' })
@@ -31,6 +36,15 @@ const subscriptionsRoutes: FastifyPluginAsync = async (fastify) => {
     const cpfLimpo = (body.cpf || '').replace(/\D/g, '')
     if (cpfLimpo.length !== 11) {
       return reply.status(400).send({ error: 'CPF inválido' })
+    }
+
+    if (!body.nome?.trim()) {
+      return reply.status(400).send({ error: 'Nome é obrigatório' })
+    }
+
+    const telefoneLimpo = (body.telefone || '').replace(/\D/g, '')
+    if (telefoneLimpo.length < 10 || telefoneLimpo.length > 11) {
+      return reply.status(400).send({ error: 'WhatsApp inválido' })
     }
 
     // Buscar dados do usuário
@@ -42,10 +56,15 @@ const subscriptionsRoutes: FastifyPluginAsync = async (fastify) => {
 
     if (!usuario) return reply.status(404).send({ error: 'Usuário não encontrado' })
 
-    // Salvar CPF se ainda não tiver
-    if (!usuario.cpf) {
-      await supabaseAdmin.from('users').update({ cpf: cpfLimpo }).eq('id', usuario.id)
-    }
+    // Atualizar dados do usuário (lead capture)
+    await supabaseAdmin
+      .from('users')
+      .update({
+        cpf: cpfLimpo,
+        full_name: body.nome.trim(),
+        telefone: telefoneLimpo
+      })
+      .eq('id', request.user.id)
 
     // Verificar se já existe assinatura pendente com mesmo ciclo
     const { data: existente } = await supabaseAdmin
@@ -76,7 +95,7 @@ const subscriptionsRoutes: FastifyPluginAsync = async (fastify) => {
 
     // Criar cliente no Asaas
     const cliente = await criarClienteAsaas({
-      nome: usuario.full_name,
+      nome: body.nome.trim(),
       email: usuario.email,
       cpf: cpfLimpo
     })
