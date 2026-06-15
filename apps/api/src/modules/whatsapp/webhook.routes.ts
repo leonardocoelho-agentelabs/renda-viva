@@ -18,11 +18,6 @@ const whatsappWebhookRoutes: FastifyPluginAsync = async (fastify) => {
       const data = body?.data
       if (!data) return
 
-      // DEBUG: investigar estrutura do payload
-      console.log('[WhatsApp DEBUG] key:', JSON.stringify(data.key, null, 2))
-      console.log('[WhatsApp DEBUG] pushName:', data.pushName)
-      console.log('[WhatsApp DEBUG] message keys:', Object.keys(data.message || {}))
-
       // Ignorar mensagens enviadas pelo próprio bot
       if (data.key?.fromMe) return
 
@@ -39,12 +34,15 @@ const whatsappWebhookRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       const remoteJid = data.key?.remoteJid || ''
-      // Ignorar grupos (terminam em @g.us)
+      const remoteJidAlt = data.key?.remoteJidAlt || ''
+
+      // Ignorar grupos (verificar sempre no remoteJid original)
       if (remoteJid.endsWith('@g.us')) return
 
-      // Número raw (formato completo com 55) para envio de mensagens
-      const numeroRemetenteRaw = remoteJid.replace('@s.whatsapp.net', '').replace(/\D/g, '')
-      // Número normalizado (sem 55) para buscar usuário no banco
+      // Preferir remoteJidAlt (contém o número de telefone real);
+      // fallback para remoteJid se remoteJidAlt não existir
+      const jidComNumero = remoteJidAlt || remoteJid
+      const numeroRemetenteRaw = jidComNumero.replace('@s.whatsapp.net', '').replace('@lid', '').replace(/\D/g, '')
       const numeroRemetenteNormalizado = normalizarTelefone(numeroRemetenteRaw)
 
       // Extrair texto da mensagem

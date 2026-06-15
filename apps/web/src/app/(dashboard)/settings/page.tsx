@@ -37,6 +37,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
@@ -97,6 +98,7 @@ export default function SettingsPage() {
       if (!res.ok) throw new Error(`Erro ${res.status}`);
       const data = await res.json();
       setUser(data.user);
+      setIsEditing(false);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch {
@@ -152,7 +154,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {user?.telefone ? (
+              {user?.telefone && !isEditing ? (
                 <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -168,7 +170,7 @@ export default function SettingsPage() {
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => setTelefone("")}
+                    onClick={() => setIsEditing(true)}
                   >
                     Alterar
                   </Button>
@@ -182,9 +184,22 @@ export default function SettingsPage() {
                     onChange={(e) => setTelefone(e.target.value.replace(/\D/g, ""))}
                     maxLength={11}
                   />
-                  <Button onClick={handleSave} loading={saving}>
-                    Salvar
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button onClick={handleSave} loading={saving}>
+                      Salvar
+                    </Button>
+                    {isEditing && (
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          setIsEditing(false);
+                          setTelefone(user?.telefone || "");
+                        }}
+                      >
+                        Cancelar
+                      </Button>
+                    )}
+                  </div>
                 </div>
               )}
             </CardContent>
