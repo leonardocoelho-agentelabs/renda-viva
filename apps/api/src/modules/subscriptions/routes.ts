@@ -7,6 +7,12 @@ const subscriptionsRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get('/subscriptions/me', {
     preHandler: [fastify.authenticate]
   }, async (request, reply) => {
+    const { data: usuario } = await supabaseAdmin
+      .from('users')
+      .select('acesso_liberado')
+      .eq('id', request.user.id)
+      .single()
+
     const { data } = await supabaseAdmin
       .from('subscriptions')
       .select('*, plans(nome, preco_mensal, preco_anual)')
@@ -15,7 +21,10 @@ const subscriptionsRoutes: FastifyPluginAsync = async (fastify) => {
       .limit(1)
       .maybeSingle()
 
-    return reply.send({ subscription: data })
+    const statusComAcesso = ['active', 'overdue']
+    const temAcesso = !!usuario?.acesso_liberado || (!!data && statusComAcesso.includes(data.status))
+
+    return reply.send({ subscription: data, temAcesso, acessoLiberado: !!usuario?.acesso_liberado })
   })
 
   // Iniciar checkout

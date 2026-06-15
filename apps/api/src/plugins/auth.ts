@@ -75,6 +75,15 @@ export async function requireActiveSubscription(
     return reply.status(401).send({ error: "subscription_required" });
   }
 
+  // Verificar acesso liberado primeiro
+  const { data: usuario } = await supabaseAdmin
+    .from("users")
+    .select("acesso_liberado")
+    .eq("id", userId)
+    .single();
+
+  if (usuario?.acesso_liberado) return; // acesso liberado, não verifica assinatura
+
   const { data } = await supabaseAdmin
     .from("subscriptions")
     .select("status")

@@ -29,8 +29,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       headers: { 'Authorization': `Bearer ${session.access_token}` }
     });
     const json = await res.json();
-    const status = json.subscription?.status;
-    const temAcesso = status === 'active' || status === 'overdue';
+    const temAcesso = json.temAcesso;
 
     if (!temAcesso && pathname !== '/assinar' && pathname !== '/settings') {
       router.push('/assinar');
