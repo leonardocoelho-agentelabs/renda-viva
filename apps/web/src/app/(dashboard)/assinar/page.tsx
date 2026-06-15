@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Check, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -13,10 +14,26 @@ export default function AssinarPage() {
   const [erro, setErro] = useState('')
   const [aguardandoPagamento, setAguardandoPagamento] = useState(false)
   const supabase = createClient()
+  const router = useRouter()
 
   useEffect(() => {
+    verificarAcesso()
     buscarDadosUsuario()
   }, [])
+
+  const verificarAcesso = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) return
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscriptions/me`, {
+      headers: { 'Authorization': `Bearer ${session.access_token}` }
+    })
+    const json = await res.json()
+
+    if (json.temAcesso) {
+      router.push('/dashboard')
+    }
+  }
 
   const buscarDadosUsuario = async () => {
     const { data: { session } } = await supabase.auth.getSession()
