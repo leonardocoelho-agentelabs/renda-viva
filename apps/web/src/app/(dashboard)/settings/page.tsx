@@ -2,10 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
-import { MessageCircle, Plus, Trash2, Check, AlertCircle } from "lucide-react";
+import { MessageCircle, Plus, Trash2, AlertCircle } from "lucide-react";
 
 interface Contato {
   id: string;
@@ -35,6 +33,22 @@ export default function SettingsPage() {
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Conta - senha
+  const [novaSenha, setNovaSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
+  const [novoEmail, setNovoEmail] = useState("");
+  const [mensagemConta, setMensagemConta] = useState("");
+
+  // Reset transações
+  const [confirmandoReset, setConfirmandoReset] = useState(false);
+  const [textoConfirmacao, setTextoConfirmacao] = useState("");
+  const [resetando, setResetando] = useState(false);
+
+  // Excluir conta
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
+  const [textoExclusao, setTextoExclusao] = useState("");
+  const [excluindo, setExcluindo] = useState(false);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
@@ -127,6 +141,87 @@ export default function SettingsPage() {
     }
   };
 
+  // Alterar senha
+  const alterarSenha = async () => {
+    setMensagemConta("");
+    if (novaSenha.length < 6) {
+      setMensagemConta("A senha deve ter no mínimo 6 caracteres");
+      return;
+    }
+    if (novaSenha !== confirmarSenha) {
+      setMensagemConta("As senhas não coincidem");
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({ password: novaSenha });
+    if (error) {
+      setMensagemConta("Erro ao alterar senha: " + error.message);
+    } else {
+      setMensagemConta("Senha alterada com sucesso!");
+      setNovaSenha("");
+      setConfirmarSenha("");
+    }
+  };
+
+  // Alterar email
+  const alterarEmail = async () => {
+    setMensagemConta("");
+    if (!novoEmail.includes("@")) {
+      setMensagemConta("Email inválido");
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({ email: novoEmail });
+    if (error) {
+      setMensagemConta("Erro ao alterar email: " + error.message);
+    } else {
+      setMensagemConta("Enviamos um link de confirmação para o novo email. Confirme para concluir a alteração.");
+      setNovoEmail("");
+    }
+  };
+
+  // Resetar transações
+  const resetarTransacoes = async () => {
+    if (textoConfirmacao !== "EXCLUIR") return;
+
+    setResetando(true);
+    const token = await getToken();
+    if (!token) {
+      setResetando(false);
+      return;
+    }
+
+    await fetch(`${apiUrl}/transactions/reset`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    setResetando(false);
+    setConfirmandoReset(false);
+    setTextoConfirmacao("");
+    window.location.href = "/dashboard";
+  };
+
+  // Excluir conta
+  const excluirConta = async () => {
+    if (textoExclusao !== "EXCLUIR MINHA CONTA") return;
+
+    setExcluindo(true);
+    const token = await getToken();
+    if (!token) {
+      setExcluindo(false);
+      return;
+    }
+
+    await fetch(`${apiUrl}/users/me`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
+
   return (
     <DashboardLayout>
       <div className="mb-8">
@@ -148,6 +243,60 @@ export default function SettingsPage() {
         </div>
       ) : (
         <div className="space-y-6 max-w-2xl">
+          {/* Card Conta */}
+          <div className="bg-white dark:bg-[#111827] rounded-2xl border border-gray-100 dark:border-[#1E293B] shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6 space-y-6">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-[#F8FAFC]">Conta</h3>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Alterar senha</label>
+              <div className="space-y-2">
+                <input
+                  type="password"
+                  placeholder="Nova senha"
+                  value={novaSenha}
+                  onChange={(e) => setNovaSenha(e.target.value)}
+                  className="w-full border border-gray-300 dark:border-[#1E293B] dark:bg-[#0F172A] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-[#F8FAFC] placeholder:text-gray-400"
+                />
+                <input
+                  type="password"
+                  placeholder="Confirmar nova senha"
+                  value={confirmarSenha}
+                  onChange={(e) => setConfirmarSenha(e.target.value)}
+                  className="w-full border border-gray-300 dark:border-[#1E293B] dark:bg-[#0F172A] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-[#F8FAFC] placeholder:text-gray-400"
+                />
+                <button
+                  onClick={alterarSenha}
+                  className="text-sm bg-gray-900 dark:bg-gray-700 text-white rounded-lg px-4 py-2 hover:bg-gray-800 dark:hover:bg-gray-600"
+                >
+                  Alterar senha
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-gray-100 dark:border-[#1E293B]">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Alterar email</label>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  placeholder="novo@email.com"
+                  value={novoEmail}
+                  onChange={(e) => setNovoEmail(e.target.value)}
+                  className="flex-1 border border-gray-300 dark:border-[#1E293B] dark:bg-[#0F172A] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-[#F8FAFC] placeholder:text-gray-400"
+                />
+                <button
+                  onClick={alterarEmail}
+                  className="text-sm bg-gray-900 dark:bg-gray-700 text-white rounded-lg px-4 py-2 whitespace-nowrap hover:bg-gray-800 dark:hover:bg-gray-600"
+                >
+                  Alterar email
+                </button>
+              </div>
+            </div>
+
+            {mensagemConta && (
+              <p className="text-sm text-gray-600 dark:text-gray-300">{mensagemConta}</p>
+            )}
+          </div>
+
           {/* Card WhatsApp */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6 dark:bg-[#111827] dark:border-[#1E293B]">
             <div className="flex items-center gap-2 mb-1">
@@ -232,6 +381,100 @@ export default function SettingsPage() {
                 Adicionar número
               </button>
             )}
+          </div>
+
+          {/* Zona de Perigo */}
+          <div className="bg-white dark:bg-[#111827] rounded-2xl border border-red-100 dark:border-red-900/30 p-6 space-y-4">
+            <h3 className="text-sm font-semibold text-red-600 dark:text-red-400 mb-1">Zona de perigo</h3>
+            <p className="text-xs text-gray-500 dark:text-[#94A3B8]">
+              Ações abaixo são irreversíveis. Tenha certeza antes de continuar.
+            </p>
+
+            {/* Resetar transações */}
+            {!confirmandoReset ? (
+              <button
+                onClick={() => setConfirmandoReset(true)}
+                className="text-sm text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-lg px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/10"
+              >
+                Resetar todas as transações
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Isso vai excluir TODAS as suas transações permanentemente. Digite{" "}
+                  <strong>EXCLUIR</strong> para confirmar.
+                </p>
+                <input
+                  type="text"
+                  value={textoConfirmacao}
+                  onChange={(e) => setTextoConfirmacao(e.target.value)}
+                  placeholder="Digite EXCLUIR"
+                  className="border border-gray-300 dark:border-[#1E293B] dark:bg-[#0F172A] rounded-lg px-3 py-2 text-sm w-full max-w-xs text-gray-900 dark:text-[#F8FAFC]"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setConfirmandoReset(false);
+                      setTextoConfirmacao("");
+                    }}
+                    className="text-sm text-gray-500 dark:text-gray-400 px-4 py-2 hover:bg-gray-100 dark:hover:bg-[#1E293B] rounded-lg"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={resetarTransacoes}
+                    disabled={textoConfirmacao !== "EXCLUIR" || resetando}
+                    className="text-sm bg-red-600 text-white rounded-lg px-4 py-2 disabled:opacity-40 hover:bg-red-700"
+                  >
+                    {resetando ? "Resetando..." : "Confirmar reset"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="border-t border-red-100 dark:border-red-900/20 pt-4">
+              {/* Excluir conta */}
+              {!confirmandoExclusao ? (
+                <button
+                  onClick={() => setConfirmandoExclusao(true)}
+                  className="text-sm text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-lg px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/10"
+                >
+                  Excluir minha conta
+                </button>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    Isso excluirá permanentemente sua conta, todas as transações, metas,
+                    assinatura e dados associados. Não pode ser desfeito.
+                  </p>
+                  <input
+                    type="text"
+                    value={textoExclusao}
+                    onChange={(e) => setTextoExclusao(e.target.value)}
+                    placeholder="Digite EXCLUIR MINHA CONTA"
+                    className="border border-gray-300 dark:border-[#1E293B] dark:bg-[#0F172A] rounded-lg px-3 py-2 text-sm w-full max-w-xs text-gray-900 dark:text-[#F8FAFC]"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setConfirmandoExclusao(false);
+                        setTextoExclusao("");
+                      }}
+                      className="text-sm text-gray-500 dark:text-gray-400 px-4 py-2 hover:bg-gray-100 dark:hover:bg-[#1E293B] rounded-lg"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={excluirConta}
+                      disabled={textoExclusao !== "EXCLUIR MINHA CONTA" || excluindo}
+                      className="text-sm bg-red-600 text-white rounded-lg px-4 py-2 disabled:opacity-40 hover:bg-red-700"
+                    >
+                      {excluindo ? "Excluindo..." : "Confirmar exclusão"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -281,6 +281,42 @@ const transactionsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
       }
     }
   );
+
+  // DELETE /transactions/reset - remove TODAS as transações do usuário
+  fastify.delete(
+    "/reset",
+    { preHandler: [authHook, requireActiveSubscription] },
+    async (request, reply) => {
+      try {
+        const userId = request.user!.id;
+
+        // Deletar todas as transações
+        const { error: txError } = await fastify.supabaseAdmin
+          .from("transactions")
+          .delete()
+          .eq("user_id", userId);
+
+        if (txError) {
+          fastify.log.error({ err: txError }, "Erro ao resetar transações");
+          return reply.status(500).send({ success: false, error: "Erro ao resetar transações" });
+        }
+
+        // Limpar forecasts
+        await fastify.supabaseAdmin
+          .from("forecasts")
+          .delete()
+          .eq("user_id", userId);
+
+        // Recalcular score
+        await recalcularScore(userId);
+
+        return reply.send({ success: true });
+      } catch (error) {
+        fastify.log.error({ err: error }, "Erro em DELETE /transactions/reset");
+        return reply.status(500).send({ success: false, error: "Erro ao resetar transações" });
+      }
+    }
+  );
 };
 
 export { transactionsRoutes };

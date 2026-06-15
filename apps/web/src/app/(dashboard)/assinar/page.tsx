@@ -1,8 +1,14 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, Loader2 } from 'lucide-react'
+import { Check, Loader2, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+
+const handleLogout = async () => {
+  const supabase = createClient()
+  await supabase.auth.signOut()
+  window.location.href = '/login'
+}
 
 export default function AssinarPage() {
   const [ciclo, setCiclo] = useState<'MONTHLY' | 'YEARLY'>('MONTHLY')
@@ -153,7 +159,14 @@ export default function AssinarPage() {
   const precoAnual = 970
 
   return (
-    <div className="max-w-md w-full">
+    <div className="max-w-md w-full relative">
+      <div className="absolute top-4 right-4">
+        <button onClick={handleLogout} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+          <LogOut className="w-3.5 h-3.5" />
+          Sair
+        </button>
+      </div>
+
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">
           Ative sua assinatura
