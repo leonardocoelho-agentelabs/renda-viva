@@ -39,6 +39,11 @@ const envSchema = z.object({
   // JWT
   JWT_SECRET: z.string().min(1, "JWT_SECRET é obrigatória").default("change-me-in-production"),
 
+  // Asaas (Assinaturas)
+  ASAAS_API_KEY: z.string(),
+  ASAAS_API_URL: z.string().default("https://api-sandbox.asaas.com/v3"),
+  ASAAS_WEBHOOK_TOKEN: z.string(),
+
   // Node env
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 });

@@ -27,6 +27,8 @@ import { insightsRoutes } from "./modules/insights/routes.js";
 import usersRoutes from "./modules/users/routes.js";
 import whatsappWebhookRoutes from "./modules/whatsapp/webhook.routes.js";
 import whatsappContactsRoutes from "./modules/whatsapp-contacts/routes.js";
+import subscriptionsRoutes from "./modules/subscriptions/routes.js";
+import asaasWebhookRoutes from "./modules/subscriptions/webhook.routes.js";
 
 async function buildApp() {
   const app = Fastify({
@@ -102,6 +104,8 @@ async function buildApp() {
   await app.register(usersRoutes, { prefix: "/api" });
   await app.register(whatsappWebhookRoutes, { prefix: "/api" });
   await app.register(whatsappContactsRoutes, { prefix: "/api" });
+  await app.register(subscriptionsRoutes, { prefix: "/api" });
+  await app.register(asaasWebhookRoutes, { prefix: "/api" });
 
   // Handler de erro global
   app.setErrorHandler((error: FastifyError, _request: FastifyRequest, reply: FastifyReply) => {
