@@ -10,6 +10,19 @@
   --border: #e5e7eb;
   --muted: #f3f4f6;
   --muted-foreground: #64748b;
+
+  /* Renda Viva brand palette */
+  --rv-forest: #1B4332;
+  --rv-green: #2D6A4F;
+  --rv-vivid: #52B788;
+  --rv-soft: #74C69D;
+  --rv-light: #95D5B2;
+  --rv-mint: #D8F3DC;
+  --rv-page: #F5F8F6;
+  --rv-card: #FFFFFF;
+  --rv-ink: #1B2A22;
+  --rv-muted: #5A6B62;
+  --rv-hairline: rgba(27, 67, 50, 0.10);
 }
 
 .dark {
@@ -30,7 +43,19 @@
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-rv-forest: var(--rv-forest);
+  --color-rv-green: var(--rv-green);
+  --color-rv-vivid: var(--rv-vivid);
+  --color-rv-soft: var(--rv-soft);
+  --color-rv-light: var(--rv-light);
+  --color-rv-mint: var(--rv-mint);
+  --color-rv-page: var(--rv-page);
+  --color-rv-card: var(--rv-card);
+  --color-rv-ink: var(--rv-ink);
+  --color-rv-muted: var(--rv-muted);
+  --color-rv-hairline: var(--rv-hairline);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-poppins: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
@@ -76,4 +101,44 @@ textarea {
   transition-property: color, background-color, border-color, box-shadow;
   transition-duration: 150ms;
   transition-timing-function: ease;
+}
+
+/* Scroll reveal animations */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }

@@ -1,0 +1,8 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="60" cy="60" r="50" fill="#2D6A4F"/>
+  <text x="60" y="60" dominant-baseline="central" text-anchor="middle" fill="#FFFFFF" font-size="62" font-family="Poppins, system-ui, sans-serif" font-weight="700" letter-spacing="-5">RV</text>
+  <g transform="translate(83, 30) rotate(33)">
+    <path d="M0 25 C-8 15, -8 5, 0 -5 C8 5, 8 15, 0 25 Z" fill="#52B788"/>
+    <line x1="0" y1="20" x2="0" y2="-3" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>
