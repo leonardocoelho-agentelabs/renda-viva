@@ -32,7 +32,7 @@ export async function enviarMensagemWhatsApp(
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      console.error("[WhatsApp] Erro ao enviar mensagem:", data);
+      console.error("[WhatsApp] Erro ao enviar mensagem:", JSON.stringify(data, null, 2));
       return false;
     }
 

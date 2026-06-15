@@ -1,5 +1,6 @@
 import { FastifyPluginAsync } from 'fastify'
 import { supabaseAdmin } from '../../plugins/supabase'
+import { normalizarTelefone } from '../../lib/phone'
 
 const usersRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get('/users/me', {
@@ -22,8 +23,7 @@ const usersRoutes: FastifyPluginAsync = async (fastify) => {
 
     const updates: Record<string, any> = {}
     if (body.telefone !== undefined) {
-      // Normalizar: manter apenas dígitos
-      updates.telefone = body.telefone.replace(/\D/g, '')
+      updates.telefone = normalizarTelefone(body.telefone)
     }
     if (body.renda_mensal !== undefined) updates.renda_mensal = body.renda_mensal
     if (body.perfil_risco !== undefined) updates.perfil_risco = body.perfil_risco
