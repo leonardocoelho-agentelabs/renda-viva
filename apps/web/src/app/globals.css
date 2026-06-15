@@ -3,15 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f8f9fb;
-  --foreground: #111827;
-  --card: #ffffff;
-  --card-foreground: #111827;
-  --border: #e5e7eb;
-  --muted: #f3f4f6;
-  --muted-foreground: #64748b;
-
-  /* Renda Viva brand palette */
+  /* Renda Viva brand palette - Light Mode */
   --rv-forest: #1B4332;
   --rv-green: #2D6A4F;
   --rv-vivid: #52B788;
@@ -23,16 +15,42 @@
   --rv-ink: #1B2A22;
   --rv-muted: #5A6B62;
   --rv-hairline: rgba(27, 67, 50, 0.10);
+
+  /* Semantic tokens - Light */
+  --background: var(--rv-page);
+  --foreground: var(--rv-ink);
+  --card: var(--rv-card);
+  --card-foreground: var(--rv-ink);
+  --border: var(--rv-hairline);
+  --muted: var(--rv-mint);
+  --muted-foreground: var(--rv-muted);
+  --primary: var(--rv-green);
+  --primary-foreground: #ffffff;
+  --accent: var(--rv-vivid);
+  --accent-foreground: var(--rv-forest);
 }
 
 .dark {
-  --background: #0F172A;
-  --foreground: #F8FAFC;
-  --card: #111827;
-  --card-foreground: #F8FAFC;
-  --border: #1E293B;
-  --muted: #1E293B;
-  --muted-foreground: #94A3B8;
+  /* Renda Viva brand palette - Dark Mode */
+  --rv-dark-bg: #0E1F18;
+  --rv-dark-card: #16291F;
+  --rv-dark-ink: #EAF4EF;
+  --rv-dark-muted: #9CB8AA;
+  --rv-dark-border: rgba(149, 213, 178, 0.12);
+  --rv-dark-active-bg: rgba(82, 183, 136, 0.15);
+
+  /* Semantic tokens - Dark */
+  --background: var(--rv-dark-bg);
+  --foreground: var(--rv-dark-ink);
+  --card: var(--rv-dark-card);
+  --card-foreground: var(--rv-dark-ink);
+  --border: var(--rv-dark-border);
+  --muted: var(--rv-dark-card);
+  --muted-foreground: var(--rv-dark-muted);
+  --primary: var(--rv-vivid);
+  --primary-foreground: var(--rv-dark-bg);
+  --accent: var(--rv-vivid);
+  --accent-foreground: var(--rv-dark-bg);
 }
 
 @theme inline {
@@ -43,6 +61,12 @@
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  /* Renda Viva brand colors */
   --color-rv-forest: var(--rv-forest);
   --color-rv-green: var(--rv-green);
   --color-rv-vivid: var(--rv-vivid);
@@ -54,8 +78,16 @@
   --color-rv-ink: var(--rv-ink);
   --color-rv-muted: var(--rv-muted);
   --color-rv-hairline: var(--rv-hairline);
+  --color-rv-dark-bg: var(--rv-dark-bg);
+  --color-rv-dark-card: var(--rv-dark-card);
+  --color-rv-dark-ink: var(--rv-dark-ink);
+  --color-rv-dark-muted: var(--rv-dark-muted);
+  --color-rv-dark-border: var(--rv-dark-border);
+  --color-rv-dark-active-bg: var(--rv-dark-active-bg);
+
+  /* Typography */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-poppins: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {

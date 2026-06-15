@@ -7,6 +7,7 @@ import { Home, ArrowLeftRight, PieChart, Target, Heart, FileText, TrendingUp, Bu
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import Logo from "@/components/brand/Logo";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -59,22 +60,20 @@ export function Sidebar({ onClose }: SidebarProps) {
   const inicial = nome.charAt(0).toUpperCase();
 
   return (
-    <aside className="w-60 h-screen bg-[#0F1117] flex flex-col flex-shrink-0">
+    <aside className="w-60 h-screen bg-rv-dark-card flex flex-col flex-shrink-0">
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-white/10">
+      <div className="px-6 py-5 border-b border-rv-dark-border">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-sm">RV</span>
-          </div>
+          <Logo size={32} variant="dark" showText={false} />
           <div className="min-w-0 flex-1">
-            <span className="text-white font-semibold text-sm block leading-tight">Renda Viva</span>
-            <p className="text-white/40 text-xs leading-tight">Gestão inteligente</p>
+            <span className="text-rv-dark-ink font-heading font-semibold text-sm block leading-tight">Renda Viva</span>
+            <p className="text-rv-dark-muted text-xs leading-tight">Gestão inteligente</p>
           </div>
           {onClose && (
             <button
               onClick={onClose}
               aria-label="Fechar menu"
-              className="text-white/50 hover:text-white flex-shrink-0"
+              className="text-rv-dark-muted hover:text-rv-dark-ink flex-shrink-0"
             >
               <X className="h-5 w-5" />
             </button>
@@ -92,13 +91,13 @@ export function Sidebar({ onClose }: SidebarProps) {
               href={item.href}
               onClick={onClose}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium border-l-2",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium border-l-2 font-heading",
                 isActive
-                  ? "bg-green-600/20 text-green-400 border-green-500"
-                  : "text-white/60 hover:bg-white/5 hover:text-white border-transparent"
+                  ? "bg-rv-dark-active-bg text-rv-vivid border-rv-vivid"
+                  : "text-rv-dark-muted hover:bg-white/5 hover:text-rv-dark-ink border-transparent"
               )}
             >
-              <item.icon className={cn("h-[18px] w-[18px]", isActive ? "text-green-400" : "text-white/50")} />
+              <item.icon className={cn("h-[18px] w-[18px]", isActive ? "text-rv-vivid" : "text-rv-dark-muted")} />
               {item.label}
             </Link>
           );
@@ -106,18 +105,18 @@ export function Sidebar({ onClose }: SidebarProps) {
       </nav>
 
       {/* Footer com usuário e toggle de tema */}
-      <div className="px-4 py-4 border-t border-white/10">
+      <div className="px-4 py-4 border-t border-rv-dark-border">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-rv-green rounded-full flex items-center justify-center flex-shrink-0">
             <span className="text-white text-xs font-medium">{inicial}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-white text-xs font-medium truncate">{nome}</p>
-            <p className="text-white/40 text-xs truncate">{email}</p>
+            <p className="text-rv-dark-ink text-xs font-medium truncate">{nome}</p>
+            <p className="text-rv-dark-muted text-xs truncate">{email}</p>
           </div>
           <button
             onClick={toggleTheme}
-            className="text-white/40 hover:text-white/80 flex-shrink-0 p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+            className="text-rv-dark-muted hover:text-rv-dark-ink flex-shrink-0 p-1.5 rounded-lg hover:bg-white/5 transition-colors"
             title={theme === 'light' ? 'Modo escuro' : 'Modo claro'}
           >
             {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
@@ -125,7 +124,7 @@ export function Sidebar({ onClose }: SidebarProps) {
           <button
             onClick={handleLogout}
             aria-label="Sair"
-            className="text-white/40 hover:text-white/80 flex-shrink-0"
+            className="text-rv-dark-muted hover:text-rv-dark-ink flex-shrink-0"
           >
             <LogOut className="h-[18px] w-[18px]" />
           </button>
