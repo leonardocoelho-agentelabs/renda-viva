@@ -125,16 +125,6 @@ export default async function DashboardPage() {
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value);
 
-  // Previsão de saldo dos próximos 30 dias
-  const hojeStr = hoje.toISOString().split("T")[0];
-  const { data: previsoes } = await supabase
-    .from("forecasts")
-    .select("data_prevista, saldo_projetado, confianca")
-    .eq("user_id", user.id)
-    .gte("data_prevista", hojeStr)
-    .order("data_prevista", { ascending: true })
-    .limit(30);
-
   return (
     <DashboardLayout>
       <DashboardHeader
@@ -150,31 +140,23 @@ export default async function DashboardPage() {
           value={formatCurrency(saldo)}
           variacao={calcularVariacao(saldo, saldoAnterior)}
           icon={Wallet}
-          iconBg="bg-green-50"
-          iconColor="text-green-600"
         />
         <SummaryCard
           label="Total de gastos"
           value={formatCurrency(totalGastos)}
           variacao={calcularVariacao(totalGastos, gastosAnterior)}
           icon={TrendingDown}
-          iconBg="bg-red-50"
-          iconColor="text-red-500"
           variacaoInvertida
         />
         <SummaryCard
           label="Score de saúde"
           value={`${scoreSaude}/100`}
           icon={Heart}
-          iconBg="bg-pink-50"
-          iconColor="text-pink-500"
         />
         <SummaryCard
           label="Transações"
           value={`${transactions?.length || 0}`}
           icon={ArrowLeftRight}
-          iconBg="bg-blue-50"
-          iconColor="text-blue-600"
         />
       </div>
 

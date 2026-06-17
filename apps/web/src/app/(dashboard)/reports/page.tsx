@@ -224,14 +224,14 @@ export default function ReportsPage() {
     <DashboardLayout>
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">Relatórios</h1>
-          <p className="text-gray-500 dark:text-[#94A3B8]">Seu resumo financeiro mensal, narrado pelo Viva</p>
+          <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-rv-dark-ink">Relatórios</h1>
+          <p className="text-rv-muted dark:text-rv-dark-muted">Seu resumo financeiro mensal, narrado pelo Viva</p>
         </div>
         {reports.length > 0 && (
           <button
             onClick={handleGenerate}
             disabled={generating}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-rv-green dark:bg-rv-vivid text-white text-sm font-medium hover:bg-rv-forest dark:hover:bg-rv-vivid/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Sparkles className="h-4 w-4" />
             {generating ? "Gerando..." : "Gerar Relatório do Mês"}
@@ -274,13 +274,13 @@ export default function ReportsPage() {
             <button
               key={r.mes_ano}
               onClick={() => handleOpen(r.mes_ano)}
-              className="text-left bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm p-5 hover:shadow-md transition-shadow"
+              className="text-left bg-white dark:bg-rv-dark-card rounded-xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-5 hover:shadow-md transition-shadow"
             >
-              <div className="w-10 h-10 rounded-lg bg-green-50 dark:bg-green-900/20 flex items-center justify-center mb-3">
-                <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <div className="w-10 h-10 rounded-lg bg-rv-mint dark:bg-rv-green/20 flex items-center justify-center mb-3">
+                <FileText className="h-5 w-5 text-rv-green dark:text-rv-vivid" />
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-[#F8FAFC]">{formatMesAno(r.mes_ano)}</h3>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              <h3 className="font-semibold text-rv-ink dark:text-rv-dark-ink">{formatMesAno(r.mes_ano)}</h3>
+              <p className="text-xs text-rv-muted dark:text-rv-dark-muted mt-1">
                 {r.gerado_em
                   ? `Gerado em ${new Date(r.gerado_em).toLocaleDateString("pt-BR")}`
                   : "Relatório disponível"}
@@ -293,17 +293,17 @@ export default function ReportsPage() {
       {/* Modal do relatório */}
       {openReport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white dark:bg-[#111827] rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-[#1E293B]">
+          <div className="bg-white dark:bg-rv-dark-card rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-rv-forest/10 dark:border-rv-light/10">
               <div className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-[#F8FAFC]">
+                <FileText className="h-5 w-5 text-rv-green dark:text-rv-vivid" />
+                <h2 className="font-[var(--font-poppins)] font-semibold text-lg text-rv-ink dark:text-rv-dark-ink">
                   {formatMesAno(openReport.mes_ano)}
                 </h2>
               </div>
               <button
                 onClick={() => setOpenReport(null)}
-                className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#1E293B] text-gray-400 dark:text-gray-500"
+                className="p-1 rounded hover:bg-rv-mint/30 dark:hover:bg-rv-dark-active-bg text-rv-muted dark:text-rv-dark-muted"
                 aria-label="Fechar"
               >
                 <X className="h-5 w-5" />
@@ -319,17 +319,17 @@ export default function ReportsPage() {
               )}
             </div>
             {openReport.relatorio && (
-              <div className="flex gap-3 justify-end px-6 py-4 border-t border-gray-100 dark:border-[#1E293B]">
+              <div className="flex gap-3 justify-end px-6 py-4 border-t border-rv-forest/10 dark:border-rv-light/10">
                 <button
                   onClick={() => baixarRelatorioPDF(openReport.relatorio, openReport.mes_ano)}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-rv-green dark:bg-rv-vivid text-white rounded-lg text-sm font-medium hover:bg-rv-forest dark:hover:bg-rv-vivid/90 transition-colors"
                 >
                   <Download className="w-4 h-4" />
                   Baixar PDF
                 </button>
                 <button
                   onClick={() => setOpenReport(null)}
-                  className="px-4 py-2 border border-gray-200 dark:border-[#1E293B] text-gray-600 dark:text-gray-400 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-[#1E293B] transition-colors"
+                  className="px-4 py-2 border border-rv-forest/10 dark:border-rv-light/10 text-rv-muted dark:text-rv-dark-muted rounded-lg text-sm font-medium hover:bg-rv-mint/30 dark:hover:bg-rv-dark-card transition-colors"
                 >
                   Fechar
                 </button>

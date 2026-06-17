@@ -37,6 +37,7 @@
   --rv-dark-ink: #EAF4EF;
   --rv-dark-muted: #9CB8AA;
   --rv-dark-border: rgba(149, 213, 178, 0.12);
+  --rv-dark-hairline: rgba(149, 213, 178, 0.10);
   --rv-dark-active-bg: rgba(82, 183, 136, 0.15);
 
   /* Semantic tokens - Dark */
@@ -83,6 +84,7 @@
   --color-rv-dark-ink: var(--rv-dark-ink);
   --color-rv-dark-muted: var(--rv-dark-muted);
   --color-rv-dark-border: var(--rv-dark-border);
+  --color-rv-dark-hairline: var(--rv-dark-hairline);
   --color-rv-dark-active-bg: var(--rv-dark-active-bg);
 
   /* Typography */

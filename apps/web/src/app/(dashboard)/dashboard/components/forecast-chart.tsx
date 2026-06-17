@@ -71,25 +71,29 @@ export function ForecastChart() {
   };
 
   const isDark = theme === 'dark';
-  const gridColor = isDark ? '#1E293B' : '#F3F4F6';
-  const axisColor = isDark ? '#64748B' : '#9CA3AF';
+  const gridColor = isDark ? 'rgba(149, 213, 178, 0.08)' : '#F3F4F6';
+  const axisColor = isDark ? '#9CB8AA' : '#9CA3AF';
+  const strokeColor = '#52B788'; // rv-vivid
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-[#111827] rounded-2xl border border-gray-100 dark:border-[#1E293B] shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
-        <div className="h-64 bg-gray-50 dark:bg-[#1E293B] rounded-xl animate-pulse" />
+      <div className="bg-white dark:bg-rv-dark-card rounded-2xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-6">
+        <div className="h-64 bg-rv-mint/50 dark:bg-rv-dark-active-bg rounded-xl animate-pulse" />
       </div>
     );
   }
 
   if (pontos.length === 0) {
     return (
-      <div className="bg-white dark:bg-[#111827] rounded-2xl border border-gray-100 dark:border-[#1E293B] shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
+      <div className="bg-white dark:bg-rv-dark-card rounded-2xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-[#F8FAFC]">Evolução do saldo</h3>
+          <div>
+            <h3 className="font-[var(--font-poppins)] font-semibold text-rv-ink dark:text-rv-dark-ink">Previsão de saldo</h3>
+            <p className="text-xs text-rv-muted dark:text-rv-dark-muted mt-0.5">Baseado no seu histórico financeiro</p>
+          </div>
           <PeriodoSelector periodo={periodo} setPeriodo={setPeriodo} />
         </div>
-        <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-12">Sem dados suficientes para este período</p>
+        <p className="text-sm text-rv-muted dark:text-rv-dark-muted text-center py-12">Sem dados suficientes para este período</p>
       </div>
     );
   }
@@ -109,11 +113,11 @@ export function ForecastChart() {
   const isProjecao = periodo === '7d' || periodo === '30d';
 
   return (
-    <div className="bg-white dark:bg-[#111827] rounded-2xl border border-gray-100 dark:border-[#1E293B] shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
+    <div className="bg-white dark:bg-rv-dark-card rounded-2xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-6">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-[#F8FAFC]">{tituloPeriodo}</h3>
-          <p className="text-xs text-gray-500 dark:text-[#94A3B8] mt-0.5">
+          <h3 className="font-[var(--font-poppins)] font-semibold text-rv-ink dark:text-rv-dark-ink">{tituloPeriodo}</h3>
+          <p className="text-xs text-rv-muted dark:text-rv-dark-muted mt-0.5">
             {isProjecao ? 'Baseado no seu histórico financeiro' : 'Saldo acumulado real'}
           </p>
         </div>
@@ -124,8 +128,8 @@ export function ForecastChart() {
         <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
           <defs>
             <linearGradient id="saldoGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#16a34a" stopOpacity={0.25} />
-              <stop offset="100%" stopColor="#16a34a" stopOpacity={0} />
+              <stop offset="0%" stopColor="#52B788" stopOpacity={isDark ? 0.3 : 0.25} />
+              <stop offset="100%" stopColor="#52B788" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
@@ -146,12 +150,12 @@ export function ForecastChart() {
           />
           <Tooltip
             formatter={(value: number) => [`R$ ${value.toFixed(2)}`, 'Saldo']}
-            labelStyle={{ fontSize: 12, fontWeight: 500, color: isDark ? '#F8FAFC' : '#111827' }}
+            labelStyle={{ fontSize: 12, fontWeight: 500, color: isDark ? '#EAF4EF' : '#1B2A22' }}
             contentStyle={{
               borderRadius: '12px',
-              border: isDark ? '1px solid #1E293B' : '1px solid #E5E7EB',
+              border: isDark ? '1px solid rgba(149, 213, 178, 0.10)' : '1px solid rgba(27, 67, 50, 0.10)',
               fontSize: 12,
-              backgroundColor: isDark ? '#111827' : '#ffffff',
+              backgroundColor: isDark ? '#16291F' : '#ffffff',
               boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
             }}
           />
@@ -161,25 +165,25 @@ export function ForecastChart() {
           <Area
             type="monotone"
             dataKey="saldo"
-            stroke="#16a34a"
+            stroke={strokeColor}
             strokeWidth={2.5}
             fill="url(#saldoGradient)"
             dot={false}
-            activeDot={{ r: 5, fill: '#16a34a', strokeWidth: 2, stroke: '#fff' }}
+            activeDot={{ r: 5, fill: strokeColor, strokeWidth: 2, stroke: '#fff' }}
           />
           {marcadores.map((m, i) => {
             const ponto = chartData.find((c) => c.dataRaw === m.data);
             if (!ponto) return null;
-            const cor = m.tipo === 'negativo' ? '#EF4444' : m.tipo === 'positivo' ? '#16a34a' : '#6B7280';
+            const cor = m.tipo === 'negativo' ? '#EF4444' : m.tipo === 'positivo' ? '#52B788' : '#6B7280';
             return <ReferenceDot key={i} x={ponto.data} y={ponto.saldo} r={5} fill={cor} stroke="#fff" strokeWidth={2} />;
           })}
         </AreaChart>
       </ResponsiveContainer>
 
       {marcadores.length > 0 && (
-        <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-[#1E293B]">
+        <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-rv-forest/10 dark:border-rv-light/10">
           {marcadores.map((m, i) => {
-            const cor = m.tipo === 'negativo' ? 'text-red-600 dark:text-red-400' : m.tipo === 'positivo' ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400';
+            const cor = m.tipo === 'negativo' ? 'text-red-500 dark:text-red-400' : m.tipo === 'positivo' ? 'text-rv-green dark:text-rv-vivid' : 'text-rv-muted dark:text-rv-dark-muted';
             const dataF = new Date(m.data + 'T00:00:00').toLocaleDateString('pt-BR', {
               day: '2-digit',
               month: 'short',
@@ -188,11 +192,11 @@ export function ForecastChart() {
               <div key={i} className="flex items-center gap-1.5 text-xs">
                 <span
                   className={`w-2 h-2 rounded-full ${
-                    m.tipo === 'negativo' ? 'bg-red-500' : m.tipo === 'positivo' ? 'bg-green-500' : 'bg-gray-400'
+                    m.tipo === 'negativo' ? 'bg-red-500' : m.tipo === 'positivo' ? 'bg-rv-green dark:bg-rv-vivid' : 'bg-rv-muted dark:bg-rv-dark-muted'
                   }`}
                 />
                 <span className={`font-medium ${cor}`}>{m.label}</span>
-                <span className="text-gray-400 dark:text-gray-500">· {dataF}</span>
+                <span className="text-rv-muted/70 dark:text-rv-dark-muted">· {dataF}</span>
               </div>
             );
           })}
@@ -209,16 +213,19 @@ function PeriodoSelector({
   periodo: Periodo;
   setPeriodo: (p: Periodo) => void;
 }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   return (
-    <div className="flex bg-gray-100 dark:bg-[#1E293B] rounded-lg p-1">
+    <div className={`flex rounded-md p-1 ${isDark ? 'bg-rv-dark-card' : 'bg-rv-mint/50'}`}>
       {PERIODOS.map((p) => (
         <button
           key={p.valor}
           onClick={() => setPeriodo(p.valor)}
           className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
             periodo === p.valor
-              ? 'bg-white dark:bg-[#111827] text-gray-900 dark:text-[#F8FAFC] shadow-sm'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              ? `${isDark ? 'bg-rv-vivid text-rv-dark-bg' : 'bg-rv-forest text-white'} shadow-sm`
+              : `${isDark ? 'text-rv-dark-muted hover:text-rv-dark-ink' : 'text-rv-muted hover:text-rv-ink'}`
           }`}
         >
           {p.label}

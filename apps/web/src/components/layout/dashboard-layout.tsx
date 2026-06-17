@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode, useEffect } from "react";
 import { Menu } from "lucide-react";
-import { Sidebar } from "./Sidebar";
+import { Sidebar } from "./sidebar";
 import { MobileNav } from "./mobile-nav";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
@@ -39,7 +39,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-rv-page dark:bg-rv-dark-bg">
+    <div className="flex h-screen overflow-hidden bg-rv-page dark:bg-rv-dark-bg">
       {/* Sidebar desktop — fixa */}
       <div className="hidden md:block fixed inset-y-0 left-0 z-30">
         <Sidebar />
@@ -59,26 +59,26 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       )}
 
       {/* Conteúdo principal */}
-      <div className="md:pl-60">
+      <div className="md:pl-60 flex-1 flex flex-col overflow-hidden">
         {/* Header mobile */}
-        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-rv-card dark:bg-rv-dark-card border-b border-rv-hairline dark:border-rv-dark-border sticky top-0 z-40">
+        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-rv-card dark:bg-rv-dark-card border-b border-rv-hairline dark:border-rv-dark-hairline sticky top-0 z-40">
           <button
             onClick={() => setSidebarOpen(true)}
             aria-label="Abrir menu"
-            className="p-2 -ml-2 rounded-lg text-rv-muted dark:text-rv-dark-muted hover:bg-rv-mint dark:hover:bg-rv-dark-active-bg"
+            className="p-2 -ml-2 rounded-lg text-rv-muted dark:text-rv-dark-muted hover:bg-rv-mint dark:hover:bg-rv-dark-active-bg transition-colors"
           >
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-rv-green rounded flex items-center justify-center">
-              <span className="text-white font-bold text-[10px]">RV</span>
+            <div className="w-6 h-6 bg-rv-green dark:bg-rv-vivid rounded flex items-center justify-center">
+              <span className="text-white font-bold text-[10px] font-[var(--font-poppins)]">RV</span>
             </div>
-            <span className="font-heading font-semibold text-rv-ink dark:text-rv-dark-ink text-sm">Renda Viva</span>
+            <span className="font-[var(--font-poppins)] font-semibold text-rv-ink dark:text-rv-dark-ink text-sm">Renda Viva</span>
           </div>
           <div className="w-9" />
         </div>
 
-        <main className="p-4 md:p-8 pb-24 md:pb-8 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8">
           <div className="max-w-6xl mx-auto">{children}</div>
         </main>
       </div>

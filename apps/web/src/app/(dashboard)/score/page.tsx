@@ -149,13 +149,13 @@ export default function ScorePage() {
     <DashboardLayout>
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">Score de Saúde Financeira</h1>
-          <p className="text-gray-500 dark:text-[#94A3B8]">Uma nota de 0 a 100 sobre a sua saúde financeira</p>
+          <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-rv-dark-ink">Score de Saúde Financeira</h1>
+          <p className="text-rv-muted dark:text-rv-dark-muted">Uma nota de 0 a 100 sobre a sua saúde financeira</p>
         </div>
         <button
           onClick={handleRecalculate}
           disabled={recalculating || loading}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-rv-green dark:bg-rv-vivid text-white text-sm font-medium hover:bg-rv-forest dark:hover:bg-rv-vivid/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <RefreshCw className={cn("h-4 w-4", recalculating && "animate-spin")} />
           {recalculating ? "Recalculando..." : "Recalcular Score"}
@@ -170,13 +170,13 @@ export default function ScorePage() {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="h-10 w-10 rounded-full border-2 border-green-500 border-t-transparent animate-spin mb-4" />
-          <p className="text-gray-400">Calculando seu score...</p>
+          <div className="h-10 w-10 rounded-full border-2 border-rv-green dark:border-rv-vivid border-t-transparent animate-spin mb-4" />
+          <p className="text-rv-muted">Calculando seu score...</p>
         </div>
       ) : data ? (
         <div className="space-y-6">
           {/* Score geral */}
-          <div className="bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm p-6 flex flex-col sm:flex-row items-center gap-6">
+          <div className="bg-white dark:bg-rv-dark-card rounded-xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-6 flex flex-col sm:flex-row items-center gap-6">
             <ScoreRing score={data.score} />
             <div className="text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
@@ -185,7 +185,7 @@ export default function ScorePage() {
                   {scoreLabel(data.score)}
                 </span>
               </div>
-              <p className="text-sm text-gray-500 dark:text-[#94A3B8] max-w-md">
+              <p className="text-sm text-rv-muted dark:text-rv-dark-muted max-w-md">
                 Seu score é calculado a partir de 6 dimensões da sua vida financeira.
                 Quanto mais completo e saudável seu histórico, maior a nota.
               </p>
@@ -212,22 +212,22 @@ export default function ScorePage() {
               return (
                 <div
                   key={dim.nome}
-                  className="bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm p-5"
+                  className="bg-white dark:bg-rv-dark-card rounded-xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-5"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-gray-900 dark:text-[#F8FAFC]">{dim.nome}</h3>
-                    <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+                    <h3 className="font-semibold text-rv-ink dark:text-rv-dark-ink">{dim.nome}</h3>
+                    <span className="text-sm font-semibold text-rv-muted dark:text-rv-dark-muted">
                       {dim.pontos}
-                      <span className="text-gray-400 dark:text-gray-500">/{dim.max}</span>
+                      <span className="text-rv-muted/70 dark:text-rv-dark-muted">/{dim.max}</span>
                     </span>
                   </div>
-                  <div className="h-1.5 w-full rounded-full bg-gray-100 dark:bg-[#1E293B] overflow-hidden mb-3">
+                  <div className="h-1.5 w-full rounded-full bg-rv-mint/50 dark:bg-rv-dark-active-bg overflow-hidden mb-3">
                     <div
                       className={cn("h-full rounded-full transition-all", barColor(pct))}
                       style={{ width: `${pct * 100}%` }}
                     />
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-[#94A3B8]">{dim.descricao}</p>
+                  <p className="text-sm text-rv-muted dark:text-rv-dark-muted">{dim.descricao}</p>
                 </div>
               );
             })}

@@ -172,14 +172,14 @@ export default function BudgetPage() {
     <DashboardLayout>
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">Orçamentos</h1>
-          <p className="text-gray-500 dark:text-[#94A3B8]">Gerencie seus limites de gastos por categoria</p>
+          <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-rv-dark-ink">Orçamentos</h1>
+          <p className="text-rv-muted dark:text-rv-dark-muted">Gerencie seus limites de gastos por categoria</p>
         </div>
         {budgets.length > 0 && (
           <button
             onClick={handleGenerate}
             disabled={generating}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-rv-green dark:bg-rv-vivid text-white text-sm font-medium hover:bg-rv-forest dark:hover:bg-rv-vivid/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Sparkles className="h-4 w-4" />
             {generating ? "Gerando..." : "Gerar Orçamento do Mês"}
@@ -220,23 +220,23 @@ export default function BudgetPage() {
       ) : (
         <div className="space-y-6">
           {/* Resumo geral */}
-          <div className="bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm p-6">
+          <div className="bg-white dark:bg-rv-dark-card rounded-xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-6">
             <div className="flex items-end justify-between mb-3">
               <div>
-                <p className="text-sm text-gray-500 dark:text-[#94A3B8]">Total gasto</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">
+                <p className="text-sm text-rv-muted dark:text-rv-dark-muted">Total gasto</p>
+                <p className="text-2xl font-bold text-rv-ink dark:text-rv-dark-ink font-[var(--font-poppins)]">
                   {formatCurrency(totalGasto)}
-                  <span className="text-base font-normal text-gray-400 dark:text-gray-500">
+                  <span className="text-base font-normal text-rv-muted/70 dark:text-rv-dark-muted">
                     {" "}
                     de {formatCurrency(totalOrcado)}
                   </span>
                 </p>
               </div>
-              <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+              <span className="text-lg font-semibold text-rv-muted dark:text-rv-dark-muted">
                 {percentualGeral.toFixed(0)}%
               </span>
             </div>
-            <div className="h-3 w-full rounded-full bg-gray-100 dark:bg-[#1E293B] overflow-hidden">
+            <div className="h-3 w-full rounded-full bg-rv-mint/50 dark:bg-rv-dark-active-bg overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all ${corBarra(percentualGeral)}`}
                 style={{ width: `${Math.min(percentualGeral, 100)}%` }}
@@ -254,11 +254,11 @@ export default function BudgetPage() {
               return (
                 <div
                   key={b.id}
-                  className="bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm p-5"
+                  className="bg-white dark:bg-rv-dark-card rounded-xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-5"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-gray-900 dark:text-[#F8FAFC]">{b.categoria}</h3>
+                      <h3 className="font-semibold text-rv-ink dark:text-rv-dark-ink">{b.categoria}</h3>
                       <span
                         className={`text-xs font-medium px-2 py-0.5 rounded-full ${TIPO_BADGE[tipo]}`}
                       >
@@ -270,12 +270,12 @@ export default function BudgetPage() {
                         </span>
                       )}
                     </div>
-                    <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+                    <span className="text-sm font-semibold text-rv-muted dark:text-rv-dark-muted">
                       {percentual.toFixed(0)}%
                     </span>
                   </div>
 
-                  <div className="h-2.5 w-full rounded-full bg-gray-100 dark:bg-[#1E293B] overflow-hidden mb-2">
+                  <div className="h-2.5 w-full rounded-full bg-rv-mint/50 dark:bg-rv-dark-active-bg overflow-hidden mb-2">
                     <div
                       className={`h-full rounded-full transition-all ${corBarra(percentual)}`}
                       style={{ width: `${Math.min(percentual, 100)}%` }}
@@ -324,7 +324,7 @@ export default function BudgetPage() {
                       </button>
                       <button
                         onClick={() => startEdit(b)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-[#1E293B] text-gray-600 dark:text-gray-400 text-xs font-medium hover:bg-gray-50 dark:hover:bg-[#1E293B] transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rv-forest/10 dark:border-rv-light/10 text-rv-muted dark:text-rv-dark-muted text-xs font-medium hover:bg-rv-mint/30 dark:hover:bg-rv-dark-card transition-colors"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                         Editar limite

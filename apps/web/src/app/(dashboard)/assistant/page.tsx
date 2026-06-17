@@ -7,7 +7,7 @@ import { Send } from "lucide-react";
 
 function VivaAvatar() {
   return (
-    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 flex items-center justify-center">
+    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-rv-green dark:bg-rv-vivid flex items-center justify-center">
       <span className="text-white text-sm font-semibold">V</span>
     </div>
   );
@@ -139,13 +139,13 @@ export default function AssistantPage() {
   return (
     <DashboardLayout>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC]">Assistente</h1>
-        <p className="text-gray-500 dark:text-[#94A3B8]">Tire dúvidas sobre suas finanças com IA</p>
+        <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-rv-dark-ink">Assistente</h1>
+        <p className="text-rv-muted dark:text-rv-dark-muted">Tire dúvidas sobre suas finanças com IA</p>
       </div>
 
-      <div className="flex flex-col bg-white dark:bg-[#111827] rounded-xl border border-gray-100 dark:border-[#1E293B] shadow-sm h-[calc(100dvh-240px)] md:h-[calc(100vh-220px)] overflow-hidden">
+      <div className="flex flex-col bg-white dark:bg-rv-dark-card rounded-xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm h-[calc(100dvh-240px)] md:h-[calc(100vh-220px)] overflow-hidden">
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 dark:bg-[#0F172A]">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-rv-mint/30 dark:bg-rv-dark-active-bg">
           {messages.map((msg, i) => (
             <div
               key={i}
@@ -155,8 +155,8 @@ export default function AssistantPage() {
               <div
                 className={`max-w-[70%] px-4 py-2.5 rounded-2xl text-sm ${
                   msg.role === "user"
-                    ? "bg-green-600 text-white rounded-br-sm whitespace-pre-wrap"
-                    : "bg-white dark:bg-[#111827] border border-gray-100 dark:border-[#1E293B] shadow-sm text-gray-800 dark:text-gray-200 rounded-bl-sm"
+                    ? "bg-rv-green dark:bg-rv-vivid text-white rounded-br-sm whitespace-pre-wrap"
+                    : "bg-white dark:bg-rv-dark-card border border-rv-forest/10 dark:border-rv-light/10 shadow-sm text-rv-ink dark:text-rv-dark-ink rounded-bl-sm"
                 }`}
               >
                 {msg.role === "user" ? msg.content : formatMessage(msg.content)}
@@ -166,7 +166,7 @@ export default function AssistantPage() {
           {loading && (
             <div className="flex gap-3 justify-start">
               <VivaAvatar />
-              <div className="max-w-[70%] px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm bg-white dark:bg-[#111827] border border-gray-100 dark:border-[#1E293B] shadow-sm text-gray-500 dark:text-gray-400">
+              <div className="max-w-[70%] px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm bg-white dark:bg-rv-dark-card border border-rv-forest/10 dark:border-rv-light/10 shadow-sm text-rv-muted dark:text-rv-dark-muted">
                 Viva está pensando...
               </div>
             </div>
@@ -175,7 +175,7 @@ export default function AssistantPage() {
         </div>
 
         {/* Input */}
-        <div className="border-t border-gray-200 dark:border-[#1E293B] p-4 flex gap-3">
+        <div className="border-t border-rv-forest/10 dark:border-rv-light/10 p-4 flex gap-3">
           <input
             type="text"
             value={input}
@@ -183,12 +183,12 @@ export default function AssistantPage() {
             onKeyDown={handleKeyDown}
             placeholder="Digite sua mensagem..."
             disabled={loading}
-            className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-[#1E293B] rounded-lg text-sm text-gray-900 dark:text-[#F8FAFC] dark:bg-[#0F172A] placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-60"
+            className="flex-1 px-4 py-2.5 border border-rv-forest/10 dark:border-rv-light/10 rounded-lg text-sm text-rv-ink dark:text-rv-dark-ink dark:bg-rv-dark-card placeholder:text-rv-muted/70 dark:placeholder:text-rv-dark-muted focus:outline-none focus:ring-2 focus:ring-rv-green focus:border-rv-green disabled:opacity-60"
           />
           <button
             onClick={sendMessage}
             disabled={loading || !input.trim()}
-            className="px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2.5 bg-rv-green dark:bg-rv-vivid text-white rounded-lg hover:bg-rv-forest dark:hover:bg-rv-vivid/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <Send className="h-4 w-4" />
           </button>
