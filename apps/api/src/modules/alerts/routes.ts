@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
 import { authHook, requireActiveSubscription } from "../../plugins/auth.js";
-import { env } from "../../env.js";
+import { supabaseAdmin } from "../../plugins/supabase.js";
 import { enviarMensagemWhatsApp } from "../../services/whatsapp.service.js";
 import {
   verificarAlertasOrcamento,
@@ -8,21 +8,44 @@ import {
   enviarResumoSemanal,
 } from "../../services/alerts.service.js";
 
+const API_SECRET = process.env.API_SECRET || "internal-secret-key";
+
 function autorizadoInterno(secret: unknown): boolean {
-  return secret === env.API_SECRET;
+  return secret === API_SECRET;
+}
+
+async function getNumerosWhatsAppUsuario(userId: string): Promise<string[]> {
+  const { data: contatos } = await supabaseAdmin
+    .from('whatsapp_contacts')
+    .select('telefone')
+    .eq('user_id', userId)
+
+  if (!contatos || contatos.length === 0) return [];
+
+  return contatos.map(c => `55${c.telefone}`);
 }
 
 const alertsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
-  // POST /alerts/test - Mensagem de teste para validar a integração
+  // POST /alerts/test - Mensagem de teste para validar a integração com os números do usuário
   fastify.post(
     "/test",
     { preHandler: [authHook, requireActiveSubscription] },
-    async (_request, reply) => {
-      const ok = await enviarMensagemWhatsApp(
-        env.ALERTS_TEST_NUMBER,
-        "🎉 *Renda Viva* — Integração WhatsApp funcionando! Seus alertas financeiros estão ativos."
+    async (request, reply) => {
+      const userId = request.user!.id;
+      const numeros = await getNumerosWhatsAppUsuario(userId);
+
+      if (numeros.length === 0) {
+        return reply.send({ enviado: false, erro: "Nenhum número WhatsApp cadastrado" });
+      }
+
+      const mensagem = "🎉 *Renda Viva* — Integração WhatsApp funcionando! Seus alertas financeiros estão ativos.";
+      const results = await Promise.all(
+        numeros.map(numero =>
+          enviarMensagemWhatsApp(numero, mensagem).catch(() => false)
+        )
       );
-      return reply.send({ enviado: ok });
+
+      return reply.send({ enviado: results.some(r => r === true), numerosEnviados: numeros.length });
     }
   );
 

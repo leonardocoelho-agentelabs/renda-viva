@@ -1,15 +1,34 @@
 import { supabaseAdmin } from "../plugins/supabase.js";
 import { enviarMensagemWhatsApp } from "./whatsapp.service.js";
-import { env } from "../env.js";
 
-// Número de teste — futuramente virá de users.telefone
-const NUMERO_TESTE = env.ALERTS_TEST_NUMBER;
+// Busca TODOS os números de WhatsApp vinculados ao usuário na tabela whatsapp_contacts
+async function getNumeroWhatsAppUsuario(userId: string): Promise<string[]> {
+  const { data: contatos } = await supabaseAdmin
+    .from('whatsapp_contacts')
+    .select('telefone')
+    .eq('user_id', userId)
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function getNumeroUsuario(_userId: string): Promise<string> {
-  // Por enquanto retorna o número de teste.
-  // Futuramente: buscar de users.telefone pelo userId.
-  return NUMERO_TESTE;
+  if (!contatos || contatos.length === 0) return []
+
+  // Adicionar prefixo 55 para envio via Evolution API
+  return contatos.map(c => `55${c.telefone}`)
+}
+
+async function enviarParaTodosOsNumeros(userId: string, mensagem: string): Promise<void> {
+  const numeros = await getNumeroWhatsAppUsuario(userId)
+
+  if (numeros.length === 0) {
+    console.log(`[Alertas] Usuário ${userId} não tem números WhatsApp cadastrados`)
+    return
+  }
+
+  await Promise.all(
+    numeros.map(numero =>
+      enviarMensagemWhatsApp(numero, mensagem).catch(err =>
+        console.error(`[Alertas] Erro ao enviar para ${numero}:`, err)
+      )
+    )
+  )
 }
 
 function intervaloMesAtual() {
@@ -69,11 +88,10 @@ export async function verificarAlertasOrcamento(userId: string): Promise<void> {
   }
 
   if (alertas.length > 0) {
-    const numero = await getNumeroUsuario(userId);
     const mensagem = `🏦 *Renda Viva — Alerta de Orçamento*\n\n${alertas.join(
       "\n"
     )}\n\n_Acesse rendavivaapp.com para detalhes_`;
-    await enviarMensagemWhatsApp(numero, mensagem);
+    await enviarParaTodosOsNumeros(userId, mensagem);
   }
 }
 
@@ -101,7 +119,6 @@ export async function verificarGastoIncomum(
   const valorAbs = Math.abs(Number(transacao.valor));
 
   if (media > 0 && valorAbs > media * 3) {
-    const numero = await getNumeroUsuario(userId);
     const mensagem =
       `💸 *Renda Viva — Gasto Incomum Detectado*\n\n` +
       `Uma transação chamou atenção:\n` +
@@ -110,7 +127,7 @@ export async function verificarGastoIncomum(
       `📊 Média histórica em ${transacao.categoria}: R$ ${media.toFixed(2)}\n\n` +
       `Isso é ${(valorAbs / media).toFixed(1)}x acima da sua média.\n\n` +
       `_Acesse rendavivaapp.com para categorizar_`;
-    await enviarMensagemWhatsApp(numero, mensagem);
+    await enviarParaTodosOsNumeros(userId, mensagem);
   }
 }
 
@@ -129,13 +146,12 @@ export async function verificarSaldoNegativo(userId: string): Promise<void> {
   const saldo = (transacoes || []).reduce((s, t) => s + Number(t.valor), 0);
 
   if (saldo < 0) {
-    const numero = await getNumeroUsuario(userId);
     const mensagem =
       `🔴 *Renda Viva — Saldo Negativo*\n\n` +
       `Seu saldo do mês está negativo: *R$ ${saldo.toFixed(2)}*\n\n` +
       `Suas despesas superaram suas receitas este mês.\n\n` +
       `💡 Acesse rendavivaapp.com para ver onde é possível reduzir gastos.`;
-    await enviarMensagemWhatsApp(numero, mensagem);
+    await enviarParaTodosOsNumeros(userId, mensagem);
   }
 }
 
@@ -172,7 +188,6 @@ export async function enviarResumoSemanal(userId: string): Promise<void> {
   const topCategoria = Object.entries(porCategoria).sort((a, b) => b[1] - a[1])[0];
 
   const emoji = saldo >= 0 ? "✅" : "⚠️";
-  const numero = await getNumeroUsuario(userId);
 
   const mensagem =
     `📊 *Renda Viva — Resumo da Semana*\n\n` +
@@ -185,5 +200,5 @@ export async function enviarResumoSemanal(userId: string): Promise<void> {
     `📝 *Transações:* ${transacoes.length}\n\n` +
     `_Acesse rendavivaapp.com para detalhes completos_`;
 
-  await enviarMensagemWhatsApp(numero, mensagem);
+  await enviarParaTodosOsNumeros(userId, mensagem);
 }

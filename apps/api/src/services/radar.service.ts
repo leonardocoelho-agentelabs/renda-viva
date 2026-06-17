@@ -5,7 +5,6 @@ import { enviarMensagemWhatsApp } from "./whatsapp.service.js";
 import { env } from "../env.js";
 
 const anthropic = new Anthropic({ apiKey: env.CLAUDE_API_KEY });
-const NUMERO_TESTE = env.ALERTS_TEST_NUMBER;
 
 export interface Oportunidade {
   titulo: string;
@@ -133,5 +132,31 @@ export async function enviarRadarWhatsApp(userId: string): Promise<boolean> {
 
   mensagem += `_Acesse rendavivaapp.com para mais detalhes_`;
 
-  return enviarMensagemWhatsApp(NUMERO_TESTE, mensagem);
+  const numeros = await getNumerosWhatsAppUsuario(userId);
+  if (numeros.length === 0) {
+    console.log(`[Radar] Usuário ${userId} não tem números WhatsApp cadastrados`);
+    return false;
+  }
+
+  const results = await Promise.all(
+    numeros.map(numero =>
+      enviarMensagemWhatsApp(numero, mensagem).catch(err => {
+        console.error(`[Radar] Erro ao enviar para ${numero}:`, err);
+        return false;
+      })
+    )
+  );
+
+  return results.some(r => r === true);
+}
+
+async function getNumerosWhatsAppUsuario(userId: string): Promise<string[]> {
+  const { data: contatos } = await supabaseAdmin
+    .from('whatsapp_contacts')
+    .select('telefone')
+    .eq('user_id', userId)
+
+  if (!contatos || contatos.length === 0) return [];
+
+  return contatos.map(c => `55${c.telefone}`);
 }
