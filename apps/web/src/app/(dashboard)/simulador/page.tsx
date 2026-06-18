@@ -5,6 +5,7 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { createClient } from "@/lib/supabase/client";
 import { Zap, TrendingUp, MessageCircle } from "lucide-react";
 import Link from "next/link";
+import jsPDF from "jspdf";
 
 interface SimulationResult {
   id: string;
@@ -139,6 +140,7 @@ export default function SimuladorPage() {
   const [resultado, setResultado] = useState<SimulationResult | null>(null);
   const [historico, setHistorico] = useState<HistoryItem[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loadingHistorico, setLoadingHistorico] = useState<string | null>(null);
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const supabase = createClient();
 
@@ -183,6 +185,79 @@ export default function SimuladorPage() {
       }
     } catch (error) {
       console.error("Erro ao carregar histórico:", error);
+    }
+  };
+
+  const abrirSimulacao = async (id: string) => {
+    setLoadingHistorico(id);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+      const response = await fetch(`${apiUrl}/simulator/${id}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao carregar simulação");
+      }
+
+      const json = await response.json();
+      if (json.success) {
+        const sim = json.simulation;
+        setPergunta(sim.pergunta_original || sim.pergunta);
+        setResultado({
+          id: sim.id,
+          tipo: sim.tipo,
+          parametros: sim.parametros || {
+            valor: sim.valor || 0,
+            parcelas: sim.parcelas || 0,
+            valor_parcela: sim.valor_parcela || 0,
+            taxa_juros_mensal: sim.taxa_juros || 0,
+            economia_mensal: sim.economia_mensal || 0,
+          },
+          impacto_1_ano: sim.impacto_1_ano || {
+            saldo_acumulado: sim.saldo_acumulado || 0,
+            total_pago: sim.total_pago || 0,
+            percentual_renda_comprometido: sim.percentual_renda_comprometido || 0,
+            meses_para_quitar: sim.meses_para_quitar || 0,
+            resumo: sim.resumo_1_ano || sim.resumo || "",
+          },
+          impacto_2_anos: sim.impacto_2_anos || {
+            saldo_acumulado: 0,
+            total_pago: 0,
+            percentual_renda_comprometido: 0,
+            resumo: sim.resumo_2_anos || "",
+          },
+          impacto_5_anos: sim.impacto_5_anos || {
+            saldo_acumulado: 0,
+            total_pago: 0,
+            custo_oportunidade: 0,
+            resumo: sim.resumo_5_anos || "",
+          },
+          viabilidade: sim.viabilidade || "viavel",
+          resumo_geral: sim.resumo_geral || sim.resumo || "",
+          recomendacao: sim.recomendacao || "",
+          alternativas: sim.alternativas || [],
+          alertas: sim.alertas || [],
+          created_at: sim.created_at,
+        });
+
+        // Scroll para o resultado
+        setTimeout(() => {
+          document.getElementById("resultado-simulacao")?.scrollIntoView({
+            behavior: "smooth",
+          });
+        }, 100);
+      }
+    } catch (err) {
+      console.error("Erro ao abrir simulação:", err);
+      setError("Erro ao carregar simulação do histórico");
+    } finally {
+      setLoadingHistorico(null);
     }
   };
 
@@ -334,7 +409,7 @@ export default function SimuladorPage() {
 
       {/* Resultado */}
       {resultado && badge && (
-        <div className="space-y-6 mb-8">
+        <div id="resultado-simulacao" className="space-y-6 mb-8">
           {/* Badge de viabilidade */}
           <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${badge.bg} ${badge.text}`}>
             <span>{badge.icon}</span>
@@ -589,7 +664,8 @@ export default function SimuladorPage() {
               return (
                 <div
                   key={item.id}
-                  className="p-3 bg-rv-mint/10 dark:bg-rv-green/10 rounded-xl hover:bg-rv-mint/20 dark:hover:bg-rv-green/15 transition-colors cursor-pointer"
+                  onClick={() => abrirSimulacao(item.id)}
+                  className="p-3 bg-rv-mint/10 dark:bg-rv-green/10 rounded-xl hover:bg-rv-mint/20 dark:hover:bg-rv-green/15 transition-colors cursor-pointer border border-transparent hover:border-rv-green dark:hover:border-rv-vivid"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-lg">{getTipoIcon(item.tipo)}</span>
@@ -600,8 +676,11 @@ export default function SimuladorPage() {
                   <p className="text-sm text-rv-ink dark:text-[#F0F0F0] line-clamp-2 mb-2">
                     {item.pergunta_original}
                   </p>
-                  <p className="text-xs text-rv-muted dark:text-[#8A8A8A]">
+                  <p className="text-xs text-rv-muted dark:text-[#8A8A8A] flex items-center gap-2">
                     {formatDate(item.created_at)}
+                    {loadingHistorico === item.id && (
+                      <span className="text-rv-green dark:text-rv-vivid">Carregando...</span>
+                    )}
                   </p>
                 </div>
               );

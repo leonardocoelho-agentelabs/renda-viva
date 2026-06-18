@@ -14,6 +14,7 @@ import {
   MessageCircle,
   Loader2,
 } from "lucide-react";
+import jsPDF from "jspdf";
 import { createClient } from "@/lib/supabase/client";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 
@@ -102,6 +103,121 @@ function formatFrequencia(frequencia: string): string {
     irregular: "irregular",
   };
   return labels[frequencia] || frequencia;
+}
+
+function gerarPDFVazamentos(resultado: AnalysisResult, periodo: number) {
+  const doc = new jsPDF();
+  const hoje = new Date().toLocaleDateString("pt-BR");
+
+  // CABEÇALHO
+  doc.setFontSize(20);
+  doc.setTextColor(27, 67, 50);
+  doc.text("Renda Viva — Mapa de Vazamentos", 20, 25);
+
+  doc.setFontSize(11);
+  doc.setTextColor(90, 107, 98);
+  doc.text(`Análise dos últimos ${periodo} dias · Gerado em ${hoje}`, 20, 35);
+
+  // LINHA SEPARADORA
+  doc.setDrawColor(27, 67, 50);
+  doc.setLineWidth(0.5);
+  doc.line(20, 40, 190, 40);
+
+  // RESUMO EXECUTIVO
+  doc.setFontSize(14);
+  doc.setTextColor(27, 67, 50);
+  doc.text("Resumo", 20, 52);
+
+  doc.setFontSize(11);
+  doc.setTextColor(27, 42, 34);
+  doc.text(`Total de vazamentos: R$ ${resultado.total_vazamentos?.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 20, 62);
+  doc.text(`Economia anual potencial: R$ ${resultado.economia_anual_total?.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 20, 70);
+  doc.text(`Categoria com mais vazamentos: ${resultado.categoria_mais_vazamentos || "N/A"}`, 20, 78);
+
+  // INSIGHT PRINCIPAL
+  if (resultado.insight_principal) {
+    doc.setFontSize(12);
+    doc.setTextColor(27, 67, 50);
+    doc.text("Insight Principal", 20, 92);
+
+    doc.setFontSize(10);
+    doc.setTextColor(27, 42, 34);
+    const linhasInsight = doc.splitTextToSize(resultado.insight_principal, 170);
+    doc.text(linhasInsight, 20, 100);
+  }
+
+  // VAZAMENTOS DETALHADOS
+  let y = 120;
+  doc.setFontSize(14);
+  doc.setTextColor(27, 67, 50);
+  doc.text("Vazamentos Identificados", 20, y);
+  y += 12;
+
+  const vazamentos = resultado.vazamentos || [];
+
+  for (const v of vazamentos) {
+    // Verificar se precisa de nova página
+    if (y > 260) {
+      doc.addPage();
+      y = 25;
+    }
+
+    // Badge de nível
+    const corNivel = v.nivel_alerta === "alto"
+      ? [239, 68, 68]
+      : v.nivel_alerta === "medio"
+      ? [245, 158, 11]
+      : [156, 163, 175];
+
+    doc.setFillColor(corNivel[0], corNivel[1], corNivel[2]);
+    doc.roundedRect(20, y - 4, 18, 6, 1, 1, "F");
+    doc.setFontSize(7);
+    doc.setTextColor(255, 255, 255);
+    doc.text(v.nivel_alerta?.toUpperCase() || "", 21, y);
+
+    // Nome do vazamento
+    doc.setFontSize(12);
+    doc.setTextColor(27, 42, 34);
+    doc.text(v.nome || "", 42, y);
+
+    y += 8;
+
+    // Detalhes
+    doc.setFontSize(9);
+    doc.setTextColor(90, 107, 98);
+    doc.text(`R$ ${v.total_periodo?.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} em ${periodo} dias · ${v.quantidade_vezes}x · média R$ ${v.media_por_ocorrencia?.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 20, y);
+
+    y += 6;
+    doc.text(`Economia anual potencial: R$ ${v.economia_anual_potencial?.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, 20, y);
+
+    if (v.sugestao) {
+      y += 6;
+      doc.setTextColor(27, 67, 50);
+      const linhasSugestao = doc.splitTextToSize(`💡 ${v.sugestao}`, 170);
+      doc.text(linhasSugestao, 20, y);
+      y += linhasSugestao.length * 5;
+    }
+
+    // Linha separadora entre vazamentos
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.3);
+    doc.line(20, y + 3, 190, y + 3);
+    y += 10;
+  }
+
+  // RODAPÉ
+  const totalPaginas = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPaginas; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(90, 107, 98);
+    doc.text("Renda Viva · rendavivaapp.com", 20, 287);
+    doc.text(`Página ${i} de ${totalPaginas}`, 170, 287);
+  }
+
+  // DOWNLOAD
+  const nomeArquivo = `vazamentos-${periodo}dias-${new Date().toISOString().split("T")[0]}.pdf`;
+  doc.save(nomeArquivo);
 }
 
 function VazamentoCard({ vazamento }: { vazamento: Vazamento }) {
@@ -427,8 +543,23 @@ export default function VazamentosPage() {
               </div>
             )}
 
-            {/* Botão falar com Viva */}
-            <div className="flex justify-center pt-4">
+            {/* Botões de ação */}
+            <div className="flex flex-wrap justify-center gap-3 pt-4">
+              <button
+                onClick={() => gerarPDFVazamentos(result, periodo)}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl
+                           bg-rv-forest dark:bg-rv-vivid text-white
+                           font-[var(--font-poppins)] font-semibold text-sm
+                           hover:opacity-90 transition-opacity"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth="2" className="w-4 h-4">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Baixar relatório em PDF
+              </button>
               <button
                 onClick={handleTalkToViva}
                 className="px-6 py-3 bg-rv-vivid hover:bg-rv-vivid/90 text-white font-semibold rounded-xl transition-all flex items-center gap-2"
