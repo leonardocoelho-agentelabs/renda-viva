@@ -2,6 +2,10 @@ import type { FastifyInstance, FastifyPluginAsync } from "fastify";
 import Anthropic from "@anthropic-ai/sdk";
 import { authHook, requireActiveSubscription } from "../../plugins/auth.js";
 import { env } from "../../env.js";
+import {
+  getVivaMemory,
+  extractAndSaveMemories,
+} from "../../services/viva-memory.service.js";
 
 const anthropic = new Anthropic({ apiKey: env.CLAUDE_API_KEY });
 
@@ -13,6 +17,7 @@ interface ChatHistoryItem {
 interface ChatBody {
   message: string;
   history?: ChatHistoryItem[];
+  sessionId?: string;
 }
 
 const assistantRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
@@ -33,6 +38,7 @@ const assistantRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => 
         }
 
         const supabase = fastify.supabaseAdmin;
+        const sessionId = body.sessionId || crypto.randomUUID();
 
         // 1. Perfil do usuário
         const { data: perfil } = await supabase
@@ -120,9 +126,23 @@ const assistantRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => 
                 .join("\n")}`
             : "";
 
+        // 6. Buscar memórias de longo prazo
+        const memorias = await getVivaMemory(supabase, userId);
+
+        // 7. Buscar histórico persistido da sessão
+        const { data: historyMessages } = await supabase
+          .from("conversation_history")
+          .select("role, content")
+          .eq("user_id", userId)
+          .eq("session_id", sessionId)
+          .order("created_at", { ascending: true })
+          .limit(10);
+
         const systemPrompt = `Você é o assistente financeiro pessoal do Renda Viva, chamado "Viva".
 Você tem acesso aos dados financeiros reais do usuário e responde de forma direta, personalizada e construtiva.
 Sempre responda em português brasileiro.
+
+${memorias}
 
 DADOS FINANCEIROS DO USUÁRIO (${periodo}):
 - Nome: ${perfil?.full_name || "Usuário"}
@@ -139,6 +159,8 @@ ${ultimasTransacoes || "Sem transações no período."}
 ${blocoMetas}
 
 INSTRUÇÕES:
+- Use as memórias para personalizar suas respostas
+- Se o usuário mencionar algo relacionado a uma memória, faça referência a ela
 - Responda sempre com base nos dados reais acima
 - Nunca invente valores ou transações
 - Seja direto e prático
@@ -146,6 +168,12 @@ INSTRUÇÕES:
 - Use o nome do usuário quando apropriado`;
 
         const messages = [
+          ...(historyMessages || [])
+            .filter((h) => h && (h.role === "user" || h.role === "assistant") && h.content)
+            .map((h) => ({
+              role: h.role,
+              content: h.content,
+            })),
           ...(body.history || [])
             .filter((h) => h && (h.role === "user" || h.role === "assistant") && h.content)
             .map((h) => ({
@@ -163,17 +191,190 @@ INSTRUÇÕES:
         });
 
         const first = response.content[0];
-        const resposta =
+        const respostaViva =
           first && first.type === "text"
             ? first.text
             : "Desculpe, não consegui processar sua mensagem.";
 
-        return reply.send({ response: resposta });
+        // 8. Salvar mensagens no histórico persistido
+        await supabase.from("conversation_history").insert([
+          {
+            user_id: userId,
+            session_id: sessionId,
+            role: "user",
+            content: body.message,
+          },
+          {
+            user_id: userId,
+            session_id: sessionId,
+            role: "assistant",
+            content: respostaViva,
+          },
+        ]);
+
+        // 9. Extrair e salvar novas memórias
+        await extractAndSaveMemories(supabase, userId, body.message, respostaViva);
+
+        return reply.send({ response: respostaViva, sessionId });
       } catch (error) {
         fastify.log.error({ err: error }, "Erro em POST /assistant/chat");
         return reply.status(500).send({
           success: false,
           error: "Erro ao processar mensagem do assistente",
+        });
+      }
+    }
+  );
+
+  // GET /assistant/history - Buscar histórico de mensagens
+  fastify.get(
+    "/history",
+    { preHandler: [authHook, requireActiveSubscription] },
+    async (request, reply) => {
+      try {
+        const userId = request.user!.id;
+        const sessionId = (request.query as { session_id?: string }).session_id;
+        const supabase = fastify.supabaseAdmin;
+
+        let query = supabase
+          .from("conversation_history")
+          .select("role, content, created_at, session_id")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: true })
+          .limit(50);
+
+        if (sessionId) {
+          query = query.eq("session_id", sessionId);
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+          return reply.status(500).send({ success: false, error: error.message });
+        }
+
+        return reply.send({ success: true, messages: data || [] });
+      } catch (error) {
+        fastify.log.error({ err: error }, "Erro em GET /assistant/history");
+        return reply.status(500).send({
+          success: false,
+          error: "Erro ao buscar histórico",
+        });
+      }
+    }
+  );
+
+  // GET /assistant/sessions - Listar sessões anteriores
+  fastify.get(
+    "/sessions",
+    { preHandler: [authHook, requireActiveSubscription] },
+    async (request, reply) => {
+      try {
+        const userId = request.user!.id;
+        const supabase = fastify.supabaseAdmin;
+
+        const { data, error } = await supabase
+          .from("conversation_history")
+          .select("session_id, content, created_at")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          return reply.status(500).send({ success: false, error: error.message });
+        }
+
+        // Agrupar por sessão
+        const sessoesMap = new Map<
+          string,
+          { session_id: string; primeira_mensagem: string; total_mensagens: number; created_at: string }
+        >();
+
+        if (data) {
+          for (const msg of data) {
+            if (!sessoesMap.has(msg.session_id)) {
+              sessoesMap.set(msg.session_id, {
+                session_id: msg.session_id,
+                primeira_mensagem: msg.content.substring(0, 100),
+                total_mensagens: 0,
+                created_at: msg.created_at,
+              });
+            }
+            const sessao = sessoesMap.get(msg.session_id)!;
+            sessao.total_mensagens++;
+          }
+        }
+
+        const sessoes = Array.from(sessoesMap.values())
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(0, 10);
+
+        return reply.send({ success: true, sessions: sessoes });
+      } catch (error) {
+        fastify.log.error({ err: error }, "Erro em GET /assistant/sessions");
+        return reply.status(500).send({
+          success: false,
+          error: "Erro ao buscar sessões",
+        });
+      }
+    }
+  );
+
+  // DELETE /assistant/history - Limpar histórico do usuário
+  fastify.delete(
+    "/history",
+    { preHandler: [authHook, requireActiveSubscription] },
+    async (request, reply) => {
+      try {
+        const userId = request.user!.id;
+        const supabase = fastify.supabaseAdmin;
+
+        const { error } = await supabase
+          .from("conversation_history")
+          .delete()
+          .eq("user_id", userId);
+
+        if (error) {
+          return reply.status(500).send({ success: false, error: error.message });
+        }
+
+        return reply.send({ success: true, message: "Histórico limpo com sucesso" });
+      } catch (error) {
+        fastify.log.error({ err: error }, "Erro em DELETE /assistant/history");
+        return reply.status(500).send({
+          success: false,
+          error: "Erro ao limpar histórico",
+        });
+      }
+    }
+  );
+
+  // GET /assistant/memory - Buscar memórias da Viva
+  fastify.get(
+    "/memory",
+    { preHandler: [authHook, requireActiveSubscription] },
+    async (request, reply) => {
+      try {
+        const userId = request.user!.id;
+        const supabase = fastify.supabaseAdmin;
+
+        const { data, error } = await supabase
+          .from("viva_memory")
+          .select("tipo, titulo, conteudo, importancia, created_at")
+          .eq("user_id", userId)
+          .eq("ativo", true)
+          .order("importancia", { ascending: false })
+          .limit(20);
+
+        if (error) {
+          return reply.status(500).send({ success: false, error: error.message });
+        }
+
+        return reply.send({ success: true, memories: data || [], hasMemory: (data?.length || 0) > 0 });
+      } catch (error) {
+        fastify.log.error({ err: error }, "Erro em GET /assistant/memory");
+        return reply.status(500).send({
+          success: false,
+          error: "Erro ao buscar memórias",
         });
       }
     }
