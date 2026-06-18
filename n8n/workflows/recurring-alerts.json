@@ -1,0 +1,123 @@
+{
+  "name": "Alertas de Compromissos Recorrentes",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9,
+              "triggerAtMinute": 0,
+              "triggerAtTimeZone": "America/Sao_Paulo"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Cron Diária 09:00",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "notes": "Dispara todo dia às 09:00 (horário de Brasília)"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3001/api/recurring/run-alerts",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Internal-Token",
+              "value": "renda-viva-internal"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-request-alerts",
+      "name": "Executar Alertas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [500, 300],
+      "notes": "Chama endpoint interno para verificar e enviar alertas"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Preparar mensagem de resumo\nconst data = $input.first().json;\n\nconst mensagem = `✅ *Alertas de Compromissos Recorrentes*\n\n` +\n  `📊 Compromiseiros verificados: ${data.compromissos_verificados}\n` +\n  `📱 Alertas enviados: ${data.alertas_enviados}\n\n` +\n  `Executado em: ${new Date().toISOString()}`;\n\nreturn { json: { mensagem, ...data } };",
+        "options": {}
+      },
+      "id": "format-summary",
+      "name": "Formatar Resumo",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [750, 300],
+      "notes": "Formata mensagem de resumo para logs"
+    }
+  ],
+  "connections": {
+    "Cron Diária 09:00": {
+      "main": [
+        [
+          {
+            "node": "Executar Alertas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Executar Alertas": {
+      "main": [
+        [
+          {
+            "node": "Formatar Resumo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": ["alertas", "compromissos", "whatsapp", "recorrentes"],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "templateId": null
+  }
+}
+
+/*
+=============================================================
+INSTRUÇÕES DE IMPORTAÇÃO
+=============================================================
+
+1. Acesse o painel do n8n (http://localhost:5673 ou seu endereço)
+
+2. Vá em Workflows → Importar (canto superior direito)
+
+3. Cole o JSON acima na área de importação
+
+4. O workflow será criado com:
+   - Trigger: Cron (todo dia às 09:00 - Horário de Brasília)
+   - Ação: HTTP Request POST para /api/recurring/run-alerts
+   - Headers: X-Internal-Token configurado
+
+5. ATENÇÃO: Configure a variável de ambiente no backend:
+   INTERNAL_API_TOKEN=renda-viva-internal
+
+6. Se o n8n estiver em outro servidor, altere a URL do HTTP Request:
+   - Substitua "http://localhost:3001" pelo URL do seu backend
+
+7. Opcional: Adicione um nó de Notificação (Slack, Discord, Email)
+   após "Formatar Resumo" para receber logs das execuções.
+
+=============================================================
+*/

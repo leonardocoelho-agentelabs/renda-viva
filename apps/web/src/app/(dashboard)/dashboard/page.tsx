@@ -8,6 +8,7 @@ import { RecentTransactions } from "./components/recent-transactions";
 import { ForecastChart } from "./components/forecast-chart";
 import { InsightsPanel } from "./components/insights-panel";
 import { FinancialHealthPanel } from "./components/financial-health-panel";
+import { CommitmentsPanel } from "./components/CommitmentsPanel";
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -161,6 +162,8 @@ export default async function DashboardPage() {
       </div>
 
       <ForecastChart />
+
+      <CommitmentsPanel />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 items-start">
         <InsightsPanel />
