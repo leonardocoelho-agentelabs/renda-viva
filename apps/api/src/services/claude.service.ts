@@ -127,6 +127,18 @@ Retorne SOMENTE o JSON, sem explicações.`;
 
         const parsed = JSON.parse(jsonMatch[0]) as CategorizedTransaction[];
 
+        // Log: verificar se few-shot influenciou na categorização
+        for (const cat of parsed) {
+          const fewShotMatch = correcoesUsuario.find(
+            (c) =>
+              c.descricao_raw.toLowerCase() === cat.descricao_raw.toLowerCase() &&
+              c.categoria_correta === cat.categoria
+          );
+          if (fewShotMatch) {
+            console.log(`[FEW-SHOT] ✅ Match exato: "${cat.descricao_raw}" → ${cat.categoria}`);
+          }
+        }
+
         console.log(`🤖 Claude categorizou ${parsed.length} transações`);
 
         return parsed;

@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
 import { authHook, requireActiveSubscription } from "../../plugins/auth.js";
+import { saveUserCorrection } from "../../services/corrections.service.js";
 
 const CATEGORIAS_PADRAO = [
   "Alimentação",
@@ -187,6 +188,66 @@ const transactionsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
       } catch (error) {
         fastify.log.error({ err: error }, "Erro em PATCH /transactions/:id");
         return reply.status(500).send({ success: false, error: "Erro ao atualizar transação" });
+      }
+    }
+  );
+
+  // POST /transactions/:id/correction - salva correção de categoria para few-shot
+  fastify.post<{
+    Params: { id: string };
+    Body: { categoria_correta: string; subcategoria_correta?: string };
+  }>(
+    "/:id/correction",
+    { preHandler: [authHook, requireActiveSubscription] },
+    async (request, reply) => {
+      try {
+        const userId = request.user!.id;
+        const { id } = request.params;
+        const { categoria_correta, subcategoria_correta } = request.body || {};
+
+        if (!categoria_correta?.trim()) {
+          return reply.status(400).send({
+            success: false,
+            error: "Informe a categoria correta.",
+          });
+        }
+
+        // Buscar transação para obter descricao_raw
+        const { data: transacao } = await fastify.supabaseAdmin
+          .from("transactions")
+          .select("id, descricao_raw")
+          .eq("id", id)
+          .eq("user_id", userId)
+          .single();
+
+        if (!transacao) {
+          return reply.status(404).send({
+            success: false,
+            error: "Transação não encontrada",
+          });
+        }
+
+        // Salvar correção (UPSERT)
+        const saved = await saveUserCorrection(
+          userId,
+          transacao.descricao_raw,
+          categoria_correta.trim(),
+          subcategoria_correta?.trim() || null
+        );
+
+        if (!saved) {
+          return reply.status(500).send({
+            success: false,
+            error: "Erro ao salvar correção",
+          });
+        }
+
+        console.log(`[FEW-SHOT] Correção salva para transação ${id}: "${transacao.descricao_raw}" → ${categoria_correta}`);
+
+        return reply.send({ success: true });
+      } catch (error) {
+        fastify.log.error({ err: error }, "Erro em POST /transactions/:id/correction");
+        return reply.status(500).send({ success: false, error: "Erro ao salvar correção" });
       }
     }
   );

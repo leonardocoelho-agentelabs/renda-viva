@@ -2,6 +2,7 @@ import { parseCSV } from "./parsers/csv.parser.js";
 import { parsePDF } from "./parsers/pdf.parser.js";
 import { getClaudeService } from "../../services/claude.service.js";
 import { supabaseAdmin } from "../../plugins/supabase.js";
+import { getUserCorrections } from "../../services/corrections.service.js";
 
 export interface UploadResult {
   uploadId: string;
@@ -87,19 +88,12 @@ export async function processUpload(uploadId: string, userId: string, fileType: 
       .update({ total_transacoes: transacoes.length, transacoes_processadas: 0 })
       .eq("id", uploadId);
 
-    // 7. Buscar correções do usuário para few-shot
-    const { data: correcoes } = await supabase
-      .from("user_corrections")
-      .select("descricao_raw, categoria_correta, subcategoria_correta")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(50);
+    // 7. Buscar correções do usuário para few-shot (UMA vez, antes do loop)
+    const correcoesFormatadas = await getUserCorrections(userId);
 
-    const correcoesFormatadas = (correcoes || []).map((c) => ({
-      descricao_raw: c.descricao_raw,
-      categoria_correta: c.categoria_correta,
-      subcategoria_correta: c.subcategoria_correta,
-    }));
+    if (correcoesFormatadas.length > 0) {
+      console.log(`[FEW-SHOT] Aplicando ${correcoesFormatadas.length} exemplos no prompt de categorização`);
+    }
 
     // 6. Limpar transações de tentativas anteriores deste mesmo upload.
     // Isso garante que retries não dupliquem dados — cada tentativa começa do zero.

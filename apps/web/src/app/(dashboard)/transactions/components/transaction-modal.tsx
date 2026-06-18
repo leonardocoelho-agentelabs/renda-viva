@@ -109,6 +109,19 @@ export function TransactionModal({ isOpen, onClose, onSuccess, transacao }: Tran
         throw new Error("Erro ao salvar transação");
       }
 
+      // Few-shot: salvar correção se categoria mudou durante edição
+      if (isEdicao && transacao!.categoria !== categoria && categoria) {
+        await fetch(`${apiUrl}/transactions/${transacao!.id}/correction`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ categoria_correta: categoria }),
+        });
+        console.log("[FEW-SHOT] Correção salva pelo usuário");
+      }
+
       onSuccess();
       onClose();
     } catch {
