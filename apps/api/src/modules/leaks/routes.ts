@@ -1,6 +1,5 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
 import { authHook } from "../../plugins/auth.js";
-import { supabaseAdmin } from "../../plugins/supabase.js";
 
 interface LeakGrupo {
   nome_normalizado: string;
@@ -121,7 +120,7 @@ export const leaksRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
         dataInicio.setDate(dataInicio.getDate() - periodo);
 
         // Buscar transações do período
-        const { data: transacoes, error } = await supabaseAdmin
+        const { data: transacoes, error } = await fastify.supabase
           .from("transactions")
           .select("descricao_raw, valor, categoria, data, estabelecimento")
           .eq("user_id", userId)
@@ -284,7 +283,7 @@ Critérios para vazamento:
 
         // Salvar análise no histórico
         try {
-          await supabaseAdmin.from("leaks_analysis").insert({
+          await fastify.supabase.from("leaks_analysis").insert({
             user_id: userId,
             periodo,
             resultado: result,
@@ -323,7 +322,7 @@ Critérios para vazamento:
           });
         }
 
-        const { data: history, error } = await supabaseAdmin
+        const { data: history, error } = await fastify.supabase
           .from("leaks_analysis")
           .select("periodo, resultado, created_at")
           .eq("user_id", userId)
