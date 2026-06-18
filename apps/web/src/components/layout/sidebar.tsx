@@ -20,6 +20,7 @@ import {
   Settings,
   CreditCard,
   Stethoscope,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -37,6 +38,7 @@ const navItems = [
   { href: "/reports", label: "Relatórios", icon: FileText },
   { href: "/investments", label: "Investimentos", icon: TrendingUp },
   { href: "/assistant", label: "Assistente", icon: MessageCircle },
+  { href: "/simulador", label: "Simulador", icon: Zap },
   { href: "/assinar", label: "Assinatura", icon: CreditCard },
   { href: "/settings", label: "Configurações", icon: Settings },
 ];

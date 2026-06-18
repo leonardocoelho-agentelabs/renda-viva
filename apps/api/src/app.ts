@@ -34,6 +34,7 @@ import subscriptionsRoutes from "./modules/subscriptions/routes.js";
 import asaasWebhookRoutes from "./modules/subscriptions/webhook.routes.js";
 import { mentorRoutes } from "./modules/mentor/routes.js";
 import { diagnosticoRoutes } from "./modules/diagnostico/routes.js";
+import { simulatorRoutes } from "./modules/simulator/routes.js";
 
 async function buildApp() {
   const app = Fastify({
@@ -116,6 +117,7 @@ async function buildApp() {
   await app.register(asaasWebhookRoutes, { prefix: "/api" });
   await app.register(mentorRoutes, { prefix: "/api/mentor" });
   await app.register(diagnosticoRoutes, { prefix: "/api/diagnostico" });
+  await app.register(simulatorRoutes, { prefix: "/api/simulator" });
 
   // Handler de erro global
   app.setErrorHandler((error: FastifyError, _request: FastifyRequest, reply: FastifyReply) => {
