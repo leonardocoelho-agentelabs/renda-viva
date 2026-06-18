@@ -107,6 +107,7 @@ export const leaksRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
     { preHandler: [authHook] },
     async (request, reply) => {
       try {
+        const supabase = fastify.supabase;
         const userId = request.user?.id;
         if (!userId) {
           return reply.status(401).send({
@@ -120,7 +121,7 @@ export const leaksRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
         dataInicio.setDate(dataInicio.getDate() - periodo);
 
         // Buscar transações do período
-        const { data: transacoes, error } = await fastify.supabase
+        const { data: transacoes, error } = await supabase
           .from("transactions")
           .select("descricao_raw, valor, categoria, data, estabelecimento")
           .eq("user_id", userId)
@@ -283,7 +284,7 @@ Critérios para vazamento:
 
         // Salvar análise no histórico
         try {
-          await fastify.supabase.from("leaks_analysis").insert({
+          await supabase.from("leaks_analysis").insert({
             user_id: userId,
             periodo,
             resultado: result,
@@ -314,6 +315,7 @@ Critérios para vazamento:
     { preHandler: [authHook] },
     async (request, reply) => {
       try {
+        const supabase = fastify.supabase;
         const userId = request.user?.id;
         if (!userId) {
           return reply.status(401).send({
@@ -322,7 +324,7 @@ Critérios para vazamento:
           });
         }
 
-        const { data: history, error } = await fastify.supabase
+        const { data: history, error } = await supabase
           .from("leaks_analysis")
           .select("periodo, resultado, created_at")
           .eq("user_id", userId)

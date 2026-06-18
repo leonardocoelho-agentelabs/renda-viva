@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { supabaseAdminAdmin } from "../../plugins/supabaseAdmin.js";
 import { anthropic } from "@anthropic-ai/sdk";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 // Tipos
 interface SimulationResult {
@@ -43,9 +43,9 @@ interface SimulateBody {
 }
 
 // Buscar contexto financeiro do usuário
-async function getUserFinancialContext(userId: string) {
+async function getUserFinancialContext(supabase: SupabaseClient, userId: string) {
   // Buscar dados do usuário
-  const { data: user, error: userError } = await supabaseAdmin
+  const { data: user, error: userError } = await supabase
     .from("users")
     .select("renda_mensal")
     .eq("id", userId)
@@ -59,9 +59,9 @@ async function getUserFinancialContext(userId: string) {
   const tresMesesAtras = new Date();
   tresMesesAtras.setMonth(tresMesesAtras.getMonth() - 3);
 
-  const { data: transactions, error: txError } = await supabaseAdmin
+  const { data: transactions, error: txError } = await supabase
     .from("transactions")
-    .select("amount, type")
+    .select("amount, type, date")
     .eq("user_id", userId)
     .gte("date", tresMesesAtras.toISOString())
     .eq("status", "completed");
@@ -88,7 +88,7 @@ async function getUserFinancialContext(userId: string) {
   const mediaMensal = totalGasto / mesesComTransacao;
 
   // Buscar score de saúde
-  const { data: scoreData, error: scoreError } = await supabaseAdmin
+  const { data: scoreData, error: scoreError } = await supabase
     .from("financial_scores")
     .select("total_score")
     .eq("user_id", userId)
@@ -99,7 +99,7 @@ async function getUserFinancialContext(userId: string) {
   const score = scoreData?.total_score || 50;
 
   // Buscar metas ativas
-  const { data: metas, error: metasError } = await supabaseAdmin
+  const { data: metas, error: metasError } = await supabase
     .from("goals")
     .select("name, target_amount, current_amount")
     .eq("user_id", userId)
@@ -110,7 +110,7 @@ async function getUserFinancialContext(userId: string) {
     : "Nenhuma meta ativa";
 
   // Buscar compromissos recorrentes
-  const { data: compromissos, error: compError } = await supabaseAdmin
+  const { data: compromissos, error: compError } = await supabase
     .from("recurring")
     .select("amount, type")
     .eq("user_id", userId)
@@ -262,6 +262,7 @@ export async function simulatorRoutes(app: FastifyInstance) {
     { preHandler: [app.authenticate] },
     async (request: FastifyRequest<{ Body: SimulateBody }>, reply: FastifyReply) => {
       try {
+        const supabase = app.supabase;
         const userId = request.user?.id;
         if (!userId) {
           return reply.status(401).send({ success: false, error: "Não autorizado" });
@@ -273,14 +274,14 @@ export async function simulatorRoutes(app: FastifyInstance) {
         }
 
         // Buscar contexto financeiro
-        const contexto = await getUserFinancialContext(userId);
+        const contexto = await getUserFinancialContext(supabase, userId);
 
         // Montar prompt e chamar IA
         const prompt = buildPrompt(pergunta, contexto);
         const resultado = await callClaudeSonnet(prompt);
 
         // Salvar simulação
-        const { data: simulation, error: saveError } = await supabaseAdmin
+        const { data: simulation, error: saveError } = await supabase
           .from("simulations")
           .insert({
             user_id: userId,
@@ -340,12 +341,13 @@ export async function simulatorRoutes(app: FastifyInstance) {
     { preHandler: [app.authenticate] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
+        const supabase = app.supabase;
         const userId = request.user?.id;
         if (!userId) {
           return reply.status(401).send({ success: false, error: "Não autorizado" });
         }
 
-        const { data: simulations, error } = await supabaseAdmin
+        const { data: simulations, error } = await supabase
           .from("simulations")
           .select("id, pergunta_original, tipo, viabilidade, resumo, created_at")
           .eq("user_id", userId)
@@ -377,6 +379,7 @@ export async function simulatorRoutes(app: FastifyInstance) {
     { preHandler: [app.authenticate] },
     async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
       try {
+        const supabase = app.supabase;
         const userId = request.user?.id;
         if (!userId) {
           return reply.status(401).send({ success: false, error: "Não autorizado" });
@@ -384,7 +387,7 @@ export async function simulatorRoutes(app: FastifyInstance) {
 
         const { id } = request.params;
 
-        const { data: simulation, error } = await supabaseAdmin
+        const { data: simulation, error } = await supabase
           .from("simulations")
           .select("*")
           .eq("id", id)

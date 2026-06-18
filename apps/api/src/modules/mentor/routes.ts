@@ -24,8 +24,9 @@ const mentorRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
+        const supabase = fastify.supabase;
         const userId = request.user!.id;
-        const objetivos = await listarObjetivosMentor(userId);
+        const objetivos = await listarObjetivosMentor(supabase, userId);
 
         return reply.send({
           success: true,
@@ -47,6 +48,7 @@ const mentorRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
+        const supabase = fastify.supabase;
         const userId = request.user!.id;
         const { objetivo, valor_alvo, prazo } = request.body || {};
 
@@ -58,6 +60,7 @@ const mentorRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         }
 
         const novoObjetivo = await criarObjetivoMentor(
+          supabase,
           userId,
           objetivo.trim(),
           valor_alvo,
@@ -85,6 +88,7 @@ const mentorRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
+        const supabase = fastify.supabase;
         const userId = request.user!.id;
         const { id } = request.params;
 
@@ -95,7 +99,7 @@ const mentorRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           });
         }
 
-        await removerObjetivoMentor(userId, id);
+        await removerObjetivoMentor(supabase, userId, id);
 
         return reply.send({
           success: true,
@@ -117,9 +121,10 @@ const mentorRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
+        const supabase = fastify.supabase;
         const userId = request.user!.id;
 
-        await runMentorAlerts(userId);
+        await runMentorAlerts(supabase, userId);
 
         return reply.send({
           success: true,

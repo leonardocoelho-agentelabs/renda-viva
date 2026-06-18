@@ -165,7 +165,7 @@ const calendarRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           return reply.status(400).send({ success: false, error: "Mês ou ano inválido" });
         }
 
-        const supabase = fastify.supabaseAdmin;
+        const supabase = fastify.supabase;
         const lastDay = getLastDayOfMonth(year, month);
         const startDate = formatDate(year, month, 1);
         const endDate = formatDate(year, month, lastDay);
@@ -359,7 +359,7 @@ const calendarRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     async (request, reply) => {
       try {
         const userId = request.user!.id;
-        const supabase = fastify.supabaseAdmin;
+        const supabase = fastify.supabase;
 
         const today = new Date();
         const thirtyDaysLater = new Date(today);
@@ -437,7 +437,7 @@ const calendarRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       try {
         const userId = request.user!.id;
         const { eventId } = request.params;
-        const supabase = fastify.supabaseAdmin;
+        const supabase = fastify.supabase;
 
         // Se é um evento de recurring_commitment, atualizar lá também
         if (eventId.startsWith("rc-")) {
@@ -545,7 +545,7 @@ const calendarRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     async (request, reply) => {
       try {
         const userId = request.user!.id;
-        const supabase = fastify.supabaseAdmin;
+        const supabase = fastify.supabase;
 
         const today = new Date();
         const threeMonthsLater = new Date(today);

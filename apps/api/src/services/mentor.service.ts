@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "../plugins/supabase.js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { enviarParaTodosOsNumeros } from "./alerts.service.js";
 import Anthropic from "@anthropic-ai/sdk";
 import { env } from "../env.js";
@@ -21,8 +21,11 @@ export interface MentorObjective {
 /**
  * Lista objetivos ativos do mentor para o usuário
  */
-export async function listarObjetivosMentor(userId: string): Promise<MentorObjective[]> {
-  const { data, error } = await supabaseAdmin
+export async function listarObjetivosMentor(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<MentorObjective[]> {
+  const { data, error } = await supabase
     .from("mentor_objectives")
     .select("*")
     .eq("user_id", userId)
@@ -40,12 +43,13 @@ export async function listarObjetivosMentor(userId: string): Promise<MentorObjec
  * Cria um novo objetivo do mentor
  */
 export async function criarObjetivoMentor(
+  supabase: SupabaseClient,
   userId: string,
   objetivo: string,
   valorAlvo?: number,
   prazo?: string
 ): Promise<MentorObjective> {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("mentor_objectives")
     .insert({
       user_id: userId,
@@ -68,10 +72,11 @@ export async function criarObjetivoMentor(
  * Remove um objetivo do mentor
  */
 export async function removerObjetivoMentor(
+  supabase: SupabaseClient,
   userId: string,
   objetivoId: string
 ): Promise<boolean> {
-  const { error } = await supabaseAdmin
+  const { error } = await supabase
     .from("mentor_objectives")
     .delete()
     .eq("id", objetivoId)
@@ -84,11 +89,12 @@ export async function removerObjetivoMentor(
  * Atualiza o progresso de um objetivo
  */
 export async function atualizarProgressoObjetivo(
+  supabase: SupabaseClient,
   userId: string,
   objetivoId: string,
   progresso: number
 ): Promise<void> {
-  await supabaseAdmin
+  await supabase
     .from("mentor_objectives")
     .update({ progresso_atual: progresso })
     .eq("id", objetivoId)
@@ -99,9 +105,12 @@ export async function atualizarProgressoObjetivo(
  * Executa alertas do mentor para um usuário
  * Deve ser chamado diariamente (ex: via cron às 18h)
  */
-export async function runMentorAlerts(userId: string): Promise<void> {
+export async function runMentorAlerts(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<void> {
   // Buscar objetivos ativos
-  const objectives = await listarObjetivosMentor(userId);
+  const objectives = await listarObjetivosMentor(supabase, userId);
 
   if (!objectives || objectives.length === 0) return;
 
@@ -114,7 +123,7 @@ export async function runMentorAlerts(userId: string): Promise<void> {
     .toISOString()
     .split("T")[0];
 
-  const { data: transacoes } = await supabaseAdmin
+  const { data: transacoes } = await supabase
     .from("transactions")
     .select("valor, categoria, descricao_raw, data")
     .eq("user_id", userId)
@@ -164,7 +173,7 @@ Retorne APENAS a mensagem, sem mais nada.
     }
 
     // Atualizar último alerta
-    await supabaseAdmin
+    await supabase
       .from("mentor_objectives")
       .update({
         ultimo_alerta: mensagem,
@@ -181,8 +190,11 @@ Retorne APENAS a mensagem, sem mais nada.
 /**
  * Verifica e atualiza progresso dos objetivos baseado nas transações
  */
-export async function atualizarProgressoObjetivos(userId: string): Promise<void> {
-  const objectives = await listarObjetivosMentor(userId);
+export async function atualizarProgressoObjetivos(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<void> {
+  const objectives = await listarObjetivosMentor(supabase, userId);
 
   if (!objectives || objectives.length === 0) return;
 
@@ -190,7 +202,7 @@ export async function atualizarProgressoObjetivos(userId: string): Promise<void>
   const seisMesesAtras = new Date();
   seisMesesAtras.setMonth(seisMesesAtras.getMonth() - 6);
 
-  const { data: transacoes } = await supabaseAdmin
+  const { data: transacoes } = await supabase
     .from("transactions")
     .select("valor, categoria")
     .eq("user_id", userId)
@@ -210,7 +222,7 @@ export async function atualizarProgressoObjetivos(userId: string): Promise<void>
   for (const obj of objectives) {
     if (obj.valor_alvo && obj.valor_alvo > 0) {
       const progresso = Math.min(100, (totalInvestido / obj.valor_alvo) * 100);
-      await atualizarProgressoObjetivo(userId, obj.id, progresso);
+      await atualizarProgressoObjetivo(supabase, userId, obj.id, progresso);
     }
   }
 }
