@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "../../plugins/supabase.js";
+import { verificarModoCrise } from "../../services/modo-crise.service.js";
 
 export interface ScoreDimensao {
   nome: string;
@@ -238,6 +239,11 @@ export async function calcularScore(userId: string): Promise<ScoreResultado> {
     .from("users")
     .update({ score_saude: score })
     .eq("id", userId);
+
+  // Verificar modo crise após calcular score
+  verificarModoCrise(userId).catch((err) =>
+    console.error("[Score] Erro ao verificar modo crise:", err)
+  );
 
   return { score, dimensoes };
 }

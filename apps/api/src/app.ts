@@ -27,10 +27,13 @@ import { recurringRoutes } from "./modules/recurring/routes.js";
 import { insightsRoutes } from "./modules/insights/routes.js";
 import usersRoutes from "./modules/users/routes.js";
 import deleteAccountRoutes from "./modules/users/delete-account.routes.js";
+import modoCriseRoutes from "./modules/users/modo-crise.routes.js";
 import whatsappWebhookRoutes from "./modules/whatsapp/webhook.routes.js";
 import whatsappContactsRoutes from "./modules/whatsapp-contacts/routes.js";
 import subscriptionsRoutes from "./modules/subscriptions/routes.js";
 import asaasWebhookRoutes from "./modules/subscriptions/webhook.routes.js";
+import { mentorRoutes } from "./modules/mentor/routes.js";
+import { diagnosticoRoutes } from "./modules/diagnostico/routes.js";
 
 async function buildApp() {
   const app = Fastify({
@@ -106,10 +109,13 @@ async function buildApp() {
   await app.register(insightsRoutes, { prefix: "/api/insights" });
   await app.register(usersRoutes, { prefix: "/api" });
   await app.register(deleteAccountRoutes, { prefix: "/api" });
+  await app.register(modoCriseRoutes, { prefix: "/api/users/modo-crise" });
   await app.register(whatsappWebhookRoutes, { prefix: "/api" });
   await app.register(whatsappContactsRoutes, { prefix: "/api" });
   await app.register(subscriptionsRoutes, { prefix: "/api" });
   await app.register(asaasWebhookRoutes, { prefix: "/api" });
+  await app.register(mentorRoutes, { prefix: "/api/mentor" });
+  await app.register(diagnosticoRoutes, { prefix: "/api/diagnostico" });
 
   // Handler de erro global
   app.setErrorHandler((error: FastifyError, _request: FastifyRequest, reply: FastifyReply) => {

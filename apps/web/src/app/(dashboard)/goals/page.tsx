@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { createClient } from "@/lib/supabase/client";
 import { Target, Plus, X, Sparkles, Lightbulb, MoreVertical, Trash2, CheckCircle } from "lucide-react";
+import { MentorSection } from "./components/MentorSection";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -257,6 +258,8 @@ export default function GoalsPage() {
 
   return (
     <DashboardLayout>
+      <MentorSection />
+
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
           <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-[#F0F0F0]">Metas</h1>

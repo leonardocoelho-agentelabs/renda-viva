@@ -14,7 +14,7 @@ async function getNumeroWhatsAppUsuario(userId: string): Promise<string[]> {
   return contatos.map(c => `55${c.telefone}`)
 }
 
-async function enviarParaTodosOsNumeros(userId: string, mensagem: string): Promise<void> {
+export async function enviarParaTodosOsNumeros(userId: string, mensagem: string): Promise<void> {
   const numeros = await getNumeroWhatsAppUsuario(userId)
 
   if (numeros.length === 0) {

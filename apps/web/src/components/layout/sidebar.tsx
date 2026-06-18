@@ -19,6 +19,7 @@ import {
   Moon,
   Settings,
   CreditCard,
+  Stethoscope,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -31,6 +32,7 @@ const navItems = [
   { href: "/connections", label: "Contas", icon: Building2 },
   { href: "/budget", label: "Orçamentos", icon: PieChart },
   { href: "/goals", label: "Metas", icon: Target },
+  { href: "/diagnostico", label: "Diagnóstico", icon: Stethoscope },
   { href: "/score", label: "Score", icon: Heart },
   { href: "/reports", label: "Relatórios", icon: FileText },
   { href: "/investments", label: "Investimentos", icon: TrendingUp },
