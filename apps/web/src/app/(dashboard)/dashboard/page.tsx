@@ -10,6 +10,7 @@ import { InsightsPanel } from "./components/insights-panel";
 import { FinancialHealthPanel } from "./components/financial-health-panel";
 import { CommitmentsPanel } from "./components/CommitmentsPanel";
 import { ModoCrisePanel } from "./components/ModoCrisePanel";
+import { UpcomingPaymentsCard } from "./components/UpcomingPaymentsCard";
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -173,6 +174,8 @@ export default async function DashboardPage() {
       <ForecastChart />
 
       <CommitmentsPanel />
+
+      <UpcomingPaymentsCard />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 items-start">
         <InsightsPanel />
