@@ -139,6 +139,7 @@ export default async function DashboardPage() {
         />
       )}
 
+      {/* Cabeçalho */}
       <DashboardHeader
         nome={userData?.full_name || ""}
         saldoAtual={saldo}
@@ -146,6 +147,10 @@ export default async function DashboardPage() {
         gastosMediaTresMeses={gastosMediaTresMeses}
       />
 
+      {/* Visão Geral */}
+      <h2 className="text-xs font-semibold tracking-widest uppercase text-rv-muted dark:text-rv-dark-muted mb-3">
+        Visão Geral
+      </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <SummaryCard
           label="Saldo do mês"
@@ -172,30 +177,46 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <ForecastChart />
+      {/* Fluxo de Caixa */}
+      <h2 className="text-xs font-semibold tracking-widest uppercase text-rv-muted dark:text-rv-dark-muted mb-3">
+        Fluxo de Caixa
+      </h2>
+      <div className="mb-6">
+        <ForecastChart />
+      </div>
 
-      <CommitmentsPanel />
+      {/* Compromissos */}
+      <h2 className="text-xs font-semibold tracking-widest uppercase text-rv-muted dark:text-rv-dark-muted mb-3">
+        Compromissos
+      </h2>
+      <div className="mb-6">
+        <CommitmentsPanel />
+      </div>
 
-      <UpcomingPaymentsCard />
+      <div className="mb-6">
+        <UpcomingPaymentsCard />
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+      {/* Análise */}
+      <h2 className="text-xs font-semibold tracking-widest uppercase text-rv-muted dark:text-rv-dark-muted mb-3">
+        Análise
+      </h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <InsightsPanel />
         <FinancialHealthPanel />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Detalhes */}
+      <h2 className="text-xs font-semibold tracking-widest uppercase text-rv-muted dark:text-rv-dark-muted mb-3">
+        Detalhes
+      </h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <CategoryDonutChart data={categoryData} />
         <RecentTransactions transactions={transactions || []} />
       </div>
 
-      <div className="mt-6">
-        <LeaksPreviewCard />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CategoryDonutChart data={categoryData} />
-        <RecentTransactions transactions={transactions || []} />
-      </div>
+      {/* Vazamentos */}
+      <LeaksPreviewCard />
     </DashboardLayout>
   );
 }

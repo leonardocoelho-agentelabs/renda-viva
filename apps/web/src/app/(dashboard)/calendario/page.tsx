@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ChevronLeft, ChevronRight, Check, X, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
 
 interface CalendarEvent {
   id: string;
@@ -290,9 +291,9 @@ export default function CalendarioPage() {
   };
 
   return (
-    <div className="min-h-screen bg-rv-page dark:bg-rv-dark-bg">
+    <DashboardLayout>
       {/* Cabeçalho */}
-      <div className="bg-white dark:bg-rv-dark-card border-b border-rv-forest/10 dark:border-white/8 px-6 py-6">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold text-rv-forest dark:text-white">
           📅 Calendário Financeiro
         </h1>
@@ -578,6 +579,6 @@ export default function CalendarioPage() {
           </div>
         </div>
       )}
-    </div>
+    </DashboardLayout>
   );
 }
