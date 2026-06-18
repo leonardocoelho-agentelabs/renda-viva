@@ -22,6 +22,7 @@ import {
   Stethoscope,
   Zap,
   CalendarDays,
+  Droplets,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -41,6 +42,7 @@ const navItems = [
   { href: "/assistant", label: "Assistente", icon: MessageCircle },
   { href: "/simulador", label: "Simulador", icon: Zap },
   { href: "/calendario", label: "Calendário", icon: CalendarDays },
+  { href: "/vazamentos", label: "Vazamentos", icon: Droplets },
   { href: "/assinar", label: "Assinatura", icon: CreditCard },
   { href: "/settings", label: "Configurações", icon: Settings },
 ];

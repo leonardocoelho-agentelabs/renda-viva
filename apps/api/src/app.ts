@@ -36,6 +36,7 @@ import { mentorRoutes } from "./modules/mentor/routes.js";
 import { diagnosticoRoutes } from "./modules/diagnostico/routes.js";
 import { simulatorRoutes } from "./modules/simulator/routes.js";
 import { calendarRoutes } from "./modules/calendar/routes.js";
+import { leaksRoutes } from "./modules/leaks/routes.js";
 
 async function buildApp() {
   const app = Fastify({
@@ -120,6 +121,7 @@ async function buildApp() {
   await app.register(diagnosticoRoutes, { prefix: "/api/diagnostico" });
   await app.register(simulatorRoutes, { prefix: "/api/simulator" });
   await app.register(calendarRoutes, { prefix: "/api/calendar" });
+  await app.register(leaksRoutes, { prefix: "/api/leaks" });
 
   // Handler de erro global
   app.setErrorHandler((error: FastifyError, _request: FastifyRequest, reply: FastifyReply) => {
