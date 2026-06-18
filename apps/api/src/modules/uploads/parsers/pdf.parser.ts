@@ -7,6 +7,25 @@ export interface ParsedTransaction {
   tipo: "debito" | "credito";
 }
 
+// ============================================================
+// FUNÇÃO CORRETA para parsing de valores brasileiros
+// Exemplos de entrada: "76,00" | "-76,00" | "1.234,56" | "R$ 1.234,56"
+// Exemplos de saída:    76.00  |  -76.00  |   1234.56  |   1234.56
+// ============================================================
+function parseBRValue(raw: string): number {
+  if (!raw || raw.trim() === "") return 0;
+
+  const cleaned = raw
+    .trim()
+    .replace(/\s/g, "") // remove espaços
+    .replace(/R\$/g, "") // remove símbolo R$
+    .replace(/\./g, "") // remove pontos de milhar: "1.234,56" → "1234,56"
+    .replace(",", "."); // troca vírgula decimal por ponto: "1234,56" → "1234.56"
+
+  const value = parseFloat(cleaned);
+  return isNaN(value) ? 0 : value;
+}
+
 // Converter data brasileira para ISO
 function parseDate(dateStr: string): string | null {
   if (!dateStr) return null;
@@ -34,11 +53,8 @@ function parseValor(valorStr: string): { valor: number; tipo: "debito" | "credit
   const isNegative = clean.startsWith("-") || clean.startsWith("(");
   clean = clean.replace(/[()-]/g, "").trim();
 
-  // Remover pontos de milhar e trocar vírgula por ponto
-  clean = clean.replace(/\./g, "").replace(",", ".");
-
-  let valor = parseFloat(clean);
-  if (isNaN(valor)) return { valor: 0, tipo: "debito" };
+  // Usar parseBRValue para converter corretamente
+  let valor = parseBRValue(clean);
 
   if (isNegative && valor > 0) {
     valor = -valor;
