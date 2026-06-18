@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 interface Oportunidade {
   titulo: string;
   tipo: string;
+  ticker?: string | null;
   retornoAnual: string;
   risco: "baixo" | "medio" | "alto";
   valorMinimo: string;
@@ -17,10 +18,39 @@ interface Oportunidade {
   ideal_para: string;
 }
 
+interface FII {
+  ticker: string;
+  nome: string;
+  segmento: string;
+  dividendYield: number;
+  pvp: number;
+  precoAtual: number;
+  ultimoDividendo: number;
+  liquidezDiaria: number;
+}
+
+interface AcaoB3 {
+  ticker: string;
+  nome: string;
+  setor: string;
+  precoAtual: number;
+  dividendYield: number;
+  pl: number;
+  variacao12m: number;
+}
+
 interface Mercado {
   selic: number;
   ipca: number;
   cdi: number;
+  tesouroDireto: Array<{
+    nome: string;
+    vencimento: string;
+    taxaAnual: number;
+    precoMinimo: number;
+  }>;
+  fiis: FII[];
+  acoes: AcaoB3[];
   coletadoEm: string;
 }
 
@@ -123,6 +153,13 @@ export default function InvestmentsPage() {
       ]
     : [];
 
+  // Separa oportunidades por categoria
+  const rendaFixa = data?.oportunidades.filter((o) =>
+    ["Tesouro Direto", "CDB", "LCI", "LCA"].includes(o.tipo)
+  );
+  const fiisOportunidades = data?.oportunidades.filter((o) => o.tipo === "FII");
+  const acoesOportunidades = data?.oportunidades.filter((o) => o.tipo === "Ação");
+
   return (
     <DashboardLayout>
       <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
@@ -189,64 +226,192 @@ export default function InvestmentsPage() {
             ))}
           </div>
 
-          {/* Oportunidades */}
-          {data.oportunidades.length === 0 ? (
+          {/* Oportunidades - Renda Fixa */}
+          {rendaFixa && rendaFixa.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold text-[#8A8A8A] uppercase tracking-wide mb-3 flex items-center gap-2">
+                🏦 Renda Fixa
+              </h2>
+              <div className="grid gap-4 lg:grid-cols-3">
+                {rendaFixa.map((op, i) => (
+                  <OportunidadeCard key={`rf-${i}`} oportunidade={op} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Oportunidades - FIIs */}
+          {fiisOportunidades && fiisOportunidades.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold text-[#8A8A8A] uppercase tracking-wide mb-3 flex items-center gap-2">
+                🏢 Fundos Imobiliários
+              </h2>
+              <div className="grid gap-4 lg:grid-cols-3">
+                {fiisOportunidades.map((op, i) => (
+                  <OportunidadeCard key={`fii-${i}`} oportunidade={op} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Oportunidades - Ações */}
+          {acoesOportunidades && acoesOportunidades.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold text-[#8A8A8A] uppercase tracking-wide mb-3 flex items-center gap-2">
+                📈 Ações B3
+              </h2>
+              <div className="grid gap-4 lg:grid-cols-3">
+                {acoesOportunidades.map((op, i) => (
+                  <OportunidadeCard key={`acao-${i}`} oportunidade={op} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Fallback: todas as oportunidades */}
+          {(!rendaFixa?.length && !fiisOportunidades?.length && !acoesOportunidades?.length) && data.oportunidades.length > 0 && (
+            <div className="grid gap-4 lg:grid-cols-3">
+              {data.oportunidades.map((op, i) => (
+                <OportunidadeCard key={`all-${i}`} oportunidade={op} />
+              ))}
+            </div>
+          )}
+
+          {/* FIIs disponíveis */}
+          {data.mercado.fiis && data.mercado.fiis.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold text-[#8A8A8A] uppercase tracking-wide mb-3 flex items-center gap-2">
+                🏢 FIIs em destaque
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                {data.mercado.fiis.slice(0, 5).map((fii) => (
+                  <div
+                    key={fii.ticker}
+                    className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-white/8 shadow-sm p-3"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-mono font-bold text-rv-green dark:text-rv-vivid text-sm">
+                        {fii.ticker}
+                      </span>
+                      <span className="text-xs text-[#8A8A8A]">{fii.segmento}</span>
+                    </div>
+                    <p className="text-xs text-rv-muted dark:text-[#8A8A8A] truncate">{fii.nome}</p>
+                    <div className="mt-2 flex justify-between">
+                      <div>
+                        <span className="text-xs text-[#8A8A8A]">DY</span>
+                        <p className="text-sm font-bold text-rv-ink dark:text-[#F0F0F0]">{fii.dividendYield.toFixed(1)}%</p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-[#8A8A8A]">P/VP</span>
+                        <p className="text-sm font-bold text-rv-ink dark:text-[#F0F0F0]">{fii.pvp.toFixed(2)}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Ações disponíveis */}
+          {data.mercado.acoes && data.mercado.acoes.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold text-[#8A8A8A] uppercase tracking-wide mb-3 flex items-center gap-2">
+                📈 Ações B3
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {data.mercado.acoes.slice(0, 4).map((acao) => (
+                  <div
+                    key={acao.ticker}
+                    className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-white/8 shadow-sm p-3"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-mono font-bold text-rv-green dark:text-rv-vivid text-sm">
+                        {acao.ticker}
+                      </span>
+                      <span className="text-xs text-[#8A8A8A]">{acao.setor}</span>
+                    </div>
+                    <p className="text-xs text-rv-muted dark:text-[#8A8A8A] truncate">{acao.nome}</p>
+                    <div className="mt-2 flex justify-between">
+                      <div>
+                        <span className="text-xs text-[#8A8A8A]">Preço</span>
+                        <p className="text-sm font-bold text-rv-ink dark:text-[#F0F0F0]">
+                          R$ {acao.precoAtual.toFixed(2)}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-xs text-[#8A8A8A]">DY</span>
+                        <p className="text-sm font-bold text-rv-ink dark:text-[#F0F0F0]">
+                          {acao.dividendYield.toFixed(1)}%
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {data.oportunidades.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center bg-white dark:bg-[#1E1E1E] rounded-xl border border-white/8 shadow-sm">
               <TrendingUp className="h-12 w-12 text-[#3a3a3a] mb-3" />
               <p className="text-[#8A8A8A]">Nenhuma recomendação disponível no momento.</p>
               <p className="text-sm text-[#8A8A8A] mt-1">Tente atualizar o radar em instantes.</p>
             </div>
-          ) : (
-            <div className="grid gap-4 lg:grid-cols-3">
-              {data.oportunidades.map((op, i) => (
-                <div
-                  key={i}
-                  className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-white/8 shadow-sm p-5 flex flex-col"
-                >
-                  <div className="flex items-start justify-between gap-2 mb-3">
-                    <div>
-                      <span className="text-xs font-medium text-[#8A8A8A]">{op.tipo}</span>
-                      <h3 className="font-semibold text-rv-ink dark:text-[#F0F0F0] leading-tight">{op.titulo}</h3>
-                    </div>
-                    <span
-                      className={cn(
-                        "text-xs font-medium px-2.5 py-0.5 rounded-full whitespace-nowrap",
-                        RISCO_BADGE[op.risco] || RISCO_BADGE.medio
-                      )}
-                    >
-                      {RISCO_DOT[op.risco] || "🟡"} {op.risco}
-                    </span>
-                  </div>
-
-                  <p className="text-2xl font-bold text-rv-green dark:text-rv-vivid font-[var(--font-poppins)]">{op.retornoAnual}</p>
-
-                  <div className="flex items-center gap-3 text-xs text-[#8A8A8A] mt-2 mb-3">
-                    <span>💰 {op.valorMinimo}</span>
-                    <span>⏱️ {op.prazo}</span>
-                  </div>
-
-                  <p className="text-sm text-[#8A8A8A] flex-1">{op.justificativa}</p>
-
-                  {op.ideal_para && (
-                    <div className="mt-4 pt-3 border-t border-white/5">
-                      <span className="inline-block text-xs font-medium px-2.5 py-1 rounded-lg bg-rv-mint dark:bg-rv-vivid/20 text-rv-green dark:text-rv-vivid">
-                        ✨ Ideal para você
-                      </span>
-                      <p className="text-xs text-[#8A8A8A] mt-1.5">{op.ideal_para}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
           )}
 
           <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5" />
-            Curadoria gerada por IA com base em dados do Banco Central e Tesouro Direto. Não é
+            Curadoria gerada por IA com base em dados do Banco Central, Tesouro Direto, Status Invest e BRAPI. Não é
             recomendação de investimento.
           </p>
         </div>
       ) : null}
     </DashboardLayout>
+  );
+}
+
+function OportunidadeCard({ oportunidade }: { oportunidade: Oportunidade }) {
+  return (
+    <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-white/8 shadow-sm p-5 flex flex-col">
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <div>
+          <span className="text-xs font-medium text-[#8A8A8A]">{oportunidade.tipo}</span>
+          <h3 className="font-semibold text-rv-ink dark:text-[#F0F0F0] leading-tight">{oportunidade.titulo}</h3>
+        </div>
+        <div className="flex flex-col items-end gap-1">
+          <span
+            className={cn(
+              "text-xs font-medium px-2.5 py-0.5 rounded-full whitespace-nowrap",
+              RISCO_BADGE[oportunidade.risco] || RISCO_BADGE.medio
+            )}
+          >
+            {RISCO_DOT[oportunidade.risco] || "🟡"} {oportunidade.risco}
+          </span>
+          {oportunidade.ticker && (
+            <span className="bg-rv-mint dark:bg-rv-vivid/20 text-rv-green dark:text-rv-vivid text-xs font-mono font-bold px-2 py-0.5 rounded">
+              {oportunidade.ticker}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <p className="text-2xl font-bold text-rv-green dark:text-rv-vivid font-[var(--font-poppins)]">{oportunidade.retornoAnual}</p>
+
+      <div className="flex items-center gap-3 text-xs text-[#8A8A8A] mt-2 mb-3">
+        <span>💰 {oportunidade.valorMinimo}</span>
+        <span>⏱️ {oportunidade.prazo}</span>
+      </div>
+
+      <p className="text-sm text-[#8A8A8A] flex-1">{oportunidade.justificativa}</p>
+
+      {oportunidade.ideal_para && (
+        <div className="mt-4 pt-3 border-t border-white/5">
+          <span className="inline-block text-xs font-medium px-2.5 py-1 rounded-lg bg-rv-mint dark:bg-rv-vivid/20 text-rv-green dark:text-rv-vivid">
+            ✨ Ideal para você
+          </span>
+          <p className="text-xs text-[#8A8A8A] mt-1.5">{oportunidade.ideal_para}</p>
+        </div>
+      )}
+    </div>
   );
 }

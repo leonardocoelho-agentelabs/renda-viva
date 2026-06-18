@@ -1,14 +1,12 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { supabaseAdmin } from "../plugins/supabase.js";
 import { coletarDadosMercado, type DadosMercado } from "./market.service.js";
 import { enviarMensagemWhatsApp } from "./whatsapp.service.js";
 import { env } from "../env.js";
 
-const anthropic = new Anthropic({ apiKey: env.CLAUDE_API_KEY });
-
 export interface Oportunidade {
   titulo: string;
   tipo: string;
+  ticker?: string | null;
   retornoAnual: string;
   risco: "baixo" | "medio" | "alto";
   valorMinimo: string;
@@ -46,7 +44,7 @@ export async function gerarRadarSemanal(userId: string): Promise<RadarResultado>
   const jaInveste = (transacoes || []).some((t) => t.categoria === "Investimentos");
 
   const prompt = `Você é um analista financeiro independente brasileiro.
-Selecione as 3 melhores oportunidades de investimento para este perfil.
+Selecione as 5 melhores oportunidades de investimento para este perfil.
 Retorne SOMENTE JSON válido, sem texto adicional.
 
 DADOS DE MERCADO ATUAIS:
@@ -56,15 +54,41 @@ DADOS DE MERCADO ATUAIS:
 
 TÍTULOS DO TESOURO DISPONÍVEIS:
 ${
-    mercado.tesouroDireto.length > 0
-      ? mercado.tesouroDireto
-          .map(
-            (t) =>
-              `- ${t.nome}: ${t.taxaAnual}% a.a., venc. ${t.vencimento}, mín. R$ ${t.precoMinimo}`
-          )
-          .join("\n")
-      : "Sem dados do Tesouro no momento."
-  }
+  mercado.tesouroDireto.length > 0
+    ? mercado.tesouroDireto
+        .map(
+          (t) =>
+            `- ${t.nome}: ${t.taxaAnual}% a.a., venc. ${t.vencimento}, mín. R$ ${t.precoMinimo}`
+        )
+        .join("\n")
+    : "Sem dados do Tesouro no momento."
+}
+
+FIIs DISPONÍVEIS:
+${
+  mercado.fiis.length > 0
+    ? mercado.fiis
+        .slice(0, 5)
+        .map(
+          (f) =>
+            `- ${f.ticker} (${f.nome}): DY ${f.dividendYield}% a.a., P/VP ${f.pvp}, Segmento: ${f.segmento}, Preço: R$ ${f.precoAtual}`
+        )
+        .join("\n")
+    : "Sem dados de FIIs no momento."
+}
+
+AÇÕES B3:
+${
+  mercado.acoes.length > 0
+    ? mercado.acoes
+        .slice(0, 5)
+        .map(
+          (a) =>
+            `- ${a.ticker} (${a.nome}): DY ${a.dividendYield}%, P/L ${a.pl}, Setor: ${a.setor}, Variação 12m: ${a.variacao12m.toFixed(1)}%`
+        )
+        .join("\n")
+    : "Sem dados de ações no momento."
+}
 
 PERFIL DO USUÁRIO:
 - Renda mensal: R$ ${Number(perfil?.renda_mensal || 0)}
@@ -73,15 +97,21 @@ PERFIL DO USUÁRIO:
 - Saldo disponível este mês: R$ ${saldoMes.toFixed(2)}
 - Já investe regularmente: ${jaInveste ? "Sim" : "Não"}
 
-Retorne JSON com exatamente 3 oportunidades:
+Selecione exatamente 5 oportunidades considerando:
+- Perfil conservador: priorizar Tesouro e CDB
+- Perfil moderado: misturar Tesouro, FIIs e CDB
+- Perfil arrojado: incluir ações e FIIs de crescimento
+
+Retorne JSON com exatamente 5 oportunidades:
 [
   {
     "titulo": "Nome do investimento",
-    "tipo": "Tesouro Direto | CDB | LCI | LCA | Poupança | Ações | FII",
-    "retornoAnual": "13,75% a.a.",
-    "risco": "baixo",
-    "valorMinimo": "R$ 30,00",
-    "prazo": "Curto prazo (até 1 ano)",
+    "tipo": "Tesouro Direto | CDB | LCI | LCA | FII | Ação",
+    "ticker": "MXRF11 ou PETR4 (se aplicável, senão null)",
+    "retornoAnual": "X% a.a.",
+    "risco": "baixo | medio | alto",
+    "valorMinimo": "R$ X",
+    "prazo": "X meses/anos ou indefinido",
     "justificativa": "Por que é ideal agora para este perfil específico",
     "ideal_para": "O que este investimento resolve para o usuário"
   }
@@ -93,14 +123,21 @@ Para agressivo: foque em rentabilidade.`;
 
   let oportunidades: Oportunidade[] = [];
   try {
-    const response = await anthropic.messages.create({
-      model: "claude-haiku-4-5",
-      max_tokens: 2048,
-      messages: [{ role: "user", content: prompt }],
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": env.CLAUDE_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5",
+        max_tokens: 1500,
+        messages: [{ role: "user", content: prompt }],
+      }),
     });
-
-    const first = response.content[0];
-    const responseText = first && first.type === "text" ? first.text : "[]";
+    const data = await response.json();
+    const responseText = data.content?.[0]?.text || "[]";
     const jsonMatch = responseText.match(/\[[\s\S]*\]/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
@@ -139,24 +176,24 @@ export async function enviarRadarWhatsApp(userId: string): Promise<boolean> {
   }
 
   const results = await Promise.all(
-    numeros.map(numero =>
-      enviarMensagemWhatsApp(numero, mensagem).catch(err => {
+    numeros.map((numero) =>
+      enviarMensagemWhatsApp(numero, mensagem).catch((err) => {
         console.error(`[Radar] Erro ao enviar para ${numero}:`, err);
         return false;
       })
     )
   );
 
-  return results.some(r => r === true);
+  return results.some((r) => r === true);
 }
 
 async function getNumerosWhatsAppUsuario(userId: string): Promise<string[]> {
   const { data: contatos } = await supabaseAdmin
-    .from('whatsapp_contacts')
-    .select('telefone')
-    .eq('user_id', userId)
+    .from("whatsapp_contacts")
+    .select("telefone")
+    .eq("user_id", userId);
 
   if (!contatos || contatos.length === 0) return [];
 
-  return contatos.map(c => `55${c.telefone}`);
+  return contatos.map((c) => `55${c.telefone}`);
 }
