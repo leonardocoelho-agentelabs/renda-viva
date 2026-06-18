@@ -107,7 +107,7 @@ export const leaksRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
     { preHandler: [authHook] },
     async (request, reply) => {
       try {
-        const supabase = fastify.supabase;
+        const supabase = fastify.supabaseAdmin;
         const userId = request.user?.id;
         if (!userId) {
           return reply.status(401).send({
@@ -315,7 +315,7 @@ Critérios para vazamento:
     { preHandler: [authHook] },
     async (request, reply) => {
       try {
-        const supabase = fastify.supabase;
+        const supabase = fastify.supabaseAdmin;
         const userId = request.user?.id;
         if (!userId) {
           return reply.status(401).send({

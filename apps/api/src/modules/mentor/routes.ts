@@ -24,7 +24,7 @@ const mentorRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
-        const supabase = fastify.supabase;
+        const supabase = fastify.supabaseAdmin;
         const userId = request.user!.id;
         const objetivos = await listarObjetivosMentor(supabase, userId);
 
@@ -48,7 +48,7 @@ const mentorRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
-        const supabase = fastify.supabase;
+        const supabase = fastify.supabaseAdmin;
         const userId = request.user!.id;
         const { objetivo, valor_alvo, prazo } = request.body || {};
 
@@ -88,7 +88,7 @@ const mentorRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
-        const supabase = fastify.supabase;
+        const supabase = fastify.supabaseAdmin;
         const userId = request.user!.id;
         const { id } = request.params;
 
@@ -121,7 +121,7 @@ const mentorRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
       try {
-        const supabase = fastify.supabase;
+        const supabase = fastify.supabaseAdmin;
         const userId = request.user!.id;
 
         await runMentorAlerts(supabase, userId);
