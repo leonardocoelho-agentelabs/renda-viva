@@ -154,7 +154,10 @@ export function RecurringModal({ isOpen, onClose, onSuccess }: RecurringModalPro
       if (tipo === "parcela") {
         body.total_parcelas = parseInt(totalParcelas);
         body.parcelas_pagas = parseInt(parcelasPagas);
-        body.data_inicio = dataInicio;
+        // Garantir data_inicio sempre presente e válida (input date pode retornar "")
+        if (dataInicio && dataInicio.trim() !== "") {
+          body.data_inicio = dataInicio;
+        }
       }
 
       const res = await fetch(`${apiUrl}/recurring`, {
@@ -167,8 +170,20 @@ export function RecurringModal({ isOpen, onClose, onSuccess }: RecurringModalPro
       });
 
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Erro ao criar compromisso");
+        // Tenta extrair a mensagem real do backend
+        let errorMsg = `Erro ${res.status} ao criar compromisso`;
+        try {
+          const errorBody = await res.json();
+          errorMsg = errorBody.error || errorBody.message || errorMsg;
+        } catch {
+          try {
+            errorMsg = await res.text();
+          } catch {
+            /* mantém a mensagem padrão */
+          }
+        }
+        console.error("[RecurringModal] Erro do backend:", { status: res.status, body });
+        throw new Error(errorMsg);
       }
 
       handleClose();
