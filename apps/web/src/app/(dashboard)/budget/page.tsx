@@ -172,8 +172,8 @@ export default function BudgetPage() {
     <DashboardLayout>
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-rv-dark-ink">Orçamentos</h1>
-          <p className="text-rv-muted dark:text-rv-dark-muted">Gerencie seus limites de gastos por categoria</p>
+          <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-[#F0F0F0]">Orçamentos</h1>
+          <p className="text-rv-muted dark:text-[#8A8A8A]">Gerencie seus limites de gastos por categoria</p>
         </div>
         {budgets.length > 0 && (
           <button
@@ -200,11 +200,11 @@ export default function BudgetPage() {
         </div>
       ) : budgets.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <PieChart className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          <PieChart className="h-16 w-16 text-gray-300 dark:text-[#3a3a3a] mb-4" />
+          <h2 className="text-xl font-semibold text-gray-700 dark:text-[#F0F0F0] mb-2">
             Nenhum orçamento para este mês
           </h2>
-          <p className="text-gray-400 dark:text-gray-500 mb-8 max-w-sm">
+          <p className="text-gray-400 dark:text-[#8A8A8A] mb-8 max-w-sm">
             Gere um orçamento inteligente baseado no seu histórico de gastos e na regra
             50/30/20 adaptada à sua realidade.
           </p>
@@ -220,23 +220,23 @@ export default function BudgetPage() {
       ) : (
         <div className="space-y-6">
           {/* Resumo geral */}
-          <div className="bg-white dark:bg-rv-dark-card rounded-xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-6">
+          <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-white/8 shadow-sm p-6">
             <div className="flex items-end justify-between mb-3">
               <div>
-                <p className="text-sm text-rv-muted dark:text-rv-dark-muted">Total gasto</p>
-                <p className="text-2xl font-bold text-rv-ink dark:text-rv-dark-ink font-[var(--font-poppins)]">
+                <p className="text-sm text-[#8A8A8A]">Total gasto</p>
+                <p className="text-2xl font-bold text-rv-ink dark:text-[#F0F0F0] font-[var(--font-poppins)]">
                   {formatCurrency(totalGasto)}
-                  <span className="text-base font-normal text-rv-muted/70 dark:text-rv-dark-muted">
+                  <span className="text-base font-normal text-[#8A8A8A]">
                     {" "}
                     de {formatCurrency(totalOrcado)}
                   </span>
                 </p>
               </div>
-              <span className="text-lg font-semibold text-rv-muted dark:text-rv-dark-muted">
+              <span className="text-lg font-semibold text-[#8A8A8A]">
                 {percentualGeral.toFixed(0)}%
               </span>
             </div>
-            <div className="h-3 w-full rounded-full bg-rv-mint/50 dark:bg-rv-dark-active-bg overflow-hidden">
+            <div className="h-3 w-full rounded-full bg-[#2A2A2A] overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all ${corBarra(percentualGeral)}`}
                 style={{ width: `${Math.min(percentualGeral, 100)}%` }}
@@ -254,11 +254,11 @@ export default function BudgetPage() {
               return (
                 <div
                   key={b.id}
-                  className="bg-white dark:bg-rv-dark-card rounded-xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-5"
+                  className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-white/8 shadow-sm p-5"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-rv-ink dark:text-rv-dark-ink">{b.categoria}</h3>
+                      <h3 className="font-semibold text-rv-ink dark:text-[#F0F0F0]">{b.categoria}</h3>
                       <span
                         className={`text-xs font-medium px-2 py-0.5 rounded-full ${TIPO_BADGE[tipo]}`}
                       >
@@ -270,19 +270,19 @@ export default function BudgetPage() {
                         </span>
                       )}
                     </div>
-                    <span className="text-sm font-semibold text-rv-muted dark:text-rv-dark-muted">
+                    <span className="text-sm font-semibold text-[#8A8A8A]">
                       {percentual.toFixed(0)}%
                     </span>
                   </div>
 
-                  <div className="h-2.5 w-full rounded-full bg-rv-mint/50 dark:bg-rv-dark-active-bg overflow-hidden mb-2">
+                  <div className="h-2.5 w-full rounded-full bg-[#2A2A2A] overflow-hidden mb-2">
                     <div
                       className={`h-full rounded-full transition-all ${corBarra(percentual)}`}
                       style={{ width: `${Math.min(percentual, 100)}%` }}
                     />
                   </div>
 
-                  <p className="text-sm text-gray-500 dark:text-[#94A3B8] mb-4">
+                  <p className="text-sm text-[#8A8A8A] mb-4">
                     {formatCurrency(gasto)} gastos de{" "}
                     {editingId === b.id ? (
                       <span className="inline-flex items-center gap-1">
@@ -297,7 +297,7 @@ export default function BudgetPage() {
                             if (e.key === "Escape") setEditingId(null);
                           }}
                           autoFocus
-                          className="w-24 border border-gray-300 dark:border-[#1E293B] rounded px-2 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 dark:bg-[#0F172A] dark:text-[#F8FAFC]"
+                          className="w-24 border border-gray-300 dark:border-white/10 rounded px-2 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 dark:bg-[#2A2A2A] dark:text-[#F0F0F0]"
                         />
                         <button
                           onClick={() => handleSaveLimit(b.id)}
@@ -307,7 +307,7 @@ export default function BudgetPage() {
                         </button>
                       </span>
                     ) : (
-                      <span className="font-medium text-gray-700 dark:text-gray-300">
+                      <span className="font-medium text-gray-700 dark:text-[#F0F0F0]">
                         {formatCurrency(limite)}
                       </span>
                     )}
@@ -324,7 +324,7 @@ export default function BudgetPage() {
                       </button>
                       <button
                         onClick={() => startEdit(b)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rv-forest/10 dark:border-rv-light/10 text-rv-muted dark:text-rv-dark-muted text-xs font-medium hover:bg-rv-mint/30 dark:hover:bg-rv-dark-card transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-[#8A8A8A] text-xs font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                         Editar limite

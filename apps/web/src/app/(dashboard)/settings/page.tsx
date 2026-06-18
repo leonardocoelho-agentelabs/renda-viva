@@ -244,48 +244,48 @@ export default function SettingsPage() {
       ) : (
         <div className="space-y-6 max-w-2xl">
           {/* Card Conta */}
-          <div className="bg-white dark:bg-rv-dark-card rounded-2xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-6 space-y-6">
-            <h3 className="text-sm font-semibold text-rv-ink dark:text-rv-dark-ink">Conta</h3>
+          <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-white/8 shadow-sm p-6 space-y-6">
+            <h3 className="text-sm font-semibold text-rv-ink dark:text-[#F0F0F0]">Conta</h3>
 
             <div>
-              <label className="block text-xs font-medium text-rv-ink dark:text-rv-dark-ink mb-2">Alterar senha</label>
+              <label className="block text-xs font-medium text-rv-ink dark:text-[#F0F0F0] mb-2">Alterar senha</label>
               <div className="space-y-2">
                 <input
                   type="password"
                   placeholder="Nova senha"
                   value={novaSenha}
                   onChange={(e) => setNovaSenha(e.target.value)}
-                  className="w-full border border-rv-forest/10 dark:border-rv-light/10 dark:bg-rv-dark-card rounded-lg px-3 py-2 text-sm text-rv-ink dark:text-rv-dark-ink placeholder:text-rv-muted/70"
+                  className="w-full border border-white/10 dark:border-white/10 dark:bg-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-rv-ink dark:text-[#F0F0F0] placeholder:text-rv-muted/70 dark:placeholder:text-[#8A8A8A]"
                 />
                 <input
                   type="password"
                   placeholder="Confirmar nova senha"
                   value={confirmarSenha}
                   onChange={(e) => setConfirmarSenha(e.target.value)}
-                  className="w-full border border-rv-forest/10 dark:border-rv-light/10 dark:bg-rv-dark-card rounded-lg px-3 py-2 text-sm text-rv-ink dark:text-rv-dark-ink placeholder:text-rv-muted/70"
+                  className="w-full border border-white/10 dark:border-white/10 dark:bg-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-rv-ink dark:text-[#F0F0F0] placeholder:text-rv-muted/70 dark:placeholder:text-[#8A8A8A]"
                 />
                 <button
                   onClick={alterarSenha}
-                  className="text-sm bg-rv-forest dark:bg-rv-dark-card text-white rounded-lg px-4 py-2 hover:bg-rv-green dark:hover:bg-rv-dark-active-bg"
+                  className="text-sm bg-rv-forest dark:bg-[#1E1E1E] text-white rounded-lg px-4 py-2 hover:bg-rv-green dark:hover:bg-white/10"
                 >
                   Alterar senha
                 </button>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-rv-forest/10 dark:border-rv-light/10">
-              <label className="block text-xs font-medium text-rv-ink dark:text-rv-dark-ink mb-2">Alterar email</label>
+            <div className="pt-4 border-t border-white/5">
+              <label className="block text-xs font-medium text-rv-ink dark:text-[#F0F0F0] mb-2">Alterar email</label>
               <div className="flex gap-2">
                 <input
                   type="email"
                   placeholder="novo@email.com"
                   value={novoEmail}
                   onChange={(e) => setNovoEmail(e.target.value)}
-                  className="flex-1 border border-rv-forest/10 dark:border-rv-light/10 dark:bg-rv-dark-card rounded-lg px-3 py-2 text-sm text-rv-ink dark:text-rv-dark-ink placeholder:text-rv-muted/70"
+                  className="flex-1 border border-white/10 dark:border-white/10 dark:bg-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-rv-ink dark:text-[#F0F0F0] placeholder:text-rv-muted/70 dark:placeholder:text-[#8A8A8A]"
                 />
                 <button
                   onClick={alterarEmail}
-                  className="text-sm bg-rv-forest dark:bg-rv-dark-card text-white rounded-lg px-4 py-2 whitespace-nowrap hover:bg-rv-green dark:hover:bg-rv-dark-active-bg"
+                  className="text-sm bg-rv-forest dark:bg-[#1E1E1E] text-white rounded-lg px-4 py-2 whitespace-nowrap hover:bg-rv-green dark:hover:bg-white/10"
                 >
                   Alterar email
                 </button>
@@ -293,17 +293,17 @@ export default function SettingsPage() {
             </div>
 
             {mensagemConta && (
-              <p className="text-sm text-rv-muted dark:text-rv-dark-muted">{mensagemConta}</p>
+              <p className="text-sm text-[#8A8A8A]">{mensagemConta}</p>
             )}
           </div>
 
           {/* Card WhatsApp */}
-          <div className="bg-white dark:bg-rv-dark-card rounded-2xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-6">
+          <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-white/8 shadow-sm p-6">
             <div className="flex items-center gap-2 mb-1">
               <MessageCircle className="w-4 h-4 text-rv-green dark:text-rv-vivid" />
-              <h3 className="text-sm font-semibold text-rv-ink dark:text-rv-dark-ink">Números vinculados ao WhatsApp</h3>
+              <h3 className="text-sm font-semibold text-rv-ink dark:text-[#F0F0F0]">Números vinculados ao WhatsApp</h3>
             </div>
-            <p className="text-xs text-rv-muted dark:text-rv-dark-muted mb-4">
+            <p className="text-xs text-[#8A8A8A] mb-4">
               Qualquer pessoa da família pode registrar transações pelo WhatsApp enviando
               mensagens de texto ou áudio para o número do Renda Viva. Adicione os números
               de quem você confia.
@@ -311,45 +311,45 @@ export default function SettingsPage() {
 
             <div className="space-y-2 mb-4">
               {contatos.map((c) => (
-                <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-rv-mint/30 dark:bg-rv-dark-active-bg">
+                <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-rv-mint/30 dark:bg-white/5">
                   <div>
-                    <p className="text-sm font-medium text-rv-ink dark:text-rv-dark-ink">{c.nome}</p>
-                    <p className="text-xs text-rv-muted dark:text-rv-dark-muted">{formatarTelefoneMascarado(c.telefone)}</p>
+                    <p className="text-sm font-medium text-rv-ink dark:text-[#F0F0F0]">{c.nome}</p>
+                    <p className="text-xs text-[#8A8A8A]">{formatarTelefoneMascarado(c.telefone)}</p>
                   </div>
                   <button
                     onClick={() => removerContato(c.id)}
-                    className="text-rv-muted/70 hover:text-red-500 dark:text-rv-dark-muted dark:hover:text-red-400 transition-colors"
+                    className="text-rv-muted/70 hover:text-red-500 dark:text-[#8A8A8A] dark:hover:text-red-400 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               ))}
               {contatos.length === 0 && (
-                <p className="text-sm text-rv-muted dark:text-rv-dark-muted text-center py-4">Nenhum número vinculado ainda</p>
+                <p className="text-sm text-[#8A8A8A] text-center py-4">Nenhum número vinculado ainda</p>
               )}
             </div>
 
             {adicionando ? (
-              <div className="space-y-3 p-3 rounded-xl border border-rv-forest/10 dark:border-rv-light/10">
+              <div className="space-y-3 p-3 rounded-xl border border-white/10">
                 <div>
-                  <label className="block text-xs font-medium text-rv-ink dark:text-rv-dark-ink mb-1">Nome/apelido</label>
+                  <label className="block text-xs font-medium text-rv-ink dark:text-[#F0F0F0] mb-1">Nome/apelido</label>
                   <input
                     type="text"
                     value={novoNome}
                     onChange={(e) => setNovoNome(e.target.value)}
                     placeholder="Ex: Maria"
-                    className="w-full border border-rv-forest/10 dark:border-rv-light/10 rounded-lg px-3 py-2 text-sm text-rv-ink dark:text-rv-dark-ink placeholder:text-rv-muted/70 focus:outline-none focus:ring-2 focus:ring-rv-green bg-white dark:bg-rv-dark-card"
+                    className="w-full border border-white/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-rv-ink dark:text-[#F0F0F0] placeholder:text-rv-muted/70 dark:placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-rv-green bg-white dark:bg-[#2A2A2A]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-rv-ink dark:text-rv-dark-ink mb-1">Número do WhatsApp</label>
+                  <label className="block text-xs font-medium text-rv-ink dark:text-[#F0F0F0] mb-1">Número do WhatsApp</label>
                   <input
                     type="text"
                     value={novoTelefone}
                     onChange={(e) => setNovoTelefone(e.target.value.replace(/\D/g, ""))}
                     placeholder="11999998888"
                     maxLength={11}
-                    className="w-full border border-rv-forest/10 dark:border-rv-light/10 rounded-lg px-3 py-2 text-sm text-rv-ink dark:text-rv-dark-ink placeholder:text-rv-muted/70 focus:outline-none focus:ring-2 focus:ring-rv-green bg-white dark:bg-rv-dark-card"
+                    className="w-full border border-white/10 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-rv-ink dark:text-[#F0F0F0] placeholder:text-rv-muted/70 dark:placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-rv-green bg-white dark:bg-[#2A2A2A]"
                   />
                 </div>
                 {erro && <p className="text-xs text-red-500 dark:text-red-400">{erro}</p>}
@@ -359,7 +359,7 @@ export default function SettingsPage() {
                       setAdicionando(false);
                       setErro("");
                     }}
-                    className="flex-1 border border-rv-forest/10 dark:border-rv-light/10 text-rv-muted dark:text-rv-dark-muted rounded-lg py-2 text-sm font-medium hover:bg-rv-mint/30 dark:hover:bg-rv-dark-card"
+                    className="flex-1 border border-white/10 text-[#8A8A8A] rounded-lg py-2 text-sm font-medium hover:bg-white/5 dark:hover:bg-white/5"
                   >
                     Cancelar
                   </button>
@@ -375,7 +375,7 @@ export default function SettingsPage() {
             ) : (
               <button
                 onClick={() => setAdicionando(true)}
-                className="w-full flex items-center justify-center gap-2 border border-dashed border-rv-forest/20 dark:border-rv-light/20 rounded-xl py-3 text-sm font-medium text-rv-muted dark:text-rv-dark-muted hover:border-rv-green hover:text-rv-green dark:hover:border-rv-vivid dark:hover:text-rv-vivid transition-colors"
+                className="w-full flex items-center justify-center gap-2 border border-dashed border-rv-forest/20 dark:border-white/10 rounded-xl py-3 text-sm font-medium text-[#8A8A8A] hover:border-rv-green hover:text-rv-green dark:hover:border-rv-vivid dark:hover:text-rv-vivid transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Adicionar número
@@ -384,7 +384,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Zona de Perigo */}
-          <div className="bg-white dark:bg-[#111827] rounded-2xl border border-red-100 dark:border-red-900/30 p-6 space-y-4">
+          <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-red-900/30 p-6 space-y-4">
             <h3 className="text-sm font-semibold text-red-600 dark:text-red-400 mb-1">Zona de perigo</h3>
             <p className="text-xs text-gray-500 dark:text-[#94A3B8]">
               Ações abaixo são irreversíveis. Tenha certeza antes de continuar.

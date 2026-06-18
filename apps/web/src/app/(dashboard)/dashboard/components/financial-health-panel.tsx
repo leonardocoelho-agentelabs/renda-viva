@@ -47,12 +47,12 @@ export function FinancialHealthPanel() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-[#111827] rounded-2xl border border-gray-100 dark:border-[#1E293B] shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
-        <div className="h-4 w-40 bg-gray-100 dark:bg-[#1E293B] rounded animate-pulse mb-4" />
-        <div className="h-8 w-24 bg-gray-100 dark:bg-[#1E293B] rounded animate-pulse mb-4" />
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-white/8 shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
+        <div className="h-4 w-40 bg-gray-100 dark:bg-[#2A2A2A] rounded animate-pulse mb-4" />
+        <div className="h-8 w-24 bg-gray-100 dark:bg-[#2A2A2A] rounded animate-pulse mb-4" />
         <div className="space-y-2">
-          <div className="h-6 bg-gray-50 dark:bg-[#1E293B] rounded animate-pulse" />
-          <div className="h-6 bg-gray-50 dark:bg-[#1E293B] rounded animate-pulse" />
+          <div className="h-6 bg-gray-50 dark:bg-[#2A2A2A] rounded animate-pulse" />
+          <div className="h-6 bg-gray-50 dark:bg-[#2A2A2A] rounded animate-pulse" />
         </div>
       </div>
     );
@@ -66,11 +66,11 @@ export function FinancialHealthPanel() {
   const ordenadas = [...dimensoes].sort((a, b) => a.pontos / a.max - b.pontos / b.max);
 
   return (
-    <div className="bg-white dark:bg-[#111827] rounded-2xl border border-gray-100 dark:border-[#1E293B] shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
+    <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-white/8 shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <Heart className="w-4 h-4 text-pink-500" />
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-[#F8FAFC]">Saúde Financeira</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-[#F0F0F0]">Saúde Financeira</h3>
         </div>
         <Link href="/score" className="text-xs text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium">
           Ver detalhes
@@ -78,8 +78,8 @@ export function FinancialHealthPanel() {
       </div>
 
       <div className="flex items-baseline gap-2 mb-4 mt-2">
-        <span className="text-3xl font-bold text-gray-900 dark:text-[#F8FAFC]">{score}</span>
-        <span className="text-sm text-gray-400 dark:text-gray-500">/100</span>
+        <span className="text-3xl font-bold text-gray-900 dark:text-[#F0F0F0]">{score}</span>
+        <span className="text-sm text-[#8A8A8A]">/100</span>
         <span className={`text-sm font-medium ${classificacao.cor}`}>
           — {classificacao.label}
         </span>
@@ -103,7 +103,7 @@ export function FinancialHealthPanel() {
                   <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                 </div>
               )}
-              <span className={`text-sm ${isBom ? "text-gray-700 dark:text-gray-300" : "text-gray-600 dark:text-gray-400"}`}>
+              <span className={`text-sm ${isBom ? "text-gray-700 dark:text-[#F0F0F0]" : "text-[#8A8A8A]"}`}>
                 {texto}
               </span>
             </div>

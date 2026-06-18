@@ -31,13 +31,15 @@
 }
 
 .dark {
-  /* Renda Viva brand palette - Dark Mode */
-  --rv-dark-bg: #0E1F18;
-  --rv-dark-card: #16291F;
-  --rv-dark-ink: #EAF4EF;
-  --rv-dark-muted: #9CB8AA;
-  --rv-dark-border: rgba(149, 213, 178, 0.12);
-  --rv-dark-hairline: rgba(149, 213, 178, 0.10);
+  /* Renda Viva brand palette - Dark Mode (neutro cinza-grafite) */
+  --rv-dark-bg: #111111;
+  --rv-dark-card: #1E1E1E;
+  --rv-dark-sidebar: #141414;
+  --rv-dark-border: rgba(255, 255, 255, 0.08);
+  --rv-dark-ink: #F0F0F0;
+  --rv-dark-muted: #8A8A8A;
+  --rv-dark-icon: #2A2A2A;
+  --rv-dark-hairline: rgba(255, 255, 255, 0.05);
   --rv-dark-active-bg: rgba(82, 183, 136, 0.15);
 
   /* Semantic tokens - Dark */
@@ -86,6 +88,8 @@
   --color-rv-dark-border: var(--rv-dark-border);
   --color-rv-dark-hairline: var(--rv-dark-hairline);
   --color-rv-dark-active-bg: var(--rv-dark-active-bg);
+  --color-rv-dark-sidebar: var(--rv-dark-sidebar);
+  --color-rv-dark-icon: var(--rv-dark-icon);
 
   /* Typography */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -117,13 +121,13 @@ body {
   border-radius: 3px;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: #3a3a3a;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
 }
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #555555;
 }
 
 /* Transições suaves */

@@ -58,7 +58,7 @@ export default function Logo({ size = 36, variant = 'auto', showText = true }: L
             <span className="text-rv-forest dark:text-white">Renda</span>
             <span className="text-rv-green dark:text-rv-soft"> Viva</span>
           </span>
-          <span className="text-rv-muted dark:text-rv-dark-muted text-[10px] block -mt-0.5">
+          <span className="text-rv-muted dark:text-[#8A8A8A] text-[10px] block -mt-0.5">
             Gestão Inteligente
           </span>
         </div>

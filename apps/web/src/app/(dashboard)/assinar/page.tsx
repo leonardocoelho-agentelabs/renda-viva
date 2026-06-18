@@ -168,16 +168,16 @@ export default function AssinarPage() {
       </div>
 
       <div className="text-center mb-8">
-        <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-rv-dark-ink">
+        <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-[#F0F0F0]">
           Ative sua assinatura
         </h1>
-        <p className="text-rv-muted dark:text-rv-dark-muted mt-2">
+        <p className="text-rv-muted dark:text-[#8A8A8A] mt-2">
           Para usar o Renda Viva, escolha o plano abaixo
         </p>
       </div>
 
-      <div className="bg-white dark:bg-rv-dark-card rounded-2xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-6">
-        <div className="flex bg-rv-mint/50 dark:bg-rv-dark-active-bg rounded-lg p-1 mb-6">
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-white/8 shadow-sm p-6">
+        <div className="flex bg-rv-mint/50 dark:bg-[#2A2A2A] rounded-lg p-1 mb-6">
           <button
             onClick={() => setCiclo('MONTHLY')}
             className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
@@ -201,11 +201,11 @@ export default function AssinarPage() {
 
         <div className="text-center mb-6">
           <div className="flex items-baseline justify-center gap-1">
-            <span className="text-sm text-rv-muted dark:text-rv-dark-muted">R$</span>
-            <span className="font-[var(--font-poppins)] font-bold text-4xl text-rv-ink dark:text-rv-dark-ink">
+            <span className="text-sm text-[#8A8A8A]">R$</span>
+            <span className="font-[var(--font-poppins)] font-bold text-4xl text-rv-ink dark:text-[#F0F0F0]">
               {ciclo === 'MONTHLY' ? precoMensal : precoAnual}
             </span>
-            <span className="text-sm text-rv-muted dark:text-rv-dark-muted">
+            <span className="text-sm text-[#8A8A8A]">
               /{ciclo === 'MONTHLY' ? 'mês' : 'ano'}
             </span>
           </div>
@@ -223,8 +223,8 @@ export default function AssinarPage() {
             'Orçamento adaptativo',
             'Radar de investimentos semanal',
           ].map((item, i) => (
-            <li key={i} className="flex items-start gap-2.5 text-sm text-rv-ink dark:text-rv-dark-ink">
-              <div className="w-5 h-5 rounded-full bg-rv-mint dark:bg-rv-green/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <li key={i} className="flex items-start gap-2.5 text-sm text-rv-ink dark:text-[#F0F0F0]">
+              <div className="w-5 h-5 rounded-full bg-rv-mint dark:bg-rv-vivid/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Check className="w-3 h-3 text-rv-green dark:text-rv-vivid" />
               </div>
               {item}
@@ -234,7 +234,7 @@ export default function AssinarPage() {
 
         <div className="space-y-4 mb-4">
           <div>
-            <label className="block text-xs font-medium text-rv-ink dark:text-rv-dark-ink mb-1">
+            <label className="block text-xs font-medium text-rv-ink dark:text-[#F0F0F0] mb-1">
               Nome completo
             </label>
             <input
@@ -242,12 +242,12 @@ export default function AssinarPage() {
               value={nome}
               onChange={e => setNome(e.target.value)}
               placeholder="Seu nome completo"
-              className="w-full border border-rv-forest/10 dark:border-rv-light/10 dark:bg-rv-dark-card rounded-lg px-3 py-2 text-sm text-rv-ink dark:text-rv-dark-ink placeholder:text-rv-muted/70 focus:outline-none focus:ring-2 focus:ring-rv-green"
+              className="w-full border border-white/10 dark:border-white/10 dark:bg-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-rv-ink dark:text-[#F0F0F0] placeholder:text-rv-muted/70 dark:placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-rv-green"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-rv-ink dark:text-rv-dark-ink mb-1">
+            <label className="block text-xs font-medium text-rv-ink dark:text-[#F0F0F0] mb-1">
               Email
             </label>
             <input
@@ -256,13 +256,13 @@ export default function AssinarPage() {
               readOnly
               disabled
               placeholder="seu@email.com"
-              className="w-full border border-rv-forest/10 dark:border-rv-light/10 dark:bg-rv-dark-card rounded-lg px-3 py-2 text-sm text-rv-muted dark:text-rv-dark-muted placeholder:text-rv-muted/70 cursor-not-allowed opacity-75"
+              className="w-full border border-white/10 dark:border-white/10 dark:bg-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-[#8A8A8A] placeholder:text-rv-muted/70 dark:placeholder:text-[#8A8A8A] cursor-not-allowed opacity-75"
             />
-            <p className="text-[10px] text-rv-muted dark:text-rv-dark-muted mt-1">Email de login — não pode ser alterado aqui</p>
+            <p className="text-[10px] text-[#8A8A8A] mt-1">Email de login — não pode ser alterado aqui</p>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-rv-ink dark:text-rv-dark-ink mb-1">
+            <label className="block text-xs font-medium text-rv-ink dark:text-[#F0F0F0] mb-1">
               WhatsApp
             </label>
             <input
@@ -270,12 +270,12 @@ export default function AssinarPage() {
               value={telefone}
               onChange={e => setTelefone(formatarTelefone(e.target.value))}
               placeholder="(11) 99999-8888"
-              className="w-full border border-rv-forest/10 dark:border-rv-light/10 dark:bg-rv-dark-card rounded-lg px-3 py-2 text-sm text-rv-ink dark:text-rv-dark-ink placeholder:text-rv-muted/70 focus:outline-none focus:ring-2 focus:ring-rv-green"
+              className="w-full border border-white/10 dark:border-white/10 dark:bg-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-rv-ink dark:text-[#F0F0F0] placeholder:text-rv-muted/70 dark:placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-rv-green"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-rv-ink dark:text-rv-dark-ink mb-1">
+            <label className="block text-xs font-medium text-rv-ink dark:text-[#F0F0F0] mb-1">
               CPF (necessário para gerar a cobrança)
             </label>
             <input
@@ -284,7 +284,7 @@ export default function AssinarPage() {
               onChange={e => setCpf(formatarCpf(e.target.value))}
               placeholder="000.000.000-00"
               maxLength={14}
-              className="w-full border border-rv-forest/10 dark:border-rv-light/10 dark:bg-rv-dark-card rounded-lg px-3 py-2 text-sm text-rv-ink dark:text-rv-dark-ink placeholder:text-rv-muted/70 focus:outline-none focus:ring-2 focus:ring-rv-green"
+              className="w-full border border-white/10 dark:border-white/10 dark:bg-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-rv-ink dark:text-[#F0F0F0] placeholder:text-rv-muted/70 dark:placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-rv-green"
             />
           </div>
         </div>
@@ -294,10 +294,10 @@ export default function AssinarPage() {
         {aguardandoPagamento ? (
           <div className="text-center py-3">
             <Loader2 className="w-5 h-5 text-rv-green dark:text-rv-vivid animate-spin mx-auto mb-2" />
-            <p className="text-sm text-rv-muted dark:text-rv-dark-muted">
+            <p className="text-sm text-[#8A8A8A]">
               Aguardando confirmação do pagamento...
             </p>
-            <p className="text-xs text-rv-muted/70 dark:text-rv-dark-muted mt-1">
+            <p className="text-xs text-[#8A8A8A] mt-1">
               Complete o pagamento na aba que abrimos. Esta página atualiza automaticamente.
             </p>
           </div>

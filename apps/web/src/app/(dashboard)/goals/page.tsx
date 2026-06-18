@@ -208,8 +208,8 @@ export default function GoalsPage() {
     <DashboardLayout>
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-rv-dark-ink">Metas</h1>
-          <p className="text-rv-muted dark:text-rv-dark-muted">Defina e acompanhe seus objetivos financeiros</p>
+          <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-[#F0F0F0]">Metas</h1>
+          <p className="text-rv-muted dark:text-[#8A8A8A]">Defina e acompanhe seus objetivos financeiros</p>
         </div>
         {goals.length > 0 && (
           <button
@@ -236,10 +236,10 @@ export default function GoalsPage() {
       ) : goals.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <span className="text-6xl mb-4">🎯</span>
-          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          <h2 className="text-xl font-semibold text-gray-700 dark:text-[#F0F0F0] mb-2">
             Defina seus objetivos financeiros
           </h2>
-          <p className="text-gray-400 dark:text-gray-500 mb-8 max-w-sm">
+          <p className="text-gray-400 dark:text-[#8A8A8A] mb-8 max-w-sm">
             A IA vai criar um plano personalizado baseado no seu histórico.
           </p>
           <button
@@ -260,33 +260,33 @@ export default function GoalsPage() {
             return (
               <div
                 key={g.id}
-                className={`bg-white dark:bg-rv-dark-card rounded-xl border p-5 ${
+                className={`bg-white dark:bg-[#1E1E1E] rounded-xl border p-5 ${
                   g.status === "cancelada" || g.status === "pausada"
-                    ? "border-rv-forest/10 dark:border-rv-light/10 opacity-70"
-                    : "border-rv-forest/10 dark:border-rv-light/10"
+                    ? "border-white/5 dark:border-white/5 opacity-70"
+                    : "border-white/8 dark:border-white/8"
                 }`}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">{getMetaEmoji(g.nome)}</span>
                     <div>
-                      <h3 className="font-semibold text-rv-ink dark:text-rv-dark-ink leading-tight">{g.nome}</h3>
-                      <p className="text-xs text-rv-muted dark:text-rv-dark-muted">{formatDate(g.data_alvo)}</p>
+                      <h3 className="font-semibold text-rv-ink dark:text-[#F0F0F0] leading-tight">{g.nome}</h3>
+                      <p className="text-xs text-[#8A8A8A]">{formatDate(g.data_alvo)}</p>
                     </div>
                   </div>
                   <div className="relative">
                     <button
                       onClick={() => setMenuId(menuId === g.id ? null : g.id)}
-                      className="p-1 rounded hover:bg-rv-mint/30 dark:hover:bg-rv-dark-active-bg text-rv-muted dark:text-rv-dark-muted"
+                      className="p-1 rounded hover:bg-white/5 dark:hover:bg-white/5 text-[#8A8A8A]"
                     >
                       <MoreVertical className="h-4 w-4" />
                     </button>
                     {menuId === g.id && (
-                      <div className="absolute right-0 mt-1 w-36 bg-white dark:bg-[#111827] border border-gray-100 dark:border-[#1E293B] rounded-lg shadow-lg z-10 py-1 text-sm">
+                      <div className="absolute right-0 mt-1 w-36 bg-white dark:bg-[#1E1E1E] border border-white/10 dark:border-white/10 rounded-lg shadow-lg z-10 py-1 text-sm">
                         {g.status !== "pausada" && g.status !== "concluida" && (
                           <button
                             onClick={() => handleStatus(g.id, "pausada")}
-                            className="block w-full text-left px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-[#1E293B] text-gray-700 dark:text-gray-300"
+                            className="block w-full text-left px-3 py-1.5 hover:bg-white/5 text-gray-700 dark:text-[#F0F0F0]"
                           >
                             Pausar
                           </button>
@@ -294,14 +294,14 @@ export default function GoalsPage() {
                         {g.status === "pausada" && (
                           <button
                             onClick={() => handleStatus(g.id, "ativa")}
-                            className="block w-full text-left px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-[#1E293B] text-gray-700 dark:text-gray-300"
+                            className="block w-full text-left px-3 py-1.5 hover:bg-white/5 text-gray-700 dark:text-[#F0F0F0]"
                           >
                             Reativar
                           </button>
                         )}
                         <button
                           onClick={() => handleStatus(g.id, "cancelada")}
-                          className="block w-full text-left px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-[#1E293B] text-red-600 dark:text-red-400"
+                          className="block w-full text-left px-3 py-1.5 hover:bg-white/5 text-red-600 dark:text-red-400"
                         >
                           Cancelar
                         </button>
@@ -310,7 +310,7 @@ export default function GoalsPage() {
                   </div>
                 </div>
 
-                <div className="h-2.5 w-full rounded-full bg-rv-mint/50 dark:bg-rv-dark-active-bg overflow-hidden mb-2">
+                <div className="h-2.5 w-full rounded-full bg-[#2A2A2A] overflow-hidden mb-2">
                   <div
                     className="h-full rounded-full bg-rv-green dark:bg-rv-vivid transition-all"
                     style={{ width: `${progresso}%` }}
@@ -318,18 +318,18 @@ export default function GoalsPage() {
                 </div>
 
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm text-rv-muted dark:text-rv-dark-muted">
-                    <span className="font-medium text-rv-ink dark:text-rv-dark-ink">{formatCurrency(atual)}</span> de{" "}
+                  <p className="text-sm text-[#8A8A8A]">
+                    <span className="font-medium text-rv-ink dark:text-[#F0F0F0]">{formatCurrency(atual)}</span> de{" "}
                     {formatCurrency(alvo)}
                   </p>
-                  <span className="text-sm font-semibold text-rv-muted dark:text-rv-dark-muted">
+                  <span className="text-sm font-semibold text-[#8A8A8A]">
                     {progresso.toFixed(0)}%
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between gap-2">
                   {g.instrumento_recomendado && (
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-rv-mint dark:bg-rv-green/20 text-rv-green dark:text-rv-vivid">
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-rv-mint dark:bg-rv-vivid/20 text-rv-green dark:text-rv-vivid">
                       {g.instrumento_recomendado}
                     </span>
                   )}
@@ -349,7 +349,7 @@ export default function GoalsPage() {
                             if (e.key === "Escape") setDepositId(null);
                           }}
                           placeholder="Valor"
-                          className="w-24 border border-rv-forest/10 dark:border-rv-light/10 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-rv-green dark:bg-rv-dark-card dark:text-rv-dark-ink"
+                          className="w-24 border border-white/10 dark:border-white/10 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-rv-green dark:bg-[#2A2A2A] dark:text-[#F0F0F0]"
                         />
                         <button
                           onClick={() => handleDeposit(g.id)}
@@ -371,7 +371,7 @@ export default function GoalsPage() {
                       </button>
                     )
                   ) : (
-                    <span className="text-xs text-gray-400 dark:text-gray-500 capitalize">{g.status}</span>
+                    <span className="text-xs text-[#8A8A8A] capitalize">{g.status}</span>
                   )}
                 </div>
               </div>
@@ -383,21 +383,21 @@ export default function GoalsPage() {
       {/* Modal criar meta */}
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white dark:bg-rv-dark-card rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-[#1E1E1E] rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             {plan ? (
               <div className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Sparkles className="h-5 w-5 text-rv-green dark:text-rv-vivid" />
-                  <h2 className="font-[var(--font-poppins)] font-semibold text-lg text-rv-ink dark:text-rv-dark-ink">Plano da IA</h2>
+                  <h2 className="font-[var(--font-poppins)] font-semibold text-lg text-rv-ink dark:text-[#F0F0F0]">Plano da IA</h2>
                 </div>
 
                 {typeof plan.aporte_mensal_necessario === "number" && (
-                  <div className="rounded-lg bg-rv-mint dark:bg-rv-green/20 border border-rv-forest/10 dark:border-rv-light/10 p-4 mb-3">
-                    <p className="text-sm text-rv-muted dark:text-rv-dark-muted">Aporte mensal necessário</p>
+                  <div className="rounded-lg bg-rv-mint dark:bg-rv-vivid/20 border border-white/10 p-4 mb-3">
+                    <p className="text-sm text-[#8A8A8A]">Aporte mensal necessário</p>
                     <p className="text-2xl font-bold text-rv-green dark:text-rv-vivid font-[var(--font-poppins)]">
                       {formatCurrency(plan.aporte_mensal_necessario)}
                       {typeof plan.meses_necessarios === "number" && (
-                        <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                        <span className="text-sm font-normal text-[#8A8A8A]">
                           {" "}por {plan.meses_necessarios} meses
                         </span>
                       )}
@@ -407,11 +407,11 @@ export default function GoalsPage() {
 
                 {plan.instrumento_recomendado && (
                   <div className="mb-3">
-                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-rv-mint dark:bg-rv-green/20 text-rv-green dark:text-rv-vivid">
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-rv-mint dark:bg-rv-vivid/20 text-rv-green dark:text-rv-vivid">
                       {plan.instrumento_recomendado}
                     </span>
                     {plan.justificativa_instrumento && (
-                      <p className="text-sm text-rv-muted dark:text-rv-dark-muted mt-1.5">
+                      <p className="text-sm text-[#8A8A8A] mt-1.5">
                         {plan.justificativa_instrumento}
                       </p>
                     )}
@@ -419,7 +419,7 @@ export default function GoalsPage() {
                 )}
 
                 {plan.mensagem && (
-                  <p className="text-sm text-rv-ink dark:text-rv-dark-ink mb-3">{plan.mensagem}</p>
+                  <p className="text-sm text-rv-ink dark:text-[#F0F0F0] mb-3">{plan.mensagem}</p>
                 )
 
                 }
@@ -442,10 +442,10 @@ export default function GoalsPage() {
             ) : (
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-[var(--font-poppins)] font-semibold text-lg text-rv-ink dark:text-rv-dark-ink">Nova Meta</h2>
+                  <h2 className="font-[var(--font-poppins)] font-semibold text-lg text-rv-ink dark:text-[#F0F0F0]">Nova Meta</h2>
                   <button
                     onClick={() => setShowCreate(false)}
-                    className="p-1 rounded hover:bg-rv-mint/30 dark:hover:bg-rv-dark-active-bg text-rv-muted dark:text-rv-dark-muted"
+                    className="p-1 rounded hover:bg-white/5 dark:hover:bg-white/5 text-[#8A8A8A]"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -453,7 +453,7 @@ export default function GoalsPage() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-rv-ink dark:text-rv-dark-ink mb-1">
+                    <label className="block text-sm font-medium text-rv-ink dark:text-[#F0F0F0] mb-1">
                       Nome da meta
                     </label>
                     <input
@@ -461,11 +461,11 @@ export default function GoalsPage() {
                       value={form.nome}
                       onChange={(e) => setForm({ ...form, nome: e.target.value })}
                       placeholder="Ex: Viagem para Europa"
-                      className="w-full px-3 py-2 border border-rv-forest/10 dark:border-rv-light/10 rounded-lg text-sm dark:bg-rv-dark-card dark:text-rv-dark-ink focus:outline-none focus:ring-2 focus:ring-rv-green"
+                      className="w-full px-3 py-2 border border-white/10 dark:border-white/10 rounded-lg text-sm dark:bg-[#2A2A2A] dark:text-[#F0F0F0] focus:outline-none focus:ring-2 focus:ring-rv-green"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-rv-ink dark:text-rv-dark-ink mb-1">
+                    <label className="block text-sm font-medium text-rv-ink dark:text-[#F0F0F0] mb-1">
                       Valor alvo (R$)
                     </label>
                     <input
@@ -474,22 +474,22 @@ export default function GoalsPage() {
                       value={form.valor_alvo}
                       onChange={(e) => setForm({ ...form, valor_alvo: e.target.value })}
                       placeholder="Ex: 15000"
-                      className="w-full px-3 py-2 border border-rv-forest/10 dark:border-rv-light/10 rounded-lg text-sm dark:bg-rv-dark-card dark:text-rv-dark-ink focus:outline-none focus:ring-2 focus:ring-rv-green"
+                      className="w-full px-3 py-2 border border-white/10 dark:border-white/10 rounded-lg text-sm dark:bg-[#2A2A2A] dark:text-[#F0F0F0] focus:outline-none focus:ring-2 focus:ring-rv-green"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-rv-ink dark:text-rv-dark-ink mb-1">
+                    <label className="block text-sm font-medium text-rv-ink dark:text-[#F0F0F0] mb-1">
                       Data alvo (opcional)
                     </label>
                     <input
                       type="date"
                       value={form.data_alvo}
                       onChange={(e) => setForm({ ...form, data_alvo: e.target.value })}
-                      className="w-full px-3 py-2 border border-rv-forest/10 dark:border-rv-light/10 rounded-lg text-sm dark:bg-rv-dark-card dark:text-rv-dark-ink focus:outline-none focus:ring-2 focus:ring-rv-green"
+                      className="w-full px-3 py-2 border border-white/10 dark:border-white/10 rounded-lg text-sm dark:bg-[#2A2A2A] dark:text-[#F0F0F0] focus:outline-none focus:ring-2 focus:ring-rv-green"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-rv-ink dark:text-rv-dark-ink mb-1">
+                    <label className="block text-sm font-medium text-rv-ink dark:text-[#F0F0F0] mb-1">
                       Descrição (opcional)
                     </label>
                     <textarea
@@ -497,7 +497,7 @@ export default function GoalsPage() {
                       onChange={(e) => setForm({ ...form, descricao: e.target.value })}
                       rows={2}
                       placeholder="Detalhes sobre a meta..."
-                      className="w-full px-3 py-2 border border-rv-forest/10 dark:border-rv-light/10 rounded-lg text-sm dark:bg-rv-dark-card dark:text-rv-dark-ink focus:outline-none focus:ring-2 focus:ring-rv-green resize-none"
+                      className="w-full px-3 py-2 border border-white/10 dark:border-white/10 rounded-lg text-sm dark:bg-[#2A2A2A] dark:text-[#F0F0F0] focus:outline-none focus:ring-2 focus:ring-rv-green resize-none"
                     />
                   </div>
                 </div>

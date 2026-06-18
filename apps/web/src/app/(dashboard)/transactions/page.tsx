@@ -131,8 +131,8 @@ export default function TransactionsPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-rv-dark-ink">Transações</h1>
-            <p className="text-rv-muted dark:text-rv-dark-muted">Gerencie suas transações financeiras</p>
+            <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-[#F0F0F0]">Transações</h1>
+            <p className="text-rv-muted dark:text-[#8A8A8A]">Gerencie suas transações financeiras</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -144,7 +144,7 @@ export default function TransactionsPage() {
             </button>
             <button
               onClick={() => setShowUpload(!showUpload)}
-              className="px-4 py-2 border border-rv-forest/10 dark:border-rv-light/10 text-rv-muted dark:text-rv-dark-muted rounded-lg text-sm font-medium hover:bg-rv-mint/30 dark:hover:bg-rv-dark-card transition-colors"
+              className="px-4 py-2 border border-white/10 text-[#8A8A8A] rounded-lg text-sm font-medium hover:bg-white/5 dark:hover:bg-white/5 transition-colors"
             >
               {showUpload ? "Ocultar upload" : "Importar extrato"}
             </button>
@@ -153,9 +153,9 @@ export default function TransactionsPage() {
       </div>
 
       {showUpload && (
-        <Card className="bg-white dark:bg-rv-dark-card border-rv-forest/10 dark:border-rv-light/10">
+        <Card className="bg-white dark:bg-[#1E1E1E] border border-gray-100 dark:border-white/8">
           <CardHeader>
-            <h3 className="font-semibold text-rv-ink dark:text-rv-dark-ink">Importar extrato</h3>
+            <h3 className="font-semibold text-rv-ink dark:text-[#F0F0F0]">Importar extrato</h3>
           </CardHeader>
           <CardContent>
             <UploadZone onUploadComplete={handleUploadComplete} />
@@ -163,14 +163,14 @@ export default function TransactionsPage() {
         </Card>
       )}
 
-      <Card className="bg-white dark:bg-rv-dark-card border-rv-forest/10 dark:border-rv-light/10">
+      <Card className="bg-white dark:bg-[#1E1E1E] border border-gray-100 dark:border-white/8">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-rv-ink dark:text-rv-dark-ink">Todas as transações</h3>
+            <h3 className="font-semibold text-rv-ink dark:text-[#F0F0F0]">Todas as transações</h3>
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="px-3 py-2 border border-rv-forest/10 dark:border-rv-light/10 rounded-lg text-sm text-rv-ink dark:text-rv-dark-ink dark:bg-rv-dark-card bg-white"
+              className="px-3 py-2 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-rv-ink dark:text-[#F0F0F0] dark:bg-[#1E1E1E] bg-white"
             >
               {months.map((month) => (
                 <option key={month.value} value={month.value}>
@@ -182,16 +182,16 @@ export default function TransactionsPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-12 text-rv-muted dark:text-rv-dark-muted">Carregando transações...</div>
+            <div className="text-center py-12 text-[#8A8A8A]">Carregando transações...</div>
           ) : transactions.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-rv-muted dark:text-rv-dark-muted">Nenhuma transação encontrada</p>
-              <p className="text-sm text-rv-muted/70 dark:text-rv-dark-muted mt-2">
+              <p className="text-[#8A8A8A]">Nenhuma transação encontrada</p>
+              <p className="text-sm text-[#8A8A8A]/70 mt-2">
                 Adicione uma transação ou importe um extrato para começar
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-rv-forest/10 dark:divide-rv-light/10">
+            <div className="divide-y divide-gray-100 dark:divide-white/5">
               {transactions.map((tx) => (
                 <TransactionRow
                   key={tx.id}

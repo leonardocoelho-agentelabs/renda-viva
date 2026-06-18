@@ -42,14 +42,14 @@ function formatMessage(text: string): React.ReactNode {
       return (
         <div key={i} className="flex gap-2 my-0.5">
           <span className="text-green-600 dark:text-green-400 font-bold mt-0.5">•</span>
-          <span className="dark:text-gray-300">{formatted.map((p, j) => <span key={j}>{p}</span>)}</span>
+          <span className="dark:text-[#F0F0F0]">{formatted.map((p, j) => <span key={j}>{p}</span>)}</span>
         </div>
       );
     }
 
     if (/^\d+\./.test(line)) {
       return (
-        <div key={i} className="my-0.5 pl-1 dark:text-gray-300">
+        <div key={i} className="my-0.5 pl-1 dark:text-[#F0F0F0]">
           {formatted.map((p, j) => (
             <span key={j}>{p}</span>
           ))}
@@ -139,13 +139,13 @@ export default function AssistantPage() {
   return (
     <DashboardLayout>
       <div className="mb-8">
-        <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-rv-dark-ink">Assistente</h1>
-        <p className="text-rv-muted dark:text-rv-dark-muted">Tire dúvidas sobre suas finanças com IA</p>
+        <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-[#F0F0F0]">Assistente</h1>
+        <p className="text-rv-muted dark:text-[#8A8A8A]">Tire dúvidas sobre suas finanças com IA</p>
       </div>
 
-      <div className="flex flex-col bg-white dark:bg-rv-dark-card rounded-xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm h-[calc(100dvh-240px)] md:h-[calc(100vh-220px)] overflow-hidden">
+      <div className="flex flex-col bg-white dark:bg-[#1E1E1E] rounded-xl border border-white/8 shadow-sm h-[calc(100dvh-240px)] md:h-[calc(100vh-220px)] overflow-hidden">
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-rv-mint/30 dark:bg-rv-dark-active-bg">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-rv-mint/30 dark:bg-white/5">
           {messages.map((msg, i) => (
             <div
               key={i}
@@ -156,7 +156,7 @@ export default function AssistantPage() {
                 className={`max-w-[70%] px-4 py-2.5 rounded-2xl text-sm ${
                   msg.role === "user"
                     ? "bg-rv-green dark:bg-rv-vivid text-white rounded-br-sm whitespace-pre-wrap"
-                    : "bg-white dark:bg-rv-dark-card border border-rv-forest/10 dark:border-rv-light/10 shadow-sm text-rv-ink dark:text-rv-dark-ink rounded-bl-sm"
+                    : "bg-white dark:bg-[#1E1E1E] border border-white/10 shadow-sm text-rv-ink dark:text-[#F0F0F0] rounded-bl-sm"
                 }`}
               >
                 {msg.role === "user" ? msg.content : formatMessage(msg.content)}
@@ -166,7 +166,7 @@ export default function AssistantPage() {
           {loading && (
             <div className="flex gap-3 justify-start">
               <VivaAvatar />
-              <div className="max-w-[70%] px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm bg-white dark:bg-rv-dark-card border border-rv-forest/10 dark:border-rv-light/10 shadow-sm text-rv-muted dark:text-rv-dark-muted">
+              <div className="max-w-[70%] px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm bg-white dark:bg-[#1E1E1E] border border-white/10 shadow-sm text-[#8A8A8A]">
                 Viva está pensando...
               </div>
             </div>
@@ -175,7 +175,7 @@ export default function AssistantPage() {
         </div>
 
         {/* Input */}
-        <div className="border-t border-rv-forest/10 dark:border-rv-light/10 p-4 flex gap-3">
+        <div className="border-t border-white/5 p-4 flex gap-3">
           <input
             type="text"
             value={input}
@@ -183,7 +183,7 @@ export default function AssistantPage() {
             onKeyDown={handleKeyDown}
             placeholder="Digite sua mensagem..."
             disabled={loading}
-            className="flex-1 px-4 py-2.5 border border-rv-forest/10 dark:border-rv-light/10 rounded-lg text-sm text-rv-ink dark:text-rv-dark-ink dark:bg-rv-dark-card placeholder:text-rv-muted/70 dark:placeholder:text-rv-dark-muted focus:outline-none focus:ring-2 focus:ring-rv-green focus:border-rv-green disabled:opacity-60"
+            className="flex-1 px-4 py-2.5 border border-white/10 dark:border-white/10 rounded-lg text-sm text-rv-ink dark:text-[#F0F0F0] dark:bg-[#2A2A2A] placeholder:text-rv-muted/70 dark:placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-rv-green focus:border-rv-green disabled:opacity-60"
           />
           <button
             onClick={sendMessage}

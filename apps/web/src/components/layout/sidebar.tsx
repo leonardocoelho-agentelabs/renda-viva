@@ -76,16 +76,16 @@ export function Sidebar({ onClose }: SidebarProps) {
   const inicial = nome.charAt(0).toUpperCase();
 
   return (
-    <aside className="w-60 h-screen flex flex-col flex-shrink-0 bg-rv-forest dark:bg-rv-dark-bg">
+    <aside className="w-60 h-screen flex flex-col flex-shrink-0 bg-rv-forest dark:bg-[#141414]">
       {/* Logo e cabeçalho */}
       <div className="px-6 py-5 border-b border-white/10">
         <div className="flex items-center gap-2.5">
           <Logo size={32} variant="light" showText={false} />
           <div className="min-w-0 flex-1">
-            <span className="font-[var(--font-poppins)] font-semibold text-sm text-white block leading-tight">
+            <span className="font-[var(--font-poppins)] font-semibold text-sm text-white dark:text-white block leading-tight">
               Renda Viva
             </span>
-            <p className="text-rv-soft/70 text-[10px] leading-tight">Gestão Inteligente</p>
+            <p className="text-rv-soft/70 dark:text-[#8A8A8A] text-[10px] leading-tight">Gestão Inteligente</p>
           </div>
           {onClose && (
             <button
@@ -111,14 +111,14 @@ export function Sidebar({ onClose }: SidebarProps) {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-medium transition-all duration-150",
                 isActive
-                  ? "bg-white text-rv-forest font-semibold"
-                  : "text-white/70 hover:bg-white/10 hover:text-white"
+                  ? "bg-rv-vivid text-white font-semibold dark:bg-rv-vivid dark:text-white"
+                  : "text-white/70 dark:text-[#8A8A8A] hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:hover:text-white"
               )}
             >
               <item.icon
                 className={cn(
                   "w-4 h-4 flex-shrink-0",
-                  isActive ? "text-rv-green" : "text-white/60"
+                  isActive ? "text-white dark:text-white" : "text-white/60 dark:text-[#8A8A8A]"
                 )}
               />
               {item.label}
@@ -128,18 +128,18 @@ export function Sidebar({ onClose }: SidebarProps) {
       </nav>
 
       {/* Footer com usuário e ações */}
-      <div className="px-4 py-4 border-t border-white/10">
+      <div className="px-4 py-4 border-t border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-rv-mint dark:bg-rv-green/30 rounded-full flex items-center justify-center flex-shrink-0">
-            <span className="text-rv-green dark:text-rv-soft text-xs font-semibold">{inicial}</span>
+          <div className="w-8 h-8 bg-rv-mint dark:bg-rv-vivid/20 rounded-full flex items-center justify-center flex-shrink-0">
+            <span className="text-rv-green dark:text-rv-vivid text-xs font-semibold">{inicial}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-white text-xs font-medium truncate">{nome}</p>
-            <p className="text-white/50 text-[10px] truncate">{email}</p>
+            <p className="text-white dark:text-white text-xs font-medium truncate">{nome}</p>
+            <p className="text-white/50 dark:text-[#8A8A8A] text-[10px] truncate">{email}</p>
           </div>
           <button
             onClick={toggleTheme}
-            className="text-white/50 hover:text-white flex-shrink-0 p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+            className="text-white/50 dark:text-[#8A8A8A] hover:text-white dark:hover:text-white flex-shrink-0 p-1.5 rounded-lg hover:bg-white/10 dark:hover:bg-white/5 transition-colors"
             title={theme === 'light' ? 'Modo escuro' : 'Modo claro'}
           >
             {theme === 'light' ? (
@@ -151,7 +151,7 @@ export function Sidebar({ onClose }: SidebarProps) {
           <button
             onClick={handleLogout}
             aria-label="Sair"
-            className="text-white/50 hover:text-white flex-shrink-0"
+            className="text-white/50 dark:text-[#8A8A8A] hover:text-white dark:hover:text-white flex-shrink-0"
           >
             <LogOut className="h-[18px] w-[18px]" />
           </button>

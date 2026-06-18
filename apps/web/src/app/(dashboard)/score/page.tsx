@@ -149,8 +149,8 @@ export default function ScorePage() {
     <DashboardLayout>
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-rv-dark-ink">Score de Saúde Financeira</h1>
-          <p className="text-rv-muted dark:text-rv-dark-muted">Uma nota de 0 a 100 sobre a sua saúde financeira</p>
+          <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-[#F0F0F0]">Score de Saúde Financeira</h1>
+          <p className="text-rv-muted dark:text-[#8A8A8A]">Uma nota de 0 a 100 sobre a sua saúde financeira</p>
         </div>
         <button
           onClick={handleRecalculate}
@@ -176,7 +176,7 @@ export default function ScorePage() {
       ) : data ? (
         <div className="space-y-6">
           {/* Score geral */}
-          <div className="bg-white dark:bg-rv-dark-card rounded-xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-6 flex flex-col sm:flex-row items-center gap-6">
+          <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-white/8 shadow-sm p-6 flex flex-col sm:flex-row items-center gap-6">
             <ScoreRing score={data.score} />
             <div className="text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
@@ -185,7 +185,7 @@ export default function ScorePage() {
                   {scoreLabel(data.score)}
                 </span>
               </div>
-              <p className="text-sm text-rv-muted dark:text-rv-dark-muted max-w-md">
+              <p className="text-sm text-[#8A8A8A] max-w-md">
                 Seu score é calculado a partir de 6 dimensões da sua vida financeira.
                 Quanto mais completo e saudável seu histórico, maior a nota.
               </p>
@@ -212,22 +212,22 @@ export default function ScorePage() {
               return (
                 <div
                   key={dim.nome}
-                  className="bg-white dark:bg-rv-dark-card rounded-xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-5"
+                  className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-white/8 shadow-sm p-5"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-rv-ink dark:text-rv-dark-ink">{dim.nome}</h3>
-                    <span className="text-sm font-semibold text-rv-muted dark:text-rv-dark-muted">
+                    <h3 className="font-semibold text-rv-ink dark:text-[#F0F0F0]">{dim.nome}</h3>
+                    <span className="text-sm font-semibold text-[#8A8A8A]">
                       {dim.pontos}
-                      <span className="text-rv-muted/70 dark:text-rv-dark-muted">/{dim.max}</span>
+                      <span className="text-[#8A8A8A]">/{dim.max}</span>
                     </span>
                   </div>
-                  <div className="h-1.5 w-full rounded-full bg-rv-mint/50 dark:bg-rv-dark-active-bg overflow-hidden mb-3">
+                  <div className="h-1.5 w-full rounded-full bg-[#2A2A2A] overflow-hidden mb-3">
                     <div
                       className={cn("h-full rounded-full transition-all", barColor(pct))}
                       style={{ width: `${pct * 100}%` }}
                     />
                   </div>
-                  <p className="text-sm text-rv-muted dark:text-rv-dark-muted">{dim.descricao}</p>
+                  <p className="text-sm text-[#8A8A8A]">{dim.descricao}</p>
                 </div>
               );
             })}

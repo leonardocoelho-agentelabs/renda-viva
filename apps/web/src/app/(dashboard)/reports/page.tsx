@@ -224,8 +224,8 @@ export default function ReportsPage() {
     <DashboardLayout>
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-rv-dark-ink">Relatórios</h1>
-          <p className="text-rv-muted dark:text-rv-dark-muted">Seu resumo financeiro mensal, narrado pelo Viva</p>
+          <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-[#F0F0F0]">Relatórios</h1>
+          <p className="text-rv-muted dark:text-[#8A8A8A]">Seu resumo financeiro mensal, narrado pelo Viva</p>
         </div>
         {reports.length > 0 && (
           <button
@@ -252,11 +252,11 @@ export default function ReportsPage() {
         </div>
       ) : reports.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <FileText className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          <FileText className="h-16 w-16 text-gray-300 dark:text-[#3a3a3a] mb-4" />
+          <h2 className="text-xl font-semibold text-gray-700 dark:text-[#F0F0F0] mb-2">
             Nenhum relatório ainda
           </h2>
-          <p className="text-gray-400 dark:text-gray-500 mb-8 max-w-sm">
+          <p className="text-gray-400 dark:text-[#8A8A8A] mb-8 max-w-sm">
             Gere um relatório narrativo do mês passado com base nas suas transações reais.
           </p>
           <button
@@ -274,13 +274,13 @@ export default function ReportsPage() {
             <button
               key={r.mes_ano}
               onClick={() => handleOpen(r.mes_ano)}
-              className="text-left bg-white dark:bg-rv-dark-card rounded-xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-5 hover:shadow-md transition-shadow"
+              className="text-left bg-white dark:bg-[#1E1E1E] rounded-xl border border-white/8 shadow-sm p-5 hover:shadow-md transition-shadow"
             >
-              <div className="w-10 h-10 rounded-lg bg-rv-mint dark:bg-rv-green/20 flex items-center justify-center mb-3">
+              <div className="w-10 h-10 rounded-lg bg-rv-mint dark:bg-rv-vivid/20 flex items-center justify-center mb-3">
                 <FileText className="h-5 w-5 text-rv-green dark:text-rv-vivid" />
               </div>
-              <h3 className="font-semibold text-rv-ink dark:text-rv-dark-ink">{formatMesAno(r.mes_ano)}</h3>
-              <p className="text-xs text-rv-muted dark:text-rv-dark-muted mt-1">
+              <h3 className="font-semibold text-rv-ink dark:text-[#F0F0F0]">{formatMesAno(r.mes_ano)}</h3>
+              <p className="text-xs text-[#8A8A8A] mt-1">
                 {r.gerado_em
                   ? `Gerado em ${new Date(r.gerado_em).toLocaleDateString("pt-BR")}`
                   : "Relatório disponível"}
@@ -293,17 +293,17 @@ export default function ReportsPage() {
       {/* Modal do relatório */}
       {openReport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white dark:bg-rv-dark-card rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-rv-forest/10 dark:border-rv-light/10">
+          <div className="bg-white dark:bg-[#1E1E1E] rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
               <div className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-rv-green dark:text-rv-vivid" />
-                <h2 className="font-[var(--font-poppins)] font-semibold text-lg text-rv-ink dark:text-rv-dark-ink">
+                <h2 className="font-[var(--font-poppins)] font-semibold text-lg text-rv-ink dark:text-[#F0F0F0]">
                   {formatMesAno(openReport.mes_ano)}
                 </h2>
               </div>
               <button
                 onClick={() => setOpenReport(null)}
-                className="p-1 rounded hover:bg-rv-mint/30 dark:hover:bg-rv-dark-active-bg text-rv-muted dark:text-rv-dark-muted"
+                className="p-1 rounded hover:bg-white/5 dark:hover:bg-white/5 text-[#8A8A8A]"
                 aria-label="Fechar"
               >
                 <X className="h-5 w-5" />
@@ -319,7 +319,7 @@ export default function ReportsPage() {
               )}
             </div>
             {openReport.relatorio && (
-              <div className="flex gap-3 justify-end px-6 py-4 border-t border-rv-forest/10 dark:border-rv-light/10">
+              <div className="flex gap-3 justify-end px-6 py-4 border-t border-white/5">
                 <button
                   onClick={() => baixarRelatorioPDF(openReport.relatorio, openReport.mes_ano)}
                   className="flex items-center gap-2 px-4 py-2 bg-rv-green dark:bg-rv-vivid text-white rounded-lg text-sm font-medium hover:bg-rv-forest dark:hover:bg-rv-vivid/90 transition-colors"
@@ -329,7 +329,7 @@ export default function ReportsPage() {
                 </button>
                 <button
                   onClick={() => setOpenReport(null)}
-                  className="px-4 py-2 border border-rv-forest/10 dark:border-rv-light/10 text-rv-muted dark:text-rv-dark-muted rounded-lg text-sm font-medium hover:bg-rv-mint/30 dark:hover:bg-rv-dark-card transition-colors"
+                  className="px-4 py-2 border border-white/10 text-[#8A8A8A] rounded-lg text-sm font-medium hover:bg-white/5 transition-colors"
                 >
                   Fechar
                 </button>

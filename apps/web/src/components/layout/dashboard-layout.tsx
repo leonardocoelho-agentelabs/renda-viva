@@ -39,7 +39,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-rv-page dark:bg-rv-dark-bg">
+    <div className="flex h-screen overflow-hidden bg-rv-page dark:bg-[#111111]">
       {/* Sidebar desktop — fixa */}
       <div className="hidden md:block fixed inset-y-0 left-0 z-30">
         <Sidebar />
@@ -61,11 +61,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Conteúdo principal */}
       <div className="md:pl-60 flex-1 flex flex-col overflow-hidden">
         {/* Header mobile */}
-        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-rv-card dark:bg-rv-dark-card border-b border-rv-hairline dark:border-rv-dark-hairline sticky top-0 z-40">
+        <div className="md:hidden flex items-center justify-between px-4 py-3 bg-rv-card dark:bg-[#1E1E1E] border-b border-rv-hairline dark:border-white/5 sticky top-0 z-40">
           <button
             onClick={() => setSidebarOpen(true)}
             aria-label="Abrir menu"
-            className="p-2 -ml-2 rounded-lg text-rv-muted dark:text-rv-dark-muted hover:bg-rv-mint dark:hover:bg-rv-dark-active-bg transition-colors"
+            className="p-2 -ml-2 rounded-lg text-rv-muted dark:text-[#8A8A8A] hover:bg-rv-mint dark:hover:bg-white/5 transition-colors"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -73,7 +73,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="w-6 h-6 bg-rv-green dark:bg-rv-vivid rounded flex items-center justify-center">
               <span className="text-white font-bold text-[10px] font-[var(--font-poppins)]">RV</span>
             </div>
-            <span className="font-[var(--font-poppins)] font-semibold text-rv-ink dark:text-rv-dark-ink text-sm">Renda Viva</span>
+            <span className="font-[var(--font-poppins)] font-semibold text-rv-ink dark:text-[#F0F0F0] text-sm">Renda Viva</span>
           </div>
           <div className="w-9" />
         </div>

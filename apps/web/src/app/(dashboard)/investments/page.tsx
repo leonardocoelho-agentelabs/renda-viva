@@ -128,18 +128,18 @@ export default function InvestmentsPage() {
       <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-rv-dark-ink">Radar de Investimentos</h1>
-            <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-rv-mint dark:bg-rv-green/20 text-rv-green dark:text-rv-vivid">
+            <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-[#F0F0F0]">Radar de Investimentos</h1>
+            <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-rv-mint dark:bg-rv-vivid/20 text-rv-green dark:text-rv-vivid">
               Atualizado domingo
             </span>
           </div>
-          <p className="text-rv-muted dark:text-rv-dark-muted">Curadoria semanal personalizada para o seu perfil</p>
+          <p className="text-rv-muted dark:text-[#8A8A8A]">Curadoria semanal personalizada para o seu perfil</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => loadRadar(true)}
             disabled={refreshing || loading}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-rv-forest/10 dark:border-rv-light/10 text-rv-muted dark:text-rv-dark-muted text-sm font-medium hover:bg-rv-mint/30 dark:hover:bg-rv-dark-card disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-white/10 text-[#8A8A8A] text-sm font-medium hover:bg-white/5 dark:hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
             Atualizar Radar
@@ -178,35 +178,35 @@ export default function InvestmentsPage() {
             {mercadoCards.map((c) => (
               <div
                 key={c.label}
-                className="bg-white dark:bg-rv-dark-card rounded-xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-5"
+                className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-white/8 shadow-sm p-5"
               >
-                <span className="text-xs font-medium text-rv-muted dark:text-rv-dark-muted uppercase tracking-wide">
+                <span className="text-xs font-medium text-[#8A8A8A] uppercase tracking-wide">
                   {c.label}
                 </span>
-                <p className="text-2xl font-bold text-rv-ink dark:text-rv-dark-ink mt-2 font-[var(--font-poppins)]">{c.value}</p>
-                <p className="text-xs text-rv-muted dark:text-rv-dark-muted mt-0.5">{c.sub}</p>
+                <p className="text-2xl font-bold text-rv-ink dark:text-[#F0F0F0] mt-2 font-[var(--font-poppins)]">{c.value}</p>
+                <p className="text-xs text-[#8A8A8A] mt-0.5">{c.sub}</p>
               </div>
             ))}
           </div>
 
           {/* Oportunidades */}
           {data.oportunidades.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center bg-white dark:bg-rv-dark-card rounded-xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm">
-              <TrendingUp className="h-12 w-12 text-rv-muted/40 dark:text-rv-dark-muted/40 mb-3" />
-              <p className="text-rv-muted dark:text-rv-dark-muted">Nenhuma recomendação disponível no momento.</p>
-              <p className="text-sm text-rv-muted/70 dark:text-rv-dark-muted mt-1">Tente atualizar o radar em instantes.</p>
+            <div className="flex flex-col items-center justify-center py-16 text-center bg-white dark:bg-[#1E1E1E] rounded-xl border border-white/8 shadow-sm">
+              <TrendingUp className="h-12 w-12 text-[#3a3a3a] mb-3" />
+              <p className="text-[#8A8A8A]">Nenhuma recomendação disponível no momento.</p>
+              <p className="text-sm text-[#8A8A8A] mt-1">Tente atualizar o radar em instantes.</p>
             </div>
           ) : (
             <div className="grid gap-4 lg:grid-cols-3">
               {data.oportunidades.map((op, i) => (
                 <div
                   key={i}
-                  className="bg-white dark:bg-rv-dark-card rounded-xl border border-rv-forest/10 dark:border-rv-light/10 shadow-sm p-5 flex flex-col"
+                  className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-white/8 shadow-sm p-5 flex flex-col"
                 >
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <div>
-                      <span className="text-xs font-medium text-rv-muted dark:text-rv-dark-muted">{op.tipo}</span>
-                      <h3 className="font-semibold text-rv-ink dark:text-rv-dark-ink leading-tight">{op.titulo}</h3>
+                      <span className="text-xs font-medium text-[#8A8A8A]">{op.tipo}</span>
+                      <h3 className="font-semibold text-rv-ink dark:text-[#F0F0F0] leading-tight">{op.titulo}</h3>
                     </div>
                     <span
                       className={cn(
@@ -220,19 +220,19 @@ export default function InvestmentsPage() {
 
                   <p className="text-2xl font-bold text-rv-green dark:text-rv-vivid font-[var(--font-poppins)]">{op.retornoAnual}</p>
 
-                  <div className="flex items-center gap-3 text-xs text-rv-muted dark:text-rv-dark-muted mt-2 mb-3">
+                  <div className="flex items-center gap-3 text-xs text-[#8A8A8A] mt-2 mb-3">
                     <span>💰 {op.valorMinimo}</span>
                     <span>⏱️ {op.prazo}</span>
                   </div>
 
-                  <p className="text-sm text-rv-muted dark:text-rv-dark-muted flex-1">{op.justificativa}</p>
+                  <p className="text-sm text-[#8A8A8A] flex-1">{op.justificativa}</p>
 
                   {op.ideal_para && (
-                    <div className="mt-4 pt-3 border-t border-rv-forest/10 dark:border-rv-light/10">
-                      <span className="inline-block text-xs font-medium px-2.5 py-1 rounded-lg bg-rv-mint dark:bg-rv-green/20 text-rv-green dark:text-rv-vivid">
+                    <div className="mt-4 pt-3 border-t border-white/5">
+                      <span className="inline-block text-xs font-medium px-2.5 py-1 rounded-lg bg-rv-mint dark:bg-rv-vivid/20 text-rv-green dark:text-rv-vivid">
                         ✨ Ideal para você
                       </span>
-                      <p className="text-xs text-rv-muted dark:text-rv-dark-muted mt-1.5">{op.ideal_para}</p>
+                      <p className="text-xs text-[#8A8A8A] mt-1.5">{op.ideal_para}</p>
                     </div>
                   )}
                 </div>

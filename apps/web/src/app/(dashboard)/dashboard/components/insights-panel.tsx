@@ -72,12 +72,12 @@ export function InsightsPanel() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-[#111827] rounded-2xl border border-gray-100 dark:border-[#1E293B] shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
-        <div className="h-4 w-40 bg-gray-100 dark:bg-[#1E293B] rounded animate-pulse mb-4" />
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-white/8 shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
+        <div className="h-4 w-40 bg-gray-100 dark:bg-[#2A2A2A] rounded animate-pulse mb-4" />
         <div className="space-y-3">
-          <div className="h-10 bg-gray-50 dark:bg-[#1E293B] rounded-xl animate-pulse" />
-          <div className="h-10 bg-gray-50 dark:bg-[#1E293B] rounded-xl animate-pulse" />
-          <div className="h-10 bg-gray-50 dark:bg-[#1E293B] rounded-xl animate-pulse" />
+          <div className="h-10 bg-gray-50 dark:bg-[#2A2A2A] rounded-xl animate-pulse" />
+          <div className="h-10 bg-gray-50 dark:bg-[#2A2A2A] rounded-xl animate-pulse" />
+          <div className="h-10 bg-gray-50 dark:bg-[#2A2A2A] rounded-xl animate-pulse" />
         </div>
       </div>
     );
@@ -86,16 +86,16 @@ export function InsightsPanel() {
   if (insights.length === 0) return null;
 
   return (
-    <div className="bg-white dark:bg-[#111827] rounded-2xl border border-gray-100 dark:border-[#1E293B] shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
+    <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-white/8 shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-green-600 dark:text-green-400" />
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-[#F8FAFC]">Insights Inteligentes</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-[#F0F0F0]">Insights Inteligentes</h3>
         </div>
         <button
           onClick={atualizar}
           disabled={refreshing}
-          className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          className="text-gray-400 dark:text-[#8A8A8A] hover:text-gray-600 dark:hover:text-[#F0F0F0] transition-colors"
           title="Atualizar insights"
           aria-label="Atualizar insights"
         >
@@ -110,14 +110,14 @@ export function InsightsPanel() {
           return (
             <div
               key={i}
-              className="flex items-start gap-3 p-3 rounded-xl bg-gray-50/50 dark:bg-[#1E293B]/50 hover:bg-gray-50 dark:hover:bg-[#1E293B] transition-colors"
+              className="flex items-start gap-3 p-3 rounded-xl bg-gray-50/50 dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
             >
               <div
                 className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${config.bg}`}
               >
                 <Icon className={`w-3.5 h-3.5 ${config.color}`} />
               </div>
-              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{insight.texto}</p>
+              <p className="text-sm text-gray-700 dark:text-[#F0F0F0] leading-relaxed">{insight.texto}</p>
             </div>
           );
         })}

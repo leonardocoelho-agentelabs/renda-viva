@@ -39,10 +39,10 @@ export function DashboardHeader({
 
   return (
     <div className="mb-6">
-      <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-rv-dark-ink">
+      <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-[#F0F0F0]">
         {getGreeting()}, {primeiroNome} 👋
       </h1>
-      <p className="text-sm text-rv-muted dark:text-rv-dark-muted mt-1">{mensagem}</p>
+      <p className="text-sm text-rv-muted dark:text-[#8A8A8A] mt-1">{mensagem}</p>
     </div>
   );
 }
