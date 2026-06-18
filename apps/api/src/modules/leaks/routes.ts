@@ -191,20 +191,20 @@ export const leaksRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
 
         // CAMADA 4: Chamada ao Claude API
         app.log.info("LEAKS: verificando API key");
-        app.log.info({ hasApiKey: !!process.env.ANTHROPIC_API_KEY }, "LEAKS: ANTHROPIC_API_KEY");
+        app.log.info({ hasApiKey: !!process.env.CLAUDE_API_KEY }, "LEAKS: CLAUDE_API_KEY");
 
-        if (!process.env.ANTHROPIC_API_KEY) {
-          app.log.error("LEAKS: ANTHROPIC_API_KEY não definida!");
+        if (!process.env.CLAUDE_API_KEY) {
+          app.log.error("LEAKS: CLAUDE_API_KEY não definida!");
           return reply.status(500).send({
             success: false,
-            error: "Configuração incompleta: ANTHROPIC_API_KEY não definida",
+            error: "Configuração incompleta: CLAUDE_API_KEY não definida",
           });
         }
 
         // Usar Claude Haiku para analisar e classificar vazamentos
         const Anthropic = (await import("@anthropic-ai/sdk")).default;
         const anthropic = new Anthropic({
-          apiKey: process.env.ANTHROPIC_API_KEY || "",
+          apiKey: process.env.CLAUDE_API_KEY || "",
         });
 
         app.log.info("LEAKS: chamando Claude API");

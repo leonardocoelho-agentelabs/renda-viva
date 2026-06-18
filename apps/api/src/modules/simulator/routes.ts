@@ -206,10 +206,10 @@ Retorne apenas o JSON, sem nenhum texto antes ou depois.`;
 
 // Chamar Claude Sonnet para análise
 async function callClaudeSonnet(prompt: string): Promise<SimulationResult> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.CLAUDE_API_KEY;
 
   if (!apiKey) {
-    throw new Error("ANTHROPIC_API_KEY não configurada");
+    throw new Error("CLAUDE_API_KEY não configurada");
   }
 
   const client = new anthropic({
@@ -262,7 +262,7 @@ export async function simulatorRoutes(app: FastifyInstance) {
     { preHandler: [app.authenticate] },
     async (request: FastifyRequest<{ Body: SimulateBody }>, reply: FastifyReply) => {
       try {
-        const supabase = app.supabase;
+        const supabase = app.supabaseAdmin;
         const userId = request.user?.id;
         if (!userId) {
           return reply.status(401).send({ success: false, error: "Não autorizado" });
@@ -341,7 +341,7 @@ export async function simulatorRoutes(app: FastifyInstance) {
     { preHandler: [app.authenticate] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const supabase = app.supabase;
+        const supabase = app.supabaseAdmin;
         const userId = request.user?.id;
         if (!userId) {
           return reply.status(401).send({ success: false, error: "Não autorizado" });
@@ -379,7 +379,7 @@ export async function simulatorRoutes(app: FastifyInstance) {
     { preHandler: [app.authenticate] },
     async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
       try {
-        const supabase = app.supabase;
+        const supabase = app.supabaseAdmin;
         const userId = request.user?.id;
         if (!userId) {
           return reply.status(401).send({ success: false, error: "Não autorizado" });
