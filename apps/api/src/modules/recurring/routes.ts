@@ -44,7 +44,8 @@ const recurringRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => 
         const userId = request.user!.id;
         const status = request.query.status || "ativo";
 
-        const commitments = await getRecurringCommitments(fastify, userId, status);
+        const supabase = fastify.supabaseAdmin;
+        const commitments = await getRecurringCommitments(supabase, userId, status);
 
         return reply.send({ commitments });
       } catch (error) {
@@ -61,7 +62,8 @@ const recurringRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => 
     async (request, reply) => {
       try {
         const userId = request.user!.id;
-        const summary = await getRecurringSummary(fastify, userId);
+        const supabase = fastify.supabaseAdmin;
+        const summary = await getRecurringSummary(supabase, userId);
 
         return reply.send(summary);
       } catch (error) {
@@ -119,7 +121,8 @@ const recurringRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => 
           }
         }
 
-        const commitment = await createRecurringCommitment(fastify, userId, body);
+        const supabase = fastify.supabaseAdmin;
+        const commitment = await createRecurringCommitment(supabase, userId, body);
 
         return reply.status(201).send({ commitment });
       } catch (error) {
@@ -150,7 +153,8 @@ const recurringRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => 
           });
         }
 
-        const commitment = await updateRecurringCommitment(fastify, userId, id, body);
+        const supabase = fastify.supabaseAdmin;
+        const commitment = await updateRecurringCommitment(supabase, userId, id, body);
 
         if (!commitment) {
           return reply.status(404).send({ success: false, error: "Compromisso não encontrado" });
@@ -192,7 +196,8 @@ const recurringRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => 
           });
         }
 
-        const commitment = await cancelRecurringCommitment(fastify, userId, id);
+        const supabase = fastify.supabaseAdmin;
+        const commitment = await cancelRecurringCommitment(supabase, userId, id);
 
         return reply.send({ commitment });
       } catch (error) {
@@ -211,7 +216,8 @@ const recurringRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => 
         const userId = request.user!.id;
         const { id } = request.params;
 
-        const commitment = await payRecurringCommitment(fastify, userId, id);
+        const supabase = fastify.supabaseAdmin;
+        const commitment = await payRecurringCommitment(supabase, userId, id);
 
         if (!commitment) {
           return reply.status(404).send({ success: false, error: "Compromisso não encontrado" });
