@@ -244,32 +244,34 @@ export function RecurringModal({ isOpen, onClose, onSuccess }: RecurringModalPro
     >
       <DialogContent
         showCloseButton={false}
-        className="max-w-2xl w-[95vw] max-h-[90vh] flex flex-col p-0 gap-0
+        className="max-w-2xl w-[95vw] max-h-[90vh] flex items-center justify-center p-0
                    bg-white dark:bg-rv-dark-card border border-rv-forest/10
-                   dark:border-white/8 rounded-2xl overflow-hidden"
+                   dark:border-white/8 rounded-2xl"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        {/* HEADER FIXO */}
-        <div className="flex items-center justify-between px-6 py-5
-                        border-b border-rv-forest/10 dark:border-white/8
-                        flex-shrink-0">
-          <h2 className="font-poppins font-semibold text-lg text-rv-ink
-                         dark:text-rv-dark-ink">
-            Novo Compromisso
-          </h2>
-          <button
-            onClick={handleClose}
-            className="text-rv-muted hover:text-rv-ink dark:text-rv-dark-muted
-                       dark:hover:text-rv-dark-ink transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        {/* Wrapper interno com scroll — max-h funciona corretamente aqui */}
+        <div className="w-full h-full max-h-[90vh] flex flex-col overflow-hidden rounded-2xl">
+          {/* HEADER FIXO */}
+          <div className="flex items-center justify-between px-6 py-5
+                          border-b border-rv-forest/10 dark:border-white/8
+                          flex-shrink-0">
+            <h2 className="font-poppins font-semibold text-lg text-rv-ink
+                           dark:text-rv-dark-ink">
+              Novo Compromisso
+            </h2>
+            <button
+              onClick={handleClose}
+              className="text-rv-muted hover:text-rv-ink dark:text-rv-dark-muted
+                         dark:hover:text-rv-dark-ink transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
-        {/* BODY COM SCROLL */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 min-h-0">
-          {step === 1 ? (
+          {/* BODY — ROLA com min-h-0 */}
+          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5">
+            {step === 1 ? (
             <div className="space-y-4">
               <p className="text-sm text-rv-muted dark:text-rv-dark-muted">
                 Escolha o tipo de compromisso financeiro recorrente:
@@ -475,6 +477,7 @@ export function RecurringModal({ isOpen, onClose, onSuccess }: RecurringModalPro
             </button>
           </div>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   );
