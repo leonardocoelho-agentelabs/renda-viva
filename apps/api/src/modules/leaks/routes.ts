@@ -107,9 +107,14 @@ export const leaksRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
     { preHandler: [authHook] },
     async (request, reply) => {
       try {
-        const supabase = fastify.supabaseAdmin;
+        // CAMADA 1: Autenticação e Supabase
+        app.log.info({ userId: request.user?.id }, "LEAKS: início do handler");
+        const supabase = app.supabaseAdmin;
+        app.log.info({ supabase: !!supabase, hasUserId: !!request.user?.id }, "LEAKS: supabase obtido");
+
         const userId = request.user?.id;
         if (!userId) {
+          app.log.warn("LEAKS: usuário não autenticado");
           return reply.status(401).send({
             success: false,
             error: "Não autorizado",
@@ -120,7 +125,9 @@ export const leaksRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
         const dataInicio = new Date();
         dataInicio.setDate(dataInicio.getDate() - periodo);
 
-        // Buscar transações do período
+        // CAMADA 2: Query de transações
+        app.log.info({ userId, periodo }, "LEAKS: buscando transações");
+
         const { data: transacoes, error } = await supabase
           .from("transactions")
           .select("descricao_raw, valor, categoria, data, estabelecimento")
@@ -129,8 +136,14 @@ export const leaksRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
           .gte("data", dataInicio.toISOString().split("T")[0])
           .order("data", { ascending: false });
 
+        app.log.info({
+          count: transacoes?.length,
+          error: error,
+          userId
+        }, "LEAKS: transações obtidas");
+
         if (error) {
-          app.log.error("Erro ao buscar transações:", error);
+          app.log.error({ error }, "LEAKS: erro ao buscar transações");
           return reply.status(500).send({
             success: false,
             error: "Erro ao buscar transações",
@@ -138,6 +151,7 @@ export const leaksRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
         }
 
         if (!transacoes || transacoes.length === 0) {
+          app.log.info("LEAKS: sem transações no período");
           return reply.send({
             success: true,
             data: {
@@ -153,10 +167,13 @@ export const leaksRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
           });
         }
 
-        // Agrupar transações por similaridade
+        // CAMADA 3: Processamento/agrupamento
+        app.log.info("LEAKS: agrupando transações");
         const grupos = agruparTransacoes(transacoes);
+        app.log.info({ grupos: grupos?.length }, "LEAKS: grupos criados");
 
         if (grupos.length === 0) {
+          app.log.info("LEAKS: sem grupos de gastos");
           return reply.send({
             success: true,
             data: {
@@ -172,11 +189,25 @@ export const leaksRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
           });
         }
 
+        // CAMADA 4: Chamada ao Claude API
+        app.log.info("LEAKS: verificando API key");
+        app.log.info({ hasApiKey: !!process.env.ANTHROPIC_API_KEY }, "LEAKS: ANTHROPIC_API_KEY");
+
+        if (!process.env.ANTHROPIC_API_KEY) {
+          app.log.error("LEAKS: ANTHROPIC_API_KEY não definida!");
+          return reply.status(500).send({
+            success: false,
+            error: "Configuração incompleta: ANTHROPIC_API_KEY não definida",
+          });
+        }
+
         // Usar Claude Haiku para analisar e classificar vazamentos
         const Anthropic = (await import("@anthropic-ai/sdk")).default;
         const anthropic = new Anthropic({
           apiKey: process.env.ANTHROPIC_API_KEY || "",
         });
+
+        app.log.info("LEAKS: chamando Claude API");
 
         const prompt = `Analise estes grupos de gastos e identifique "vazamentos financeiros" — pequenos gastos recorrentes que passam despercebidos mas somam um valor significativo.
 
@@ -215,20 +246,34 @@ Critérios para vazamento:
 - Máximo 10 vazamentos
 - Para economia_anual_potencial, calcule baseado na frequência e valor do gasto`;
 
-        const response = await anthropic.messages.create({
-          model: "claude-haiku-4-20250514",
-          max_tokens: 4096,
-          messages: [
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-        });
+        // Chamada com timeout de 25 segundos
+        let response;
+        try {
+          response = await Promise.race([
+            anthropic.messages.create({
+              model: "claude-haiku-4-20250514",
+              max_tokens: 4096,
+              messages: [{ role: "user", content: prompt }],
+            }),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error("TIMEOUT: Claude API excedeu 25 segundos")), 25000)
+            )
+          ]);
+          app.log.info({ status: response?.status, stopReason: response?.stop_reason }, "LEAKS: Claude respondeu");
+        } catch (apiError: any) {
+          app.log.error({ error: apiError?.message, code: apiError?.code }, "LEAKS: erro na chamada ao Claude");
+          return reply.status(500).send({
+            success: false,
+            error: `Erro na análise: ${apiError?.message || "Falha ao comunicar com Claude API"}`,
+          });
+        }
 
         const responseText = response.content[0].type === "text"
           ? response.content[0].text
           : "";
+
+        // CAMADA 5: Parse do JSON
+        app.log.info({ rawText: responseText?.substring(0, 200) }, "LEAKS: texto Claude");
 
         // Parsear resposta JSON
         let analysisData: Partial<AnalysisResult>;
@@ -238,9 +283,14 @@ Critérios para vazamento:
             .replace(/```json\s*/g, "")
             .replace(/```\s*/g, "")
             .trim();
+          app.log.info({ cleanJson: cleanJson?.substring(0, 200) }, "LEAKS: JSON limpo");
           analysisData = JSON.parse(cleanJson);
+          app.log.info("LEAKS: JSON parseado com sucesso");
         } catch (parseError) {
-          app.log.error("Erro ao parsear resposta da IA:", parseError);
+          app.log.error({
+            error: parseError,
+            rawText: responseText?.substring(0, 500)
+          }, "LEAKS: erro ao parsear resposta da IA");
           // Fallback: criar análise básica
           analysisData = {
             vazamentos: grupos.slice(0, 5).map((g) => ({
@@ -299,11 +349,23 @@ Critérios para vazamento:
           success: true,
           data: result,
         });
-      } catch (error) {
-        app.log.error("Erro na análise de vazamentos:", error);
+      } catch (error: any) {
+        app.log.error({
+          msg: "LEAKS: Erro na análise de vazamentos — DETALHES COMPLETOS",
+          error: error?.message || String(error),
+          stack: error?.stack,
+          name: error?.name,
+          code: error?.code,
+          details: error?.details,
+          hint: error?.hint,
+          status: error?.status,
+          statusCode: error?.statusCode,
+          response: error?.response?.data
+        }, "LEAKS: catch principal");
         return reply.status(500).send({
           success: false,
           error: "Erro ao analisar vazamentos",
+          debug: error?.message
         });
       }
     }
@@ -315,15 +377,20 @@ Critérios para vazamento:
     { preHandler: [authHook] },
     async (request, reply) => {
       try {
-        const supabase = fastify.supabaseAdmin;
+        app.log.info({ userId: request.user?.id }, "LEAKS: history - início");
+        const supabase = app.supabaseAdmin;
+        app.log.info({ hasSupabase: !!supabase }, "LEAKS: history - supabase obtido");
+
         const userId = request.user?.id;
         if (!userId) {
+          app.log.warn("LEAKS: history - usuário não autenticado");
           return reply.status(401).send({
             success: false,
             error: "Não autorizado",
           });
         }
 
+        app.log.info("LEAKS: history - buscando histórico");
         const { data: history, error } = await supabase
           .from("leaks_analysis")
           .select("periodo, resultado, created_at")
@@ -331,8 +398,10 @@ Critérios para vazamento:
           .order("created_at", { ascending: false })
           .limit(5);
 
+        app.log.info({ count: history?.length, error }, "LEAKS: history - resultado");
+
         if (error) {
-          app.log.error("Erro ao buscar histórico:", error);
+          app.log.error({ error }, "LEAKS: history - erro ao buscar");
           return reply.status(500).send({
             success: false,
             error: "Erro ao buscar histórico",
@@ -343,8 +412,12 @@ Critérios para vazamento:
           success: true,
           data: history || [],
         });
-      } catch (error) {
-        app.log.error("Erro na busca de histórico:", error);
+      } catch (error: any) {
+        app.log.error({
+          msg: "LEAKS: Erro no histórico",
+          error: error?.message || String(error),
+          stack: error?.stack
+        }, "LEAKS: history - catch");
         return reply.status(500).send({
           success: false,
           error: "Erro ao buscar histórico",

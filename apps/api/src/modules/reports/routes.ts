@@ -6,6 +6,7 @@ import {
   gerarESalvarRelatorio,
   RELATORIOS_BUCKET,
 } from "./service.js";
+import { gerarRelatorioIR } from "./ir-service.js";
 
 interface GenerateBody {
   mes_ano?: string;
@@ -161,6 +162,69 @@ const reportsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
 
       return reply.send({ processados, erros });
+    }
+  );
+
+  // GET /reports/ir/:ano - Gera relatório de IR para o ano fiscal
+  fastify.get<{ Params: { ano: string } }>(
+    "/ir/:ano",
+    { preHandler: [authHook, requireActiveSubscription] },
+    async (request, reply) => {
+      try {
+        const userId = request.user!.id;
+        const ano = parseInt(request.params.ano, 10);
+
+        if (isNaN(ano) || ano < 2000 || ano > new Date().getFullYear()) {
+          return reply.status(400).send({
+            success: false,
+            error: "Ano inválido. Use um ano entre 2000 e o ano atual.",
+          });
+        }
+
+        const relatorio = await gerarRelatorioIR(userId, ano);
+        return reply.send(relatorio);
+      } catch (error) {
+        fastify.log.error({ err: error }, "Erro em GET /reports/ir/:ano");
+        return reply.status(500).send({
+          success: false,
+          error: "Erro ao gerar relatório de IR",
+        });
+      }
+    }
+  );
+
+  // POST /reports/ir/:ano/download - Baixa relatório de IR como JSON
+  fastify.post<{ Params: { ano: string } }>(
+    "/ir/:ano/download",
+    { preHandler: [authHook, requireActiveSubscription] },
+    async (request, reply) => {
+      try {
+        const userId = request.user!.id;
+        const ano = parseInt(request.params.ano, 10);
+
+        if (isNaN(ano) || ano < 2000 || ano > new Date().getFullYear()) {
+          return reply.status(400).send({
+            success: false,
+            error: "Ano inválido. Use um ano entre 2000 e o ano atual.",
+          });
+        }
+
+        const relatorio = await gerarRelatorioIR(userId, ano);
+
+        return reply
+          .header(
+            "Content-Disposition",
+            `attachment; filename="IR-${ano}-RendaViva.json"`
+          )
+          .header("Content-Type", "application/json")
+          .send(relatorio);
+      } catch (error) {
+        fastify.log.error({ err: error }, "Erro em POST /reports/ir/:ano/download");
+        return reply.status(500).send({
+          success: false,
+          error: "Erro ao gerar relatório de IR para download",
+        });
+      }
     }
   );
 };
