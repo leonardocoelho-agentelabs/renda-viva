@@ -85,8 +85,8 @@ export function RecurringModal({ isOpen, onClose, onSuccess }: RecurringModalPro
   }, [isOpen, resetForm]);
 
   const handleClose = () => {
-    const temDados = nome || valor || totalParcelas || descricao;
-    if (temDados) {
+    const temDados = nome.trim() || valor;
+    if (temDados && step === 2) {
       if (!window.confirm("Deseja descartar as informações preenchidas?")) {
         return;
       }
@@ -127,7 +127,7 @@ export function RecurringModal({ isOpen, onClose, onSuccess }: RecurringModalPro
     return addMonths(new Date(), restantes);
   }, [calcularParcelasRestantes]);
 
-  const handleSubmit = async () => {
+  const handleSalvar = async () => {
     if (!tipo || !nome.trim() || !valor || !diaVencimento) {
       return;
     }
@@ -212,7 +212,7 @@ export function RecurringModal({ isOpen, onClose, onSuccess }: RecurringModalPro
     return (
       <div className="mt-4 p-3 bg-rv-mint/10 dark:bg-rv-green/10 rounded-lg border border-rv-forest/10 dark:border-rv-vivid/20">
         <p className="text-sm text-rv-forest dark:text-rv-vivid font-medium">
-          💳 Preview da parcela
+          💳 Preview da dívida parcelada
         </p>
         <p className="text-sm text-rv-ink dark:text-[#F0F0F0] mt-1">
           Parcelas restantes: <strong>{restantes}</strong> de {totalParcelas}
@@ -243,78 +243,78 @@ export function RecurringModal({ isOpen, onClose, onSuccess }: RecurringModalPro
       }}
     >
       <DialogContent
-        className="sm:max-w-[500px] w-full max-h-[90vh] overflow-hidden flex flex-col bg-white dark:bg-[#1E1E1E] p-0"
+        showCloseButton={false}
+        className="max-w-2xl w-[95vw] max-h-[90vh] flex flex-col p-0 gap-0
+                   bg-white dark:bg-rv-dark-card border border-rv-forest/10
+                   dark:border-white/8 rounded-2xl overflow-hidden"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        {/* Header fixo */}
-        <div className="px-6 pt-6 pb-4 border-b border-rv-forest/10 dark:border-white/8 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <h2 className="font-[var(--font-poppins)] font-bold text-lg text-rv-ink dark:text-[#F0F0F0]">
-              Novo Compromisso
-            </h2>
-            <button
-              onClick={handleClose}
-              className="p-1 rounded hover:bg-white/5 dark:hover:bg-white/5 text-[#8A8A8A] hover:text-rv-ink dark:hover:text-[#F0F0F0] transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
+        {/* HEADER FIXO */}
+        <div className="flex items-center justify-between px-6 py-5
+                        border-b border-rv-forest/10 dark:border-white/8
+                        flex-shrink-0">
+          <h2 className="font-poppins font-semibold text-lg text-rv-ink
+                         dark:text-rv-dark-ink">
+            Novo Compromisso
+          </h2>
+          <button
+            onClick={handleClose}
+            className="text-rv-muted hover:text-rv-ink dark:text-rv-dark-muted
+                       dark:hover:text-rv-dark-ink transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        {/* Body com scroll */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          {step === 1 && (
+        {/* BODY COM SCROLL */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 min-h-0">
+          {step === 1 ? (
             <div className="space-y-4">
-              <p className="text-sm text-rv-muted">
+              <p className="text-sm text-rv-muted dark:text-rv-dark-muted">
                 Escolha o tipo de compromisso financeiro recorrente:
               </p>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                {/* Card Assinatura */}
                 <button
                   onClick={() => handleTipoSelect("assinatura")}
-                  className="flex flex-col items-center p-6 rounded-xl border-2 border-rv-forest/20 dark:border-rv-vivid/20 hover:border-rv-forest dark:hover:border-rv-vivid hover:bg-rv-mint/5 dark:hover:bg-rv-green/10 transition-all"
+                  className="flex flex-col items-start gap-3 p-5 rounded-xl border-2
+                             border-rv-forest/15 dark:border-white/10 hover:border-rv-green
+                             dark:hover:border-rv-vivid hover:bg-rv-mint/20
+                             dark:hover:bg-rv-green/10 transition-all text-left"
                 >
-                  <span className="text-3xl mb-2">📅</span>
-                  <span className="font-semibold text-rv-ink dark:text-[#F0F0F0]">
-                    Assinatura
-                  </span>
-                  <span className="text-xs text-rv-muted mt-1 text-center">
-                    Sem prazo definido
-                  </span>
-                  <span className="text-xs text-rv-muted text-center">
-                    Netflix, academia, streaming...
-                  </span>
+                  <span className="text-2xl">📅</span>
+                  <div>
+                    <p className="font-poppins font-semibold text-rv-ink
+                                  dark:text-rv-dark-ink text-sm">Assinatura</p>
+                    <p className="text-rv-muted dark:text-rv-dark-muted text-xs mt-1">
+                      Sem prazo definido.<br />Netflix, academia, streaming...
+                    </p>
+                  </div>
                 </button>
 
+                {/* Card Dívida Parcelada */}
                 <button
                   onClick={() => handleTipoSelect("parcela")}
-                  className="flex flex-col items-center p-6 rounded-xl border-2 border-rv-forest/20 dark:border-rv-vivid/20 hover:border-rv-forest dark:hover:border-rv-vivid hover:bg-rv-mint/5 dark:hover:bg-rv-green/10 transition-all"
+                  className="flex flex-col items-start gap-3 p-5 rounded-xl border-2
+                             border-rv-forest/15 dark:border-white/10 hover:border-rv-green
+                             dark:hover:border-rv-vivid hover:bg-rv-mint/20
+                             dark:hover:bg-rv-green/10 transition-all text-left"
                 >
-                  <span className="text-3xl mb-2">💳</span>
-                  <span className="font-semibold text-rv-ink dark:text-[#F0F0F0]">
-                    Parcela
-                  </span>
-                  <span className="text-xs text-rv-muted mt-1 text-center">
-                    Número fixo de meses
-                  </span>
-                  <span className="text-xs text-rv-muted text-center">
-                    Financiamento, cartão...
-                  </span>
+                  <span className="text-2xl">💳</span>
+                  <div>
+                    <p className="font-poppins font-semibold text-rv-ink
+                                  dark:text-rv-dark-ink text-sm">Dívida Parcelada</p>
+                    <p className="text-rv-muted dark:text-rv-dark-muted text-xs mt-1">
+                      Número fixo de meses.<br />Financiamento, cartão parcelado...
+                    </p>
+                  </div>
                 </button>
               </div>
             </div>
-          )}
-
-          {step === 2 && tipo && (
+          ) : (
             <div className="space-y-4">
-              <button
-                onClick={() => setStep(1)}
-                className="text-sm text-rv-muted hover:text-rv-ink dark:hover:text-[#F0F0F0]"
-              >
-                ← Voltar e escolher tipo
-              </button>
-
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="nome">
@@ -433,7 +433,7 @@ export function RecurringModal({ isOpen, onClose, onSuccess }: RecurringModalPro
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="alertaWhatsapp">Alertas via WhatsApp</Label>
-                    <p className="text-xs text-rv-muted">
+                    <p className="text-xs text-rv-muted dark:text-rv-dark-muted">
                       Receba lembretes 3 dias antes do vencimento
                     </p>
                   </div>
@@ -450,23 +450,29 @@ export function RecurringModal({ isOpen, onClose, onSuccess }: RecurringModalPro
           )}
         </div>
 
-        {/* Footer fixo */}
+        {/* FOOTER FIXO */}
         {step === 2 && (
-          <div className="px-6 pb-6 pt-4 border-t border-rv-forest/10 dark:border-white/8 flex-shrink-0 flex justify-end gap-3">
-            <Button
-              variant="outline"
-              onClick={handleClose}
-              className="border-gray-200 dark:border-white/10"
+          <div className="flex gap-3 px-6 py-5 border-t border-rv-forest/10
+                          dark:border-white/8 flex-shrink-0">
+            <button
+              onClick={() => setStep(1)}
+              className="flex-1 py-2.5 rounded-xl border border-rv-forest/10
+                         dark:border-white/8 text-rv-muted dark:text-rv-dark-muted
+                         font-semibold text-sm hover:bg-rv-mint/30
+                         dark:hover:bg-white/5 transition-colors"
             >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={loading || !nome.trim() || !valor}
-              className="bg-rv-green hover:bg-rv-forest text-white"
+              ← Voltar
+            </button>
+            <button
+              onClick={handleSalvar}
+              disabled={loading}
+              className="flex-2 flex-grow py-2.5 rounded-xl bg-rv-green
+                         dark:bg-rv-vivid text-white font-poppins font-semibold
+                         text-sm hover:bg-rv-forest dark:hover:bg-rv-green
+                         transition-colors disabled:opacity-50"
             >
               {loading ? "Salvando..." : "Salvar compromisso"}
-            </Button>
+            </button>
           </div>
         )}
       </DialogContent>
