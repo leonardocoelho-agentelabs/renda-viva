@@ -1,5 +1,4 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { anthropic } from "@anthropic-ai/sdk";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 // Tipos
@@ -204,7 +203,7 @@ Se a renda não foi informada, faça projeções relativas (percentuais).
 Retorne apenas o JSON, sem nenhum texto antes ou depois.`;
 }
 
-// Chamar Claude Sonnet para análise
+// Chamar Claude Sonnet para análise via fetch direto
 async function callClaudeSonnet(prompt: string): Promise<SimulationResult> {
   const apiKey = process.env.CLAUDE_API_KEY;
 
@@ -212,24 +211,26 @@ async function callClaudeSonnet(prompt: string): Promise<SimulationResult> {
     throw new Error("CLAUDE_API_KEY não configurada");
   }
 
-  const client = new anthropic({
-    apiKey,
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 2000,
+      messages: [{ role: "user", content: prompt }],
+    }),
   });
 
-  const message = await client.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 2000,
-    messages: [
-      {
-        role: "user",
-        content: prompt,
-      },
-    ],
-  });
+  if (!response.ok) {
+    throw new Error(`Claude API error: ${response.status}`);
+  }
 
-  const responseText = message.content[0].type === "text"
-    ? message.content[0].text
-    : "";
+  const data = await response.json();
+  const responseText = data.content?.[0]?.text || "";
 
   // Parsear JSON da resposta
   // Limpar markdown se houver

@@ -189,23 +189,15 @@ export const leaksRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
           });
         }
 
-        // CAMADA 4: Chamada ao Claude API
-        app.log.info("LEAKS: verificando API key");
-        app.log.info({ hasApiKey: !!process.env.CLAUDE_API_KEY }, "LEAKS: CLAUDE_API_KEY");
-
-        if (!process.env.CLAUDE_API_KEY) {
+        // CAMADA 4: Chamada ao Claude API via fetch direto
+        const apiKey = process.env.CLAUDE_API_KEY;
+        if (!apiKey) {
           app.log.error("LEAKS: CLAUDE_API_KEY não definida!");
           return reply.status(500).send({
             success: false,
             error: "Configuração incompleta: CLAUDE_API_KEY não definida",
           });
         }
-
-        // Usar Claude Haiku para analisar e classificar vazamentos
-        const Anthropic = (await import("@anthropic-ai/sdk")).default;
-        const anthropic = new Anthropic({
-          apiKey: process.env.CLAUDE_API_KEY || "",
-        });
 
         app.log.info("LEAKS: chamando Claude API");
 
@@ -246,20 +238,37 @@ Critérios para vazamento:
 - Máximo 10 vazamentos
 - Para economia_anual_potencial, calcule baseado na frequência e valor do gasto`;
 
-        // Chamada com timeout de 25 segundos
-        let response;
+        // Chamada com timeout de 25 segundos via fetch direto
+        let responseText = "";
         try {
-          response = await Promise.race([
-            anthropic.messages.create({
-              model: "claude-haiku-4-20250514",
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 25000);
+
+          const response = await fetch("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: {
+              "x-api-key": apiKey,
+              "anthropic-version": "2023-06-01",
+              "content-type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "claude-haiku-4-5",
               max_tokens: 4096,
               messages: [{ role: "user", content: prompt }],
             }),
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error("TIMEOUT: Claude API excedeu 25 segundos")), 25000)
-            )
-          ]);
-          app.log.info({ status: response?.status, stopReason: response?.stop_reason }, "LEAKS: Claude respondeu");
+            signal: controller.signal,
+          });
+
+          clearTimeout(timeoutId);
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Claude API error: ${response.status} - ${errorText}`);
+          }
+
+          const data = await response.json();
+          responseText = data.content?.[0]?.text || "";
+          app.log.info({ rawText: responseText?.substring(0, 200) }, "LEAKS: texto Claude");
         } catch (apiError: any) {
           app.log.error({ error: apiError?.message, code: apiError?.code }, "LEAKS: erro na chamada ao Claude");
           return reply.status(500).send({
@@ -267,10 +276,6 @@ Critérios para vazamento:
             error: `Erro na análise: ${apiError?.message || "Falha ao comunicar com Claude API"}`,
           });
         }
-
-        const responseText = response.content[0].type === "text"
-          ? response.content[0].text
-          : "";
 
         // CAMADA 5: Parse do JSON
         app.log.info({ rawText: responseText?.substring(0, 200) }, "LEAKS: texto Claude");

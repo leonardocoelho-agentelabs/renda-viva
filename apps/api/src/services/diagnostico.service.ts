@@ -1,8 +1,5 @@
 import { supabaseAdmin } from "../plugins/supabase.js";
-import Anthropic from "@anthropic-ai/sdk";
 import { env } from "../env.js";
-
-const anthropic = new Anthropic({ apiKey: env.CLAUDE_API_KEY });
 
 export interface DiagnosticoPerfil {
   tipo: string;
@@ -200,19 +197,28 @@ Retorne SOMENTE um JSON válido com esta estrutura:
 Escolha o tipo de perfil que melhor se encaixa no comportamento financeiro descrito.
 `.trim();
 
-  // 6. Chamar IA
+  // 6. Chamar IA via fetch direto
   let diagnosticoData: Record<string, unknown> = {};
 
   try {
-    const response = await anthropic.messages.create({
-      model: "claude-haiku-4-5",
-      max_tokens: 2048,
-      messages: [{ role: "user", content: prompt }],
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": env.CLAUDE_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5",
+        max_tokens: 2048,
+        messages: [{ role: "user", content: prompt }],
+      }),
     });
 
-    const first = response.content[0];
-    if (first && first.type === "text") {
-      diagnosticoData = extractJson<Record<string, unknown>>(first.text) || {};
+    if (response.ok) {
+      const data = await response.json();
+      const text = data.content?.[0]?.text || "";
+      diagnosticoData = extractJson<Record<string, unknown>>(text) || {};
     }
   } catch (aiErr) {
     console.error("[Diagnóstico] Erro ao gerar com IA:", aiErr);

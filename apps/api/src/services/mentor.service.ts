@@ -1,9 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { enviarParaTodosOsNumeros } from "./alerts.service.js";
-import Anthropic from "@anthropic-ai/sdk";
 import { env } from "../env.js";
-
-const anthropic = new Anthropic({ apiKey: env.CLAUDE_API_KEY });
 
 export interface MentorObjective {
   id: string;
@@ -154,15 +151,23 @@ Retorne APENAS a mensagem, sem mais nada.
     let mensagem = "";
 
     try {
-      const response = await anthropic.messages.create({
-        model: "claude-haiku-4-5",
-        max_tokens: 150,
-        messages: [{ role: "user", content: prompt }],
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "x-api-key": env.CLAUDE_API_KEY,
+          "anthropic-version": "2023-06-01",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5",
+          max_tokens: 150,
+          messages: [{ role: "user", content: prompt }],
+        }),
       });
 
-      const first = response.content[0];
-      if (first && first.type === "text") {
-        mensagem = first.text.trim();
+      if (response.ok) {
+        const data = await response.json();
+        mensagem = data.content?.[0]?.text?.trim() || "";
       }
     } catch (aiErr) {
       console.error("[Mentor] Erro ao gerar alerta com IA:", aiErr);
