@@ -6,8 +6,6 @@ import { createClient } from "@/lib/supabase/client";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +21,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { format, addMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Check } from "lucide-react";
+import { Check, X } from "lucide-react";
 
 interface RecurringModalProps {
   isOpen: boolean;
@@ -87,6 +85,12 @@ export function RecurringModal({ isOpen, onClose, onSuccess }: RecurringModalPro
   }, [isOpen, resetForm]);
 
   const handleClose = () => {
+    const temDados = nome || valor || totalParcelas || descricao;
+    if (temDados) {
+      if (!window.confirm("Deseja descartar as informações preenchidas?")) {
+        return;
+      }
+    }
     resetForm();
     onClose();
   };
@@ -232,213 +236,237 @@ export function RecurringModal({ isOpen, onClose, onSuccess }: RecurringModalPro
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px] bg-white dark:bg-[#1E1E1E]">
-        <DialogHeader>
-          <DialogTitle className="font-[var(--font-poppins)] font-bold text-lg text-rv-ink dark:text-[#F0F0F0]">
-            Novo Compromisso
-          </DialogTitle>
-        </DialogHeader>
-
-        {step === 1 && (
-          <div className="space-y-4">
-            <p className="text-sm text-rv-muted">
-              Escolha o tipo de compromisso financeiro recorrente:
-            </p>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleTipoSelect("assinatura")}
-                className="flex flex-col items-center p-6 rounded-xl border-2 border-rv-forest/20 dark:border-rv-vivid/20 hover:border-rv-forest dark:hover:border-rv-vivid hover:bg-rv-mint/5 dark:hover:bg-rv-green/10 transition-all"
-              >
-                <span className="text-3xl mb-2">📅</span>
-                <span className="font-semibold text-rv-ink dark:text-[#F0F0F0]">
-                  Assinatura
-                </span>
-                <span className="text-xs text-rv-muted mt-1 text-center">
-                  Sem prazo definido
-                </span>
-                <span className="text-xs text-rv-muted text-center">
-                  Netflix, academia, streaming...
-                </span>
-              </button>
-
-              <button
-                onClick={() => handleTipoSelect("parcela")}
-                className="flex flex-col items-center p-6 rounded-xl border-2 border-rv-forest/20 dark:border-rv-vivid/20 hover:border-rv-forest dark:hover:border-rv-vivid hover:bg-rv-mint/5 dark:hover:bg-rv-green/10 transition-all"
-              >
-                <span className="text-3xl mb-2">💳</span>
-                <span className="font-semibold text-rv-ink dark:text-[#F0F0F0]">
-                  Parcela
-                </span>
-                <span className="text-xs text-rv-muted mt-1 text-center">
-                  Número fixo de meses
-                </span>
-                <span className="text-xs text-rv-muted text-center">
-                  Financiamento, cartão...
-                </span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {step === 2 && tipo && (
-          <div className="space-y-4">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) handleClose();
+      }}
+    >
+      <DialogContent
+        className="sm:max-w-[500px] w-full max-h-[90vh] overflow-hidden flex flex-col bg-white dark:bg-[#1E1E1E] p-0"
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
+        {/* Header fixo */}
+        <div className="px-6 pt-6 pb-4 border-b border-rv-forest/10 dark:border-white/8 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <h2 className="font-[var(--font-poppins)] font-bold text-lg text-rv-ink dark:text-[#F0F0F0]">
+              Novo Compromisso
+            </h2>
             <button
-              onClick={() => setStep(1)}
-              className="text-sm text-rv-muted hover:text-rv-ink dark:hover:text-[#F0F0F0]"
+              onClick={handleClose}
+              className="p-1 rounded hover:bg-white/5 dark:hover:bg-white/5 text-[#8A8A8A] hover:text-rv-ink dark:hover:text-[#F0F0F0] transition-colors"
             >
-              ← Voltar e escolher tipo
+              <X className="h-5 w-5" />
             </button>
+          </div>
+        </div>
 
+        {/* Body com scroll */}
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          {step === 1 && (
             <div className="space-y-4">
-              <div>
-                <Label htmlFor="nome">
-                  Nome do {tipo === "assinatura" ? "serviço" : "compromisso"} *
-                </Label>
-                <Input
-                  id="nome"
-                  value={nome}
-                  onChange={(e) => setNome(e.target.value)}
-                  placeholder={tipo === "assinatura" ? "Netflix" : "Notebook Samsung"}
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="categoria">Categoria *</Label>
-                <Select value={categoria} onValueChange={setCategoria}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIAS.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <p className="text-sm text-rv-muted">
+                Escolha o tipo de compromisso financeiro recorrente:
+              </p>
 
               <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => handleTipoSelect("assinatura")}
+                  className="flex flex-col items-center p-6 rounded-xl border-2 border-rv-forest/20 dark:border-rv-vivid/20 hover:border-rv-forest dark:hover:border-rv-vivid hover:bg-rv-mint/5 dark:hover:bg-rv-green/10 transition-all"
+                >
+                  <span className="text-3xl mb-2">📅</span>
+                  <span className="font-semibold text-rv-ink dark:text-[#F0F0F0]">
+                    Assinatura
+                  </span>
+                  <span className="text-xs text-rv-muted mt-1 text-center">
+                    Sem prazo definido
+                  </span>
+                  <span className="text-xs text-rv-muted text-center">
+                    Netflix, academia, streaming...
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => handleTipoSelect("parcela")}
+                  className="flex flex-col items-center p-6 rounded-xl border-2 border-rv-forest/20 dark:border-rv-vivid/20 hover:border-rv-forest dark:hover:border-rv-vivid hover:bg-rv-mint/5 dark:hover:bg-rv-green/10 transition-all"
+                >
+                  <span className="text-3xl mb-2">💳</span>
+                  <span className="font-semibold text-rv-ink dark:text-[#F0F0F0]">
+                    Parcela
+                  </span>
+                  <span className="text-xs text-rv-muted mt-1 text-center">
+                    Número fixo de meses
+                  </span>
+                  <span className="text-xs text-rv-muted text-center">
+                    Financiamento, cartão...
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && tipo && (
+            <div className="space-y-4">
+              <button
+                onClick={() => setStep(1)}
+                className="text-sm text-rv-muted hover:text-rv-ink dark:hover:text-[#F0F0F0]"
+              >
+                ← Voltar e escolher tipo
+              </button>
+
+              <div className="space-y-4">
                 <div>
-                  <Label htmlFor="valor">
-                    Valor {tipo === "parcela" ? "por parcela" : "mensal"} *
+                  <Label htmlFor="nome">
+                    Nome do {tipo === "assinatura" ? "serviço" : "compromisso"} *
                   </Label>
                   <Input
-                    id="valor"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={valor}
-                    onChange={(e) => setValor(e.target.value)}
-                    placeholder="0,00"
+                    id="nome"
+                    value={nome}
+                    onChange={(e) => setNome(e.target.value)}
+                    placeholder={tipo === "assinatura" ? "Netflix" : "Notebook Samsung"}
                     className="mt-1"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="diaVencimento">Dia de vencimento *</Label>
-                  <Select value={diaVencimento} onValueChange={setDiaVencimento}>
+                  <Label htmlFor="categoria">Categoria *</Label>
+                  <Select value={categoria} onValueChange={setCategoria}>
                     <SelectTrigger className="mt-1">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {Array.from({ length: 31 }, (_, i) => i + 1).map((dia) => (
-                        <SelectItem key={dia} value={String(dia)}>
-                          Dia {dia}
+                      {CATEGORIAS.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
 
-              {tipo === "parcela" && (
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="totalParcelas">Total de parcelas *</Label>
+                    <Label htmlFor="valor">
+                      Valor {tipo === "parcela" ? "por parcela" : "mensal"} *
+                    </Label>
                     <Input
-                      id="totalParcelas"
+                      id="valor"
                       type="number"
-                      min="2"
-                      value={totalParcelas}
-                      onChange={(e) => setTotalParcelas(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="parcelasPagas">Já pagas *</Label>
-                    <Input
-                      id="parcelasPagas"
-                      type="number"
+                      step="0.01"
                       min="0"
-                      value={parcelasPagas}
-                      onChange={(e) => setParcelasPagas(e.target.value)}
+                      value={valor}
+                      onChange={(e) => setValor(e.target.value)}
+                      placeholder="0,00"
                       className="mt-1"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="dataInicio">Início</Label>
-                    <Input
-                      id="dataInicio"
-                      type="date"
-                      value={dataInicio}
-                      onChange={(e) => setDataInicio(e.target.value)}
-                      className="mt-1"
-                    />
+                    <Label htmlFor="diaVencimento">Dia de vencimento *</Label>
+                    <Select value={diaVencimento} onValueChange={setDiaVencimento}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 31 }, (_, i) => i + 1).map((dia) => (
+                          <SelectItem key={dia} value={String(dia)}>
+                            Dia {dia}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-              )}
 
-              <div>
-                <Label htmlFor="descricao">Descrição (opcional)</Label>
-                <Textarea
-                  id="descricao"
-                  value={descricao}
-                  onChange={(e) => setDescricao(e.target.value)}
-                  placeholder="Observações adicionais..."
-                  className="mt-1"
-                  rows={2}
-                />
-              </div>
+                {tipo === "parcela" && (
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="totalParcelas">Total de parcelas *</Label>
+                      <Input
+                        id="totalParcelas"
+                        type="number"
+                        min="2"
+                        value={totalParcelas}
+                        onChange={(e) => setTotalParcelas(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="alertaWhatsapp">Alertas via WhatsApp</Label>
-                  <p className="text-xs text-rv-muted">
-                    Receba lembretes 3 dias antes do vencimento
-                  </p>
+                    <div>
+                      <Label htmlFor="parcelasPagas">Já pagas *</Label>
+                      <Input
+                        id="parcelasPagas"
+                        type="number"
+                        min="0"
+                        value={parcelasPagas}
+                        onChange={(e) => setParcelasPagas(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="dataInicio">Início</Label>
+                      <Input
+                        id="dataInicio"
+                        type="date"
+                        value={dataInicio}
+                        onChange={(e) => setDataInicio(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <Label htmlFor="descricao">Descrição (opcional)</Label>
+                  <Textarea
+                    id="descricao"
+                    value={descricao}
+                    onChange={(e) => setDescricao(e.target.value)}
+                    placeholder="Observações adicionais..."
+                    className="mt-1"
+                    rows={2}
+                  />
                 </div>
-                <Switch
-                  id="alertaWhatsapp"
-                  checked={alertaWhatsapp}
-                  onCheckedChange={setAlertaWhatsapp}
-                />
-              </div>
 
-              {valor && renderPreview()}
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="alertaWhatsapp">Alertas via WhatsApp</Label>
+                    <p className="text-xs text-rv-muted">
+                      Receba lembretes 3 dias antes do vencimento
+                    </p>
+                  </div>
+                  <Switch
+                    id="alertaWhatsapp"
+                    checked={alertaWhatsapp}
+                    onCheckedChange={setAlertaWhatsapp}
+                  />
+                </div>
 
-              <div className="flex justify-end gap-3 pt-4">
-                <Button
-                  variant="outline"
-                  onClick={handleClose}
-                  className="border-gray-200 dark:border-white/10"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handleSubmit}
-                  disabled={loading || !nome.trim() || !valor}
-                  className="bg-rv-green hover:bg-rv-forest text-white"
-                >
-                  {loading ? "Salvando..." : "Salvar compromisso"}
-                </Button>
+                {valor && renderPreview()}
               </div>
             </div>
+          )}
+        </div>
+
+        {/* Footer fixo */}
+        {step === 2 && (
+          <div className="px-6 pb-6 pt-4 border-t border-rv-forest/10 dark:border-white/8 flex-shrink-0 flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              className="border-gray-200 dark:border-white/10"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={loading || !nome.trim() || !valor}
+              className="bg-rv-green hover:bg-rv-forest text-white"
+            >
+              {loading ? "Salvando..." : "Salvar compromisso"}
+            </Button>
           </div>
         )}
       </DialogContent>

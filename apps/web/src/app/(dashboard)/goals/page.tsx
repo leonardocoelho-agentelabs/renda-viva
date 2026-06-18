@@ -3,7 +3,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { createClient } from "@/lib/supabase/client";
-import { Target, Plus, X, Sparkles, Lightbulb, MoreVertical } from "lucide-react";
+import { Target, Plus, X, Sparkles, Lightbulb, MoreVertical, Trash2, CheckCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Goal {
   id: string;
@@ -63,6 +73,7 @@ export default function GoalsPage() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -73,6 +84,9 @@ export default function GoalsPage() {
   const [depositValue, setDepositValue] = useState("");
 
   const [menuId, setMenuId] = useState<string | null>(null);
+  const [deleteGoalId, setDeleteGoalId] = useState<string | null>(null);
+  const [deleteGoalName, setDeleteGoalName] = useState<string>("");
+  const [deleting, setDeleting] = useState(false);
 
   const getToken = useCallback(async (): Promise<string | null> => {
     const {
@@ -204,6 +218,43 @@ export default function GoalsPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!deleteGoalId) return;
+    setDeleting(true);
+    const token = await getToken();
+    if (!token) {
+      setDeleting(false);
+      setDeleteGoalId(null);
+      return;
+    }
+    try {
+      const res = await fetch(`${apiUrl}/goals/${deleteGoalId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setGoals((prev) => prev.filter((g) => g.id !== deleteGoalId));
+        setSuccessMessage("Meta excluída com sucesso!");
+        setTimeout(() => setSuccessMessage(null), 3000);
+      } else {
+        throw new Error("Erro ao excluir");
+      }
+    } catch {
+      setError("Não foi possível excluir a meta. Tente novamente.");
+      setTimeout(() => setError(null), 4000);
+    } finally {
+      setDeleting(false);
+      setDeleteGoalId(null);
+      setDeleteGoalName("");
+    }
+  };
+
+  const openDeleteConfirm = (id: string, nome: string) => {
+    setMenuId(null);
+    setDeleteGoalId(id);
+    setDeleteGoalName(nome);
+  };
+
   return (
     <DashboardLayout>
       <div className="mb-8 flex items-start justify-between gap-4">
@@ -225,6 +276,13 @@ export default function GoalsPage() {
       {error && (
         <div className="mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">
           {error}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="mb-6 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 px-4 py-3 text-sm text-green-700 dark:text-green-400 flex items-center gap-2">
+          <CheckCircle className="h-4 w-4" />
+          {successMessage}
         </div>
       )}
 
@@ -282,7 +340,7 @@ export default function GoalsPage() {
                       <MoreVertical className="h-4 w-4" />
                     </button>
                     {menuId === g.id && (
-                      <div className="absolute right-0 mt-1 w-36 bg-white dark:bg-[#1E1E1E] border border-white/10 dark:border-white/10 rounded-lg shadow-lg z-10 py-1 text-sm">
+                      <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-[#1E1E1E] border border-white/10 dark:border-white/10 rounded-lg shadow-lg z-10 py-1 text-sm">
                         {g.status !== "pausada" && g.status !== "concluida" && (
                           <button
                             onClick={() => handleStatus(g.id, "pausada")}
@@ -304,6 +362,16 @@ export default function GoalsPage() {
                           className="block w-full text-left px-3 py-1.5 hover:bg-white/5 text-red-600 dark:text-red-400"
                         >
                           Cancelar
+                        </button>
+                        <div className="border-t border-white/10 dark:border-white/10 my-1" />
+                        <button
+                          onClick={() => openDeleteConfirm(g.id, g.nome)}
+                          className="block w-full text-left px-3 py-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 hover:text-red-600"
+                        >
+                          <span className="flex items-center gap-2">
+                            <Trash2 className="h-3.5 w-3.5" />
+                            Excluir meta
+                          </span>
                         </button>
                       </div>
                     )}
@@ -519,6 +587,28 @@ export default function GoalsPage() {
           </div>
         </div>
       )}
+
+      {/* AlertDialog de confirmação para excluir meta */}
+      <AlertDialog open={deleteGoalId !== null} onOpenChange={(open) => !open && setDeleteGoalId(null)}>
+        <AlertDialogContent className="bg-white dark:bg-[#1E1E1E]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-rv-ink dark:text-[#F0F0F0]">Excluir meta</AlertDialogTitle>
+            <AlertDialogDescription className="text-[#8A8A8A]">
+              Tem certeza que deseja excluir a meta "{deleteGoalName}"? Esta ação não pode ser desfeita e todos os dados de progresso serão perdidos permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-gray-200 dark:border-white/10">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-500 hover:bg-red-600 text-white"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting ? "Excluindo..." : "Sim, excluir meta"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }
