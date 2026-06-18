@@ -58,26 +58,144 @@ function detectTipo(historico: string, valor: number): ParsedTransaction["tipo"]
 }
 
 // ============================================================
+// UTILITÁRIOS DE ENCODING E PARSING
+// ============================================================
+
+/**
+ * Detecta e converte encoding ISO-8859-1 para UTF-8 se necessário
+ */
+function fixEncoding(buffer: Buffer): string {
+  const utf8 = buffer.toString("utf-8");
+  // Verifica se há caracteres de substituição que indicam problema de encoding
+  if (!utf8.includes("�")) return utf8;
+  // Fallback para latin1 (ISO-8859-1)
+  return buffer.toString("latin1");
+}
+
+/**
+ * Parse valor com parênteses (negativos) ou sinal D/C no final
+ * Exemplos: "(1.234,56)" | "-1.234,56" | "1.234,56 D" | "500,00 C"
+ */
+function parseValueWithParens(raw: string): number {
+  if (!raw || raw.trim() === "") return 0;
+
+  const trimmed = raw.trim();
+
+  // Detecta se é negativo: parênteses ou sinal D (débito)
+  const isNegative =
+    trimmed.startsWith("(") ||
+    trimmed.startsWith("-") ||
+    trimmed.includes(" D") ||
+    trimmed.includes("D ") ||
+    trimmed.includes(" D ") ||
+    trimmed.endsWith(" D") ||
+    trimmed.endsWith("d");
+
+  // Remove parênteses, D/C, espaços e pontos de milhar
+  const cleaned = trimmed
+    .replace(/[()D Cd]/g, "")
+    .replace(/\s/g, "")
+    .replace(/\./g, "")
+    .replace(",", ".");
+
+  const value = parseFloat(cleaned);
+  if (isNaN(value)) return 0;
+
+  return isNegative ? -Math.abs(value) : Math.abs(value);
+}
+
+/**
+ * Parse valores de colunas Crédito/Débito separadas (Itaú)
+ * Se Crédito preenchido → positivo; se Débito preenchido → negativo
+ */
+function parseCreditDebit(credito: string, debito: string): number {
+  const creditVal = parseBRValue(credito);
+  const debitVal = parseBRValue(debito);
+
+  if (creditVal > 0) return creditVal;
+  if (debitVal > 0) return -Math.abs(debitVal);
+  return 0;
+}
+
+// ============================================================
 // ETAPA 1 — Detecção automática de formato CSV
 // ============================================================
-type CSVFormat = "inter" | "nubank" | "unknown";
+type CSVFormat =
+  | "inter"
+  | "nubank"
+  | "itau"
+  | "bradesco"
+  | "c6"
+  | "santander"
+  | "caixa"
+  | "bb"
+  | "unknown";
 
 function detectCSVFormat(content: string): CSVFormat {
   const lines = content.split("\n").filter((l) => l.trim());
+  const header = lines[0]?.toLowerCase() || "";
+  const fullContent = content.toLowerCase();
 
-  // Formato Nubank: header na linha 1 com "Data,Valor,Identificador"
-  if (lines[0]?.includes("Data,Valor,Identificador")) {
+  // Nubank — vírgula como separador, tem "identificador"
+  if (header.includes("identificador") && header.includes(",")) {
     return "nubank";
   }
 
-  // Formato Banco Inter: separador ";" e header após linhas de metadados
+  // Banco Inter — separador ; e tem "histórico" e "lançamento"
   if (
     content.includes(";") &&
-    (content.includes("Data Lançamento") ||
-      content.includes("Histórico") ||
-      content.includes("Lançamento"))
+    (header.includes("histórico") || header.includes("historico")) &&
+    (header.includes("valor") || header.includes("saldo"))
   ) {
     return "inter";
+  }
+
+  // Itaú — tem "débito" e "crédito" como colunas separadas
+  if (
+    header.includes("débito") ||
+    header.includes("debito") ||
+    header.includes("crédito") ||
+    header.includes("credito") ||
+    fullContent.includes("itau") ||
+    fullContent.includes("itaú")
+  ) {
+    return "itau";
+  }
+
+  // Bradesco
+  if (fullContent.includes("bradesco")) {
+    return "bradesco";
+  }
+
+  // C6 Bank
+  if (fullContent.includes("c6 bank") || fullContent.includes("c6bank")) {
+    return "c6";
+  }
+
+  // Santander
+  if (
+    fullContent.includes("santander") ||
+    header.includes("dt.mov") ||
+    header.includes("dt. movimento")
+  ) {
+    return "santander";
+  }
+
+  // Caixa Econômica
+  if (
+    fullContent.includes("caixa econômica") ||
+    fullContent.includes("caixa economica") ||
+    fullContent.includes("cef")
+  ) {
+    return "caixa";
+  }
+
+  // Banco do Brasil
+  if (
+    fullContent.includes("banco do brasil") ||
+    header.includes("dependencia origem")
+  ) {
+    return "bb";
   }
 
   // Fallback: tentar detectar pelo separador predominante
@@ -159,18 +277,13 @@ function parseNubankCSV(content: string): ParsedTransaction[] {
 }
 
 // ============================================================
-// ETAPA 4 — Parser específico para Banco Inter (encapsulado)
+// ETAPA 3 — Parser específico para Banco Inter
 // ============================================================
 function parseInterCSV(buffer: Buffer): ParsedTransaction[] {
-  // Contador para logs de diagnóstico (mostra apenas as 3 primeiras linhas)
-  let diagnosticCount = 0;
-
-  // Remove BOM (byte order mark) que alguns bancos colocam no início do arquivo
-  const content = buffer.toString("utf-8").replace(/^﻿/, "");
+  const content = fixEncoding(buffer).replace(/^﻿/, "");
   const lines = content.split("\n");
 
   // Encontrar a linha de cabeçalho real: contém "data" e "valor".
-  // Bancos como o Inter colocam metadados nas primeiras linhas.
   let headerIndex = -1;
   for (let i = 0; i < Math.min(lines.length, 15); i++) {
     const line = lines[i].toLowerCase();
@@ -209,7 +322,6 @@ function parseInterCSV(buffer: Buffer): ParsedTransaction[] {
   const transactions: ParsedTransaction[] = [];
 
   for (const row of result.data) {
-    // Identificar colunas por nome (case-insensitive nas variações comuns)
     const dataRaw =
       row["Data Lançamento"] ||
       row["Data Lancamento"] ||
@@ -226,12 +338,6 @@ function parseInterCSV(buffer: Buffer): ParsedTransaction[] {
       row["Debito"] ||
       row["Credito"];
 
-    // LOG DIAGNÓSTICO: primeiras 3 transações para verificar parsing de valores
-    if (diagnosticCount < 3 && valorRaw) {
-      diagnosticCount++;
-      console.log(`[CSV PARSER] Raw value: "${valorRaw}"`);
-      console.log(`[CSV PARSER] Parsed value: ${parseBRValue(String(valorRaw))}`);
-    }
     const historico =
       row["Histórico"] || row["Historico"] || row["historico"] || "";
     const descricao =
@@ -244,9 +350,8 @@ function parseInterCSV(buffer: Buffer): ParsedTransaction[] {
     if (!dataRaw || !valorRaw) continue;
 
     const valor = parseBrazilianNumber(String(valorRaw));
-    if (valor === 0) continue; // Ignorar linhas com valor zero (ex: saldo)
+    if (valor === 0) continue;
 
-    // descricao_raw = Histórico + ": " + Descrição quando ambos existirem
     const h = historico.trim();
     const d = descricao.trim();
     const descricao_raw = h && d ? `${h}: ${d}` : h || d || "Transação";
@@ -263,24 +368,400 @@ function parseInterCSV(buffer: Buffer): ParsedTransaction[] {
 }
 
 // ============================================================
-// ETAPA 3 — Parser principal com detecção automática
+// PARSER ITAÚ
+// Colunas: Data | Histórico | Docto. | Crédito (R$) | Débito (R$) | Saldo (R$)
+// ============================================================
+function parseItauCSV(buffer: Buffer): ParsedTransaction[] {
+  const content = fixEncoding(buffer).replace(/^﻿/, "");
+  const lines = content.split("\n");
+
+  // Encontrar linha do header com "Data"
+  let headerIndex = -1;
+  for (let i = 0; i < Math.min(lines.length, 10); i++) {
+    if (lines[i].toLowerCase().includes("data")) {
+      headerIndex = i;
+      break;
+    }
+  }
+
+  if (headerIndex === -1) return [];
+
+  const csvContent = lines.slice(headerIndex).join("\n");
+  const result = Papa.parse<Record<string, string>>(csvContent, {
+    header: true,
+    delimiter: ";",
+    skipEmptyLines: true,
+    transformHeader: (h) => h.trim(),
+  });
+
+  const transactions: ParsedTransaction[] = [];
+
+  for (const row of result.data) {
+    const dataRaw = row["Data"] || row["DATA"] || row["data"];
+    const historico = row["Histórico"] || row["Historico"] || row["Historria"] || "";
+    const creditoRaw =
+      row["Crédito (R$)"] ||
+      row["Credito (R$)"] ||
+      row["Crédito"] ||
+      row["Credito"] ||
+      "";
+    const debitoRaw =
+      row["Débito (R$)"] || row["Debito (R$)"] || row["Débito"] || row["Debito"] || "";
+
+    if (!dataRaw) continue;
+
+    const valor = parseCreditDebit(creditoRaw, debitoRaw);
+    if (valor === 0) continue;
+
+    const descricao_raw = historico.trim() || "Transação Itaú";
+
+    transactions.push({
+      data: parseBrazilianDate(dataRaw),
+      valor,
+      descricao_raw,
+      tipo: detectTipo(historico, valor),
+    });
+  }
+
+  return transactions;
+}
+
+// ============================================================
+// PARSER BRADESCO
+// Colunas: Data | Histórico | Valor | Saldo
+// Valor negativo tem "-" ou está entre parênteses
+// ============================================================
+function parseBradescoCSV(buffer: Buffer): ParsedTransaction[] {
+  const content = fixEncoding(buffer).replace(/^﻿/, "");
+  const lines = content.split("\n");
+
+  // Encontrar linha do header
+  let headerIndex = -1;
+  for (let i = 0; i < Math.min(lines.length, 10); i++) {
+    if (lines[i].toLowerCase().includes("data")) {
+      headerIndex = i;
+      break;
+    }
+  }
+
+  if (headerIndex === -1) return [];
+
+  const csvContent = lines.slice(headerIndex).join("\n");
+  const result = Papa.parse<Record<string, string>>(csvContent, {
+    header: true,
+    delimiter: ";",
+    skipEmptyLines: true,
+    transformHeader: (h) => h.trim(),
+  });
+
+  const transactions: ParsedTransaction[] = [];
+
+  for (const row of result.data) {
+    const dataRaw = row["Data"] || row["DATA"] || row["data"];
+    const historico = row["Histórico"] || row["Historico"] || row["Historria"] || "";
+    const valorRaw = row["Valor"] || row["VALOR"] || row["valor"] || "";
+
+    if (!dataRaw || !valorRaw) continue;
+
+    const valor = parseValueWithParens(valorRaw);
+    if (valor === 0) continue;
+
+    const descricao_raw = historico.trim() || "Transação Bradesco";
+
+    transactions.push({
+      data: parseBrazilianDate(dataRaw),
+      valor,
+      descricao_raw,
+      tipo: detectTipo(historico, valor),
+    });
+  }
+
+  return transactions;
+}
+
+// ============================================================
+// PARSER C6 BANK
+// Colunas: Data | Descrição | Valor | Saldo
+// Pode ter formato americano ou brasileiro — detectar automaticamente
+// ============================================================
+function parseC6CSV(buffer: Buffer): ParsedTransaction[] {
+  const content = fixEncoding(buffer).replace(/^﻿/, "");
+  const lines = content.split("\n");
+
+  // Encontrar linha do header
+  let headerIndex = -1;
+  for (let i = 0; i < Math.min(lines.length, 10); i++) {
+    if (lines[i].toLowerCase().includes("data")) {
+      headerIndex = i;
+      break;
+    }
+  }
+
+  if (headerIndex === -1) return [];
+
+  const csvContent = lines.slice(headerIndex).join("\n");
+  const result = Papa.parse<Record<string, string>>(csvContent, {
+    header: true,
+    delimiter: ";",
+    skipEmptyLines: true,
+    transformHeader: (h) => h.trim(),
+  });
+
+  const transactions: ParsedTransaction[] = [];
+
+  for (const row of result.data) {
+    const dataRaw = row["Data"] || row["DATA"] || row["data"];
+    const descricao =
+      row["Descrição"] || row["Descricao"] || row["Descricao"] || row["descricao"] || "";
+    const valorRaw = row["Valor"] || row["VALOR"] || row["valor"] || "";
+
+    if (!dataRaw || !valorRaw) continue;
+
+    const valor = parseValueWithParens(valorRaw);
+    if (valor === 0) continue;
+
+    const descricao_raw = descricao.trim() || "Transação C6 Bank";
+
+    transactions.push({
+      data: parseBrazilianDate(dataRaw),
+      valor,
+      descricao_raw,
+      tipo: detectTipo(descricao, valor),
+    });
+  }
+
+  return transactions;
+}
+
+// ============================================================
+// PARSER SANTANDER
+// Colunas: Dt.Mov | Dt.Contáb | Histórico | Valor | Saldo
+// Valor negativo tem parênteses
+// ============================================================
+function parseSantanderCSV(buffer: Buffer): ParsedTransaction[] {
+  const content = fixEncoding(buffer).replace(/^﻿/, "");
+  const lines = content.split("\n");
+
+  // Encontrar linha do header com "Dt.Mov" ou "Data"
+  let headerIndex = -1;
+  for (let i = 0; i < Math.min(lines.length, 10); i++) {
+    const line = lines[i].toLowerCase();
+    if (line.includes("dt.mov") || line.includes("data") || line.includes("movimento")) {
+      headerIndex = i;
+      break;
+    }
+  }
+
+  if (headerIndex === -1) return [];
+
+  const csvContent = lines.slice(headerIndex).join("\n");
+  const result = Papa.parse<Record<string, string>>(csvContent, {
+    header: true,
+    delimiter: ";",
+    skipEmptyLines: true,
+    transformHeader: (h) => h.trim(),
+  });
+
+  const transactions: ParsedTransaction[] = [];
+
+  for (const row of result.data) {
+    // Santander usa "Dt.Mov" para data do movimento
+    const dataRaw =
+      row["Dt.Mov"] || row["Dt.Movimento"] || row["Data"] || row["DATA"] || row["data"];
+    const historico =
+      row["Histórico"] || row["Historico"] || row["Historria"] || "";
+    const valorRaw = row["Valor"] || row["VALOR"] || row["valor"] || "";
+
+    if (!dataRaw || !valorRaw) continue;
+
+    const valor = parseValueWithParens(valorRaw);
+    if (valor === 0) continue;
+
+    const descricao_raw = historico.trim() || "Transação Santander";
+
+    transactions.push({
+      data: parseBrazilianDate(dataRaw),
+      valor,
+      descricao_raw,
+      tipo: detectTipo(historico, valor),
+    });
+  }
+
+  return transactions;
+}
+
+// ============================================================
+// PARSER CAIXA ECONÔMICA
+// Colunas: Data | Histórico | Valor | Saldo
+// Sinal: negativo tem "D" no final, positivo tem "C" (crédito)
+// ============================================================
+function parseCaixaCSV(buffer: Buffer): ParsedTransaction[] {
+  const content = fixEncoding(buffer).replace(/^﻿/, "");
+  const lines = content.split("\n");
+
+  // Encontrar linha do header
+  let headerIndex = -1;
+  for (let i = 0; i < Math.min(lines.length, 10); i++) {
+    if (lines[i].toLowerCase().includes("data")) {
+      headerIndex = i;
+      break;
+    }
+  }
+
+  if (headerIndex === -1) return [];
+
+  const csvContent = lines.slice(headerIndex).join("\n");
+  const result = Papa.parse<Record<string, string>>(csvContent, {
+    header: true,
+    delimiter: ";",
+    skipEmptyLines: true,
+    transformHeader: (h) => h.trim(),
+  });
+
+  const transactions: ParsedTransaction[] = [];
+
+  for (const row of result.data) {
+    const dataRaw = row["Data"] || row["DATA"] || row["data"];
+    const historico = row["Histórico"] || row["Historico"] || row["Historria"] || "";
+    const valorRaw = row["Valor"] || row["VALOR"] || row["valor"] || "";
+
+    if (!dataRaw || !valorRaw) continue;
+
+    // Caixa usa "D" e "C" no final do valor
+    const valor = parseValueWithParens(valorRaw);
+    if (valor === 0) continue;
+
+    const descricao_raw = historico.trim() || "Transação Caixa";
+
+    transactions.push({
+      data: parseBrazilianDate(dataRaw),
+      valor,
+      descricao_raw,
+      tipo: detectTipo(historico, valor),
+    });
+  }
+
+  return transactions;
+}
+
+// ============================================================
+// PARSER BANCO DO BRASIL
+// Colunas: Data | Dependencia Origem | Histórico | Data Balancete | Número do documento | Valor
+// ============================================================
+function parseBBCSV(buffer: Buffer): ParsedTransaction[] {
+  const content = fixEncoding(buffer).replace(/^﻿/, "");
+  const lines = content.split("\n");
+
+  // Encontrar linha do header com "Data" e "Histórico"
+  let headerIndex = -1;
+  for (let i = 0; i < Math.min(lines.length, 10); i++) {
+    const line = lines[i].toLowerCase();
+    if (line.includes("data") && line.includes("histórico")) {
+      headerIndex = i;
+      break;
+    }
+  }
+
+  if (headerIndex === -1) {
+    // Tentar só com "Data"
+    for (let i = 0; i < Math.min(lines.length, 10); i++) {
+      if (lines[i].toLowerCase().includes("data")) {
+        headerIndex = i;
+        break;
+      }
+    }
+  }
+
+  if (headerIndex === -1) return [];
+
+  const csvContent = lines.slice(headerIndex).join("\n");
+  const result = Papa.parse<Record<string, string>>(csvContent, {
+    header: true,
+    delimiter: ";",
+    skipEmptyLines: true,
+    transformHeader: (h) => h.trim(),
+  });
+
+  const transactions: ParsedTransaction[] = [];
+
+  for (const row of result.data) {
+    const dataRaw = row["Data"] || row["DATA"] || row["data"];
+    const historico =
+      row["Histórico"] || row["Historico"] || row["Historria"] || "";
+    const valorRaw = row["Valor"] || row["VALOR"] || row["valor"] || "";
+
+    if (!dataRaw || !valorRaw) continue;
+
+    const valor = parseValueWithParens(valorRaw);
+    if (valor === 0) continue;
+
+    const descricao_raw = historico.trim() || "Transação Banco do Brasil";
+
+    transactions.push({
+      data: parseBrazilianDate(dataRaw),
+      valor,
+      descricao_raw,
+      tipo: detectTipo(historico, valor),
+    });
+  }
+
+  return transactions;
+}
+
+// ============================================================
+// PARSER PRINCIPAL COM DETECÇÃO AUTOMÁTICA
 // ============================================================
 export async function parseCSV(buffer: Buffer): Promise<ParsedTransaction[]> {
-  const content = buffer.toString("utf-8").replace(/^﻿/, "");
+  const content = fixEncoding(buffer).replace(/^﻿/, "");
   const format = detectCSVFormat(content);
 
-  console.log(`[CSV PARSER] Formato detectado: ${format}`);
+  console.log(`[CSV PARSER] Banco detectado: ${format}`);
 
   let transactions: ParsedTransaction[] = [];
 
-  if (format === "nubank") {
-    transactions = parseNubankCSV(content);
-  } else if (format === "inter") {
-    transactions = parseInterCSV(buffer);
-  } else {
-    // Tentar Nubank como fallback
-    console.log("[CSV PARSER] Formato desconhecido, tentando Nubank...");
-    transactions = parseNubankCSV(content);
+  switch (format) {
+    case "nubank":
+      transactions = parseNubankCSV(content);
+      break;
+    case "inter":
+      transactions = parseInterCSV(buffer);
+      break;
+    case "itau":
+      transactions = parseItauCSV(buffer);
+      break;
+    case "bradesco":
+      transactions = parseBradescoCSV(buffer);
+      break;
+    case "c6":
+      transactions = parseC6CSV(buffer);
+      break;
+    case "santander":
+      transactions = parseSantanderCSV(buffer);
+      break;
+    case "caixa":
+      transactions = parseCaixaCSV(buffer);
+      break;
+    case "bb":
+      transactions = parseBBCSV(buffer);
+      break;
+    case "unknown":
+    default:
+      // Tentar parsing genérico primeiro
+      console.log("[CSV PARSER] Formato desconhecido, tentando parser genérico...");
+
+      // Tenta Inter como fallback (mais comum)
+      transactions = parseInterCSV(buffer);
+
+      // Se não encontrou nada, lança erro amigável
+      if (transactions.length === 0) {
+        throw new Error(
+          "Formato de extrato não reconhecido. " +
+            "Bancos suportados: Banco Inter, Nubank, Itaú, Bradesco, " +
+            "C6 Bank, Santander, Caixa Econômica e Banco do Brasil. " +
+            "Verifique se o arquivo é um extrato CSV válido."
+        );
+      }
+      break;
   }
 
   console.log(`[CSV PARSER] ${transactions.length} transações extraídas`);
