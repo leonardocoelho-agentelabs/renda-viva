@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { createClient } from "@/lib/supabase/client";
-import { MessageCircle, Plus, Trash2, AlertCircle } from "lucide-react";
+import { MessageCircle, Plus, Trash2, AlertCircle, CreditCard, Download } from "lucide-react";
 
 interface Contato {
   id: string;
@@ -50,6 +50,28 @@ export default function SettingsPage() {
   const [textoExclusao, setTextoExclusao] = useState("");
   const [excluindo, setExcluindo] = useState(false);
 
+  // Assinatura
+  const [subscriptionData, setSubscriptionData] = useState<{
+    subscription: any;
+    temAcesso: boolean;
+    acessoLiberado: boolean;
+  } | null>(null);
+
+  const [confirmandoCancelamento, setConfirmandoCancelamento] = useState(false);
+  const [textoCancelamento, setTextoCancelamento] = useState("");
+  const [cancelando, setCancelando] = useState(false);
+
+  // Exportação
+  const [exportando, setExportando] = useState(false);
+
+  // Toast
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  const showToast = (message: string, type: "success" | "error" = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
+
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
   const getToken = useCallback(async (): Promise<string | null> => {
@@ -81,9 +103,28 @@ export default function SettingsPage() {
     }
   }, [apiUrl, getToken]);
 
+  const carregarAssinatura = useCallback(async () => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      const res = await fetch(`${apiUrl}/subscriptions/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setSubscriptionData(data);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar assinatura:", err);
+    }
+  }, [apiUrl, getToken]);
+
   useEffect(() => {
     carregarContatos();
-  }, [carregarContatos]);
+    carregarAssinatura();
+  }, [carregarContatos, carregarAssinatura]);
 
   const adicionarContato = async () => {
     setErro("");
@@ -222,6 +263,81 @@ export default function SettingsPage() {
     window.location.href = "/";
   };
 
+  // Cancelar assinatura
+  const cancelarAssinatura = async () => {
+    if (textoCancelamento !== "CANCELAR") return;
+
+    setCancelando(true);
+    const token = await getToken();
+    if (!token) {
+      setCancelando(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${apiUrl}/subscriptions/cancel`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        showToast(data.error || "Erro ao cancelar assinatura", "error");
+      } else {
+        showToast("Assinatura cancelada. Seu acesso continua até o fim do período pago.");
+        setConfirmandoCancelamento(false);
+        setTextoCancelamento("");
+        carregarAssinatura(); // Atualiza os dados da assinatura
+      }
+    } catch (err) {
+      showToast("Erro ao cancelar assinatura", "error");
+    } finally {
+      setCancelando(false);
+    }
+  };
+
+  // Exportar dados
+  const exportarDados = async () => {
+    setExportando(true);
+    const token = await getToken();
+    if (!token) {
+      setExportando(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${apiUrl}/users/export`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        showToast("Erro ao exportar dados", "error");
+        setExportando(false);
+        return;
+      }
+
+      const data = await res.json();
+
+      // Trigger download
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `renda-viva-dados-${new Date().toISOString().split("T")[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      showToast("Seus dados foram exportados com sucesso!");
+    } catch (err) {
+      showToast("Erro ao exportar dados", "error");
+    } finally {
+      setExportando(false);
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="mb-8">
@@ -233,6 +349,18 @@ export default function SettingsPage() {
         <div className="mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400 flex items-center gap-2">
           <AlertCircle className="h-4 w-4" />
           {erro}
+        </div>
+      )}
+
+      {toast && (
+        <div
+          className={`mb-6 rounded-lg px-4 py-3 text-sm flex items-center gap-2 ${
+            toast.type === "success"
+              ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400"
+              : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400"
+          }`}
+        >
+          {toast.message}
         </div>
       )}
 
@@ -383,6 +511,121 @@ export default function SettingsPage() {
             )}
           </div>
 
+          {/* Card Assinatura */}
+          {subscriptionData && !subscriptionData.acessoLiberado && (
+            <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-rv-forest/10 dark:border-white/8 p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <CreditCard className="w-4 h-4 text-rv-green dark:text-rv-vivid" />
+                <h3 className="text-sm font-semibold text-rv-ink dark:text-[#F0F0F0]">Minha Assinatura</h3>
+              </div>
+
+              <div className="space-y-2 mb-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#8A8A8A]">Plano:</span>
+                  <span className="font-medium text-rv-ink dark:text-[#F0F0F0]">
+                    {subscriptionData.subscription?.plans?.nome || "Renda Viva Pro"}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#8A8A8A]">Status:</span>
+                  <span className="flex items-center gap-1.5">
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        subscriptionData.subscription?.status === "active"
+                          ? "bg-rv-green animate-pulse"
+                          : subscriptionData.subscription?.status === "canceled"
+                          ? "bg-red-500"
+                          : "bg-yellow-500"
+                      }`}
+                    />
+                    <span className="font-medium text-rv-ink dark:text-[#F0F0F0]">
+                      {subscriptionData.subscription?.status === "active"
+                        ? "Ativa"
+                        : subscriptionData.subscription?.status === "canceled"
+                        ? "Cancelada"
+                        : subscriptionData.subscription?.status === "pending"
+                        ? "Pendente"
+                        : subscriptionData.subscription?.status === "overdue"
+                        ? "Atrasada"
+                        : subscriptionData.subscription?.status || "—"}
+                    </span>
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#8A8A8A]">Valor:</span>
+                  <span className="font-medium text-rv-ink dark:text-[#F0F0F0]">
+                    {subscriptionData.subscription?.valor
+                      ? `R$ ${Number(subscriptionData.subscription.valor).toFixed(2).replace(".", ",")}`
+                      : "—"}
+                    {subscriptionData.subscription?.ciclo === "MONTHLY" && (
+                      <span className="text-[#8A8A8A]">/mês</span>
+                    )}
+                  </span>
+                </div>
+                {subscriptionData.subscription?.proxima_cobranca && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#8A8A8A]">Próxima cobrança:</span>
+                    <span className="font-medium text-rv-ink dark:text-[#F0F0F0]">
+                      {new Date(subscriptionData.subscription.proxima_cobranca).toLocaleDateString("pt-BR")}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {subscriptionData.subscription?.status === "active" && !confirmandoCancelamento && (
+                <button
+                  onClick={() => setConfirmandoCancelamento(true)}
+                  className="text-sm text-red-500 border border-red-200 dark:border-red-900/50 rounded-lg px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                >
+                  Cancelar assinatura
+                </button>
+              )}
+
+              {confirmandoCancelamento && (
+                <div className="space-y-3 border-t border-rv-forest/10 dark:border-white/8 pt-4">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    Tem certeza que deseja cancelar sua assinatura?
+                  </p>
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/50 rounded-lg p-3 text-sm text-yellow-800 dark:text-yellow-200 space-y-1">
+                    <p className="font-medium mb-2">⚠️ O que acontece ao cancelar:</p>
+                    <p>• Você perde acesso ao dashboard ao final do período pago</p>
+                    <p>• Seus dados ficam salvos por 30 dias</p>
+                    <p>• Não há reembolso proporcional</p>
+                    <p>• Você pode reativar quando quiser</p>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Para confirmar, digite <strong>CANCELAR</strong> no campo abaixo:
+                  </p>
+                  <input
+                    type="text"
+                    value={textoCancelamento}
+                    onChange={(e) => setTextoCancelamento(e.target.value)}
+                    placeholder="Digite CANCELAR para confirmar"
+                    className="border border-red-200 dark:border-red-900/50 dark:bg-[#2A2A2A] rounded-lg px-3 py-2 text-sm w-full text-gray-900 dark:text-[#F8FAFC] focus:outline-none focus:ring-2 focus:ring-red-300 dark:focus:ring-red-700 placeholder:text-gray-400 dark:placeholder:text-[#8A8A8A]"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setConfirmandoCancelamento(false);
+                        setTextoCancelamento("");
+                      }}
+                      className="text-sm text-gray-500 dark:text-gray-400 px-4 py-2 hover:bg-gray-100 dark:hover:bg-[#1E293B] rounded-lg transition-colors"
+                    >
+                      Manter assinatura
+                    </button>
+                    <button
+                      onClick={cancelarAssinatura}
+                      disabled={textoCancelamento !== "CANCELAR" || cancelando}
+                      className="text-sm bg-red-600 text-white rounded-lg px-4 py-2 disabled:opacity-40 hover:bg-red-700 transition-colors"
+                    >
+                      {cancelando ? "Cancelando..." : "Cancelar assinatura"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Seção Suporte */}
           <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-rv-forest/10 dark:border-white/8 p-6">
             <div className="flex items-center gap-2 mb-1">
@@ -483,6 +726,29 @@ export default function SettingsPage() {
             <p className="text-xs text-gray-500 dark:text-[#94A3B8]">
               Ações abaixo são irreversíveis. Tenha certeza antes de continuar.
             </p>
+
+            {/* Card Exportação de Dados (LGPD) */}
+            <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-rv-forest/10 dark:border-white/8 p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Download className="w-4 h-4 text-rv-green dark:text-rv-vivid" />
+                <h3 className="text-sm font-semibold text-rv-ink dark:text-[#F0F0F0]">Exportar meus dados</h3>
+              </div>
+              <p className="text-xs text-[#8A8A8A] mb-4">
+                Baixe uma cópia completa de todos os seus dados armazenados no Renda Viva, conforme
+                garantido pela LGPD (Lei 13.709/2018).
+              </p>
+              <p className="text-xs text-[#8A8A8A] mb-4">
+                Inclui: transações, metas, orçamentos, compromissos e configurações.
+              </p>
+              <button
+                onClick={exportarDados}
+                disabled={exportando}
+                className="flex items-center gap-2 text-sm bg-rv-page dark:bg-rv-dark-bg border border-rv-forest/10 dark:border-white/8 text-rv-ink dark:text-rv-dark-ink rounded-lg px-4 py-2 hover:bg-rv-mint/30 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
+              >
+                <Download className="w-4 h-4" />
+                {exportando ? "Preparando exportação..." : "Baixar meus dados"}
+              </button>
+            </div>
 
             {/* Resetar transações */}
             {!confirmandoReset ? (

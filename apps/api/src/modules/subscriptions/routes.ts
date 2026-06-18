@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify'
 import { supabaseAdmin } from '../../plugins/supabase'
-import { criarClienteAsaas, criarAssinaturaAsaas, buscarLinkPagamento } from '../../services/asaas.service'
+import { criarClienteAsaas, criarAssinaturaAsaas, buscarLinkPagamento, cancelarAssinaturaAsaas } from '../../services/asaas.service'
 
 const subscriptionsRoutes: FastifyPluginAsync = async (fastify) => {
   // Status da assinatura do usuário logado
@@ -133,6 +133,59 @@ const subscriptionsRoutes: FastifyPluginAsync = async (fastify) => {
     })
 
     return reply.send({ invoiceUrl })
+  })
+
+  // Cancelar assinatura
+  fastify.post('/subscriptions/cancel', {
+    preHandler: [fastify.authenticate]
+  }, async (request, reply) => {
+    const userId = request.user.id
+
+    // Verificar se usuário tem acesso de fundador (sem assinatura)
+    const { data: usuario } = await supabaseAdmin
+      .from('users')
+      .select('acesso_liberado')
+      .eq('id', userId)
+      .single()
+
+    if (usuario?.acesso_liberado) {
+      return reply.status(400).send({
+        error: 'Sua conta tem acesso de fundador e não possui assinatura para cancelar'
+      })
+    }
+
+    // Buscar assinatura ativa
+    const { data: subscription } = await supabaseAdmin
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .maybeSingle()
+
+    if (!subscription) {
+      return reply.status(404).send({ error: 'Nenhuma assinatura ativa encontrada' })
+    }
+
+    // Tentar cancelar no Asaas (mas não bloquear se falhar)
+    if (subscription.asaas_subscription_id) {
+      await cancelarAssinaturaAsaas(subscription.asaas_subscription_id)
+    }
+
+    // Atualizar status no banco
+    const { error: updateError } = await supabaseAdmin
+      .from('subscriptions')
+      .update({
+        status: 'canceled',
+        cancelado_em: new Date().toISOString()
+      })
+      .eq('id', subscription.id)
+
+    if (updateError) {
+      console.error('[Subscriptions] Erro ao atualizar status de cancelamento:', updateError)
+      return reply.status(500).send({ error: 'Erro ao cancelar assinatura' })
+    }
+
+    return reply.send({ success: true, message: 'Assinatura cancelada com sucesso' })
   })
 }
 

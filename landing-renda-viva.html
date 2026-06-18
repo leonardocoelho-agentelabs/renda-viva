@@ -3,1119 +3,1359 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Renda Viva — Alguém cuidando do seu dinheiro por você</title>
-<meta name="description" content="A plataforma financeira com IA que categoriza seus gastos, entende áudios no WhatsApp e avisa antes do problema acontecer. Sem planilha, sem login diário, sem esforço.">
+<title>Renda Viva — Seu dinheiro organizado. Pelo WhatsApp.</title>
+<meta name="description" content="A plataforma financeira com IA que categoriza seus gastos pelo WhatsApp. Manda uma mensagem, a IA faz o resto.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --black: #0A0908;
-    --white: #F8F6F1;
-    --green: #0D6B47;
-    --green-mid: #1A9E6B;
-    --green-light: #D6F0E5;
-    --green-pale: #F0FAF5;
-    --stone: #EAE6DD;
-    --stone-mid: #C8C2B5;
-    --stone-dark: #8A8379;
-    --red-soft: #C44B35;
-    --serif: 'Instrument Serif', Georgia, serif;
-    --sans: 'DM Sans', system-ui, sans-serif;
-  }
+:root {
+  --forest: #1B4332;
+  --green: #2D6A4F;
+  --vivid: #52B788;
+  --mint: #D8F3DC;
+  --page: #F5F8F6;
+  --ink: #1B2A22;
+  --muted: #5A6B62;
+  --white: #ffffff;
+  --gold: #D4A853;
+  --gold-light: #F5E6C8;
+}
 
-  html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; }
 
-  body {
-    font-family: var(--sans);
-    background: var(--white);
-    color: var(--black);
-    font-size: 16px;
-    line-height: 1.6;
-    overflow-x: hidden;
-  }
+body {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  background: var(--page);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-  /* NAV */
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 48px;
-    background: rgba(248,246,241,0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(0,0,0,0.06);
-  }
-  .nav-logo {
-    font-family: var(--serif);
-    font-size: 22px;
-    color: var(--black);
-    letter-spacing: -0.5px;
-  }
-  .nav-logo span { color: var(--green); }
-  .nav-cta {
-    background: var(--green);
-    color: var(--white);
-    border: none;
-    padding: 10px 24px;
-    border-radius: 100px;
-    font-family: var(--sans);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    text-decoration: none;
-    transition: background 0.2s, transform 0.15s;
-  }
-  .nav-cta:hover { background: var(--green-mid); transform: translateY(-1px); }
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 32px;
+  background: rgba(245,248,246,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(27,67,50,0.06);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.nav-logo svg { transition: transform 0.2s; }
+.nav-logo:hover svg { transform: scale(1.05); }
+.nav-logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--forest);
+  letter-spacing: -0.02em;
+}
+.nav-cta {
+  background: var(--green);
+  color: var(--white);
+  padding: 12px 24px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(45,106,79,0.3);
+}
+.nav-cta:hover {
+  background: var(--forest);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(27,67,50,0.35);
+}
+.nav-cta:focus-visible {
+  outline: 3px solid var(--vivid);
+  outline-offset: 2px;
+}
 
-  /* HERO */
-  .hero {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 120px 24px 80px;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse 80% 60% at 50% 0%, #D6F0E5 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .hero-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: var(--green-light);
-    color: var(--green);
-    font-size: 13px;
-    font-weight: 500;
-    padding: 6px 16px;
-    border-radius: 100px;
-    margin-bottom: 32px;
-    border: 1px solid rgba(13,107,71,0.2);
-    animation: fadeUp 0.6s ease both;
-  }
-  .hero-badge::before {
-    content: '';
-    width: 6px; height: 6px;
-    background: var(--green-mid);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0%,100% { opacity:1; transform:scale(1); }
-    50% { opacity:0.5; transform:scale(0.8); }
-  }
-  .hero h1 {
-    font-family: var(--serif);
-    font-size: clamp(40px, 6vw, 76px);
-    line-height: 1.06;
-    letter-spacing: -2px;
-    color: var(--black);
-    max-width: 900px;
-    margin-bottom: 28px;
-    animation: fadeUp 0.6s 0.1s ease both;
-  }
-  .hero h1 em {
-    font-style: italic;
-    color: var(--green);
-  }
-  .hero-sub {
-    font-size: clamp(16px, 2vw, 20px);
-    color: var(--stone-dark);
-    max-width: 620px;
-    line-height: 1.7;
-    margin-bottom: 48px;
-    font-weight: 300;
-    animation: fadeUp 0.6s 0.2s ease both;
-  }
-  .hero-ctas {
-    display: flex; gap: 14px; align-items: center; flex-wrap: wrap; justify-content: center;
-    animation: fadeUp 0.6s 0.3s ease both;
-  }
-  .btn-primary {
-    background: var(--green);
-    color: var(--white);
-    padding: 16px 36px;
-    border-radius: 100px;
-    font-size: 16px;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    transition: background 0.2s, transform 0.15s;
-    display: inline-block;
-  }
-  .btn-primary:hover { background: var(--green-mid); transform: translateY(-2px); }
-  .btn-ghost {
-    color: var(--stone-dark);
-    font-size: 14px;
-    text-decoration: none;
-    display: inline-flex; align-items: center; gap: 6px;
-  }
-  .btn-ghost:hover { color: var(--black); }
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 80px;
+  padding: 120px 64px 80px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.hero-content { }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--gold-light);
+  border: 1px solid rgba(212,168,83,0.3);
+  color: #8B6914;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 100px;
+  margin-bottom: 32px;
+  animation: fadeUp 0.6s ease both;
+  cursor: pointer;
+}
+.hero-badge-dot {
+  width: 8px; height: 8px;
+  background: #E53935;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+.hero h1 {
+  font-size: clamp(40px, 5vw, 64px);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--forest);
+  margin-bottom: 24px;
+  letter-spacing: -0.03em;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+.hero-sub {
+  font-size: 18px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 40px;
+  max-width: 480px;
+  font-weight: 400;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+.hero-ctas {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  animation: fadeUp 0.6s 0.3s ease both;
+}
+.btn-primary {
+  background: var(--green);
+  color: var(--white);
+  padding: 16px 32px;
+  border-radius: 100px;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+  box-shadow: 0 4px 16px rgba(45,106,79,0.35);
+}
+.btn-primary:hover {
+  background: var(--forest);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(27,67,50,0.4);
+}
+.btn-primary:focus-visible {
+  outline: 3px solid var(--vivid);
+  outline-offset: 2px;
+}
+.btn-secondary {
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: color 0.2s;
+  cursor: pointer;
+  padding: 16px 8px;
+}
+.btn-secondary:hover { color: var(--forest); }
+.btn-secondary:focus-visible {
+  outline: 3px solid var(--vivid);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 
-  /* OPENING / IDENTIFICATION */
-  .opening {
-    padding: 100px 24px;
-    max-width: 720px;
-    margin: 0 auto;
-  }
-  .section-label {
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--stone-mid);
-    margin-bottom: 28px;
-  }
-  .opening p {
-    font-size: clamp(19px, 2.4vw, 24px);
-    line-height: 1.65;
-    color: var(--black);
-    margin-bottom: 28px;
-    font-weight: 300;
-    letter-spacing: -0.2px;
-  }
-  .opening p:last-child { margin-bottom: 0; }
-  .opening p strong { font-weight: 500; }
-  .opening p em { font-style: italic; color: var(--green); font-family: var(--serif); }
-  .opening .lead {
-    font-family: var(--serif);
-    font-size: clamp(28px, 4vw, 42px);
-    line-height: 1.2;
-    letter-spacing: -0.8px;
-    font-weight: 400;
-    color: var(--black);
-  }
+/* WhatsApp Mockup */
+.whatsapp-mockup {
+  background: var(--forest);
+  border-radius: 32px;
+  padding: 28px;
+  box-shadow: 0 48px 96px rgba(27,67,50,0.22), 0 0 0 1px rgba(82,183,136,0.1);
+  animation: fadeUp 0.8s 0.2s ease both;
+}
+.whatsapp-header {
+  display: flex; align-items: center; gap: 14px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 20px;
+}
+.whatsapp-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--vivid), var(--green));
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 12px rgba(82,183,136,0.4);
+}
+.whatsapp-avatar svg { width: 28px; height: 28px; }
+.whatsapp-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--white);
+}
+.whatsapp-status {
+  font-size: 13px;
+  color: var(--vivid);
+  display: flex; align-items: center; gap: 6px;
+}
+.whatsapp-status::before {
+  content: '';
+  width: 8px; height: 8px;
+  background: var(--vivid);
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.chat-bubble {
+  padding: 14px 18px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.55;
+  max-width: 85%;
+  animation: fadeIn 0.4s ease both;
+}
+.chat-bubble:nth-child(1) { animation-delay: 0.4s; }
+.chat-bubble:nth-child(2) { animation-delay: 0.8s; }
+.chat-bubble:nth-child(3) { animation-delay: 1.2s; }
+.chat-bubble:nth-child(4) { animation-delay: 1.6s; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.bubble-user {
+  background: rgba(255,255,255,0.1);
+  color: var(--white);
+  border-bottom-left-radius: 6px;
+  align-self: flex-start;
+}
+.bubble-bot {
+  background: var(--vivid);
+  color: var(--forest);
+  border-bottom-right-radius: 6px;
+  align-self: flex-end;
+  margin-left: auto;
+}
+.bubble-label {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+.bubble-response {
+  font-weight: 500;
+  font-size: 14px;
+}
+.bubble-highlight {
+  font-weight: 700;
+}
+.bubble-small {
+  font-size: 12px;
+  margin-top: 8px;
+  opacity: 0.8;
+  border-top: 1px solid rgba(27,67,50,0.15);
+  padding-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bubble-small svg { width: 14px; height: 14px; opacity: 0.9; }
 
-  /* PAIN GRID (5 cards) */
-  .pain {
-    padding: 80px 24px 100px;
-    max-width: 1080px;
-    margin: 0 auto;
-  }
-  .pain-head { max-width: 720px; margin: 0 auto 56px; text-align: center; }
-  .pain-head h2 {
-    font-family: var(--serif);
-    font-size: clamp(30px, 4.5vw, 50px);
-    line-height: 1.15;
-    letter-spacing: -1px;
-  }
-  .pain-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-  }
-  .pain-item {
-    background: var(--white);
-    border: 1px solid var(--stone);
-    border-radius: 16px;
-    padding: 30px;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .pain-item:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(10,9,8,0.06); }
-  .pain-icon {
-    width: 44px; height: 44px; border-radius: 10px;
-    background: #FEF2F0;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    font-size: 22px;
-    margin-bottom: 18px;
-  }
-  .pain-item h3 {
-    font-family: var(--serif);
-    font-size: 22px; font-weight: 400;
-    letter-spacing: -0.3px;
-    margin-bottom: 12px; color: var(--black);
-    line-height: 1.2;
-  }
-  .pain-item p { font-size: 15px; color: var(--stone-dark); line-height: 1.7; font-weight: 300; }
-  .pain-close {
-    grid-column: 1 / -1;
-    background: var(--green-pale);
-    border: 1px solid var(--green-light);
-    border-radius: 16px;
-    padding: 40px;
-    text-align: center;
-  }
-  .pain-close p {
-    font-family: var(--serif);
-    font-size: clamp(24px, 3.5vw, 36px);
-    line-height: 1.25;
-    letter-spacing: -0.5px;
-    color: var(--green);
-  }
-  .pain-close p strong { font-weight: 400; font-style: italic; }
+/* ── TRUST BAR ── */
+.trust-bar {
+  background: var(--white);
+  padding: 40px 32px;
+  border-top: 1px solid var(--mint);
+  border-bottom: 1px solid var(--mint);
+}
+.trust-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: default;
+}
+.trust-item svg { width: 20px; height: 20px; color: var(--green); }
+.trust-item strong { color: var(--forest); }
 
-  /* TRANSITION / SOLUTION (dark block) */
-  .transition-block {
-    text-align: left;
-    padding: 100px 24px;
-    background: var(--black);
-    color: var(--white);
-    position: relative;
-    overflow: hidden;
-  }
-  .transition-block::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(13,107,71,0.32) 0%, transparent 65%);
-    pointer-events: none;
-  }
-  .transition-inner { max-width: 760px; margin: 0 auto; position: relative; }
-  .transition-block .section-label { color: var(--green-mid); }
-  .transition-block .lead {
-    font-family: var(--serif);
-    font-size: clamp(28px, 4vw, 46px);
-    line-height: 1.2;
-    letter-spacing: -0.8px;
-    margin-bottom: 32px;
-  }
-  .transition-block .lead em { font-style: italic; color: var(--green-mid); }
-  .transition-block p {
-    font-size: clamp(16px, 2vw, 19px);
-    line-height: 1.75;
-    color: rgba(255,255,255,0.72);
-    margin-bottom: 24px;
-    font-weight: 300;
-  }
-  .transition-block p:last-child { margin-bottom: 0; }
-  .transition-block p strong { color: var(--white); font-weight: 500; }
-  .transition-block .chat-line {
-    font-family: var(--serif);
-    font-style: italic;
-    color: var(--green-mid);
-  }
-  .transition-promise {
-    font-family: var(--serif);
-    font-size: clamp(24px, 3vw, 34px) !important;
-    color: var(--white) !important;
-    letter-spacing: -0.5px;
-    margin-top: 40px !important;
-  }
+/* ── COMO FUNCIONA ── */
+.how {
+  padding: 120px 32px;
+  background: var(--page);
+}
+.how-inner { max-width: 1200px; margin: 0 auto; }
+.how h2 {
+  font-size: clamp(36px, 5vw, 52px);
+  font-weight: 700;
+  color: var(--forest);
+  text-align: center;
+  margin-bottom: 64px;
+  letter-spacing: -0.03em;
+}
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+.how-card {
+  text-align: center;
+  padding: 40px 32px;
+  background: var(--white);
+  border-radius: 24px;
+  border: 2px solid transparent;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  cursor: default;
+}
+.how-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 24px 48px rgba(27,67,50,0.1);
+  border-color: var(--mint);
+}
+.how-icon {
+  width: 80px; height: 80px;
+  background: linear-gradient(135deg, var(--mint), rgba(82,183,136,0.2));
+  border-radius: 24px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 24px;
+  transition: transform 0.25s ease;
+}
+.how-card:hover .how-icon { transform: scale(1.08); }
+.how-icon svg { width: 40px; height: 40px; color: var(--green); }
+.how-number {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.how-card h3 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--forest);
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+.how-card p { font-size: 15px; color: var(--muted); line-height: 1.6; }
 
-  /* CREATOR */
-  .creator {
-    padding: 100px 24px;
-    max-width: 760px;
-    margin: 0 auto;
-  }
-  .creator-head { display: flex; align-items: center; gap: 20px; margin-bottom: 40px; }
-  .creator-avatar {
-    width: 72px; height: 72px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--green), var(--green-mid));
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-family: var(--serif); font-size: 30px;
-    flex-shrink: 0;
-  }
-  .creator-head h2 {
-    font-family: var(--serif);
-    font-size: clamp(28px, 4vw, 44px);
-    letter-spacing: -0.8px;
-    line-height: 1.1;
-  }
-  .creator p {
-    font-size: clamp(16px, 2vw, 19px);
-    line-height: 1.8;
-    color: var(--stone-dark);
-    margin-bottom: 22px;
-    font-weight: 300;
-  }
-  .creator p:last-child { margin-bottom: 0; }
-  .creator p strong { color: var(--black); font-weight: 500; }
-  .creator p em { font-style: italic; color: var(--green); }
+/* ── FEATURES ── */
+.features {
+  padding: 120px 32px;
+  background: var(--white);
+}
+.features-inner { max-width: 1200px; margin: 0 auto; }
+.features h2 {
+  font-size: clamp(36px, 5vw, 52px);
+  font-weight: 700;
+  color: var(--forest);
+  text-align: center;
+  margin-bottom: 56px;
+  letter-spacing: -0.03em;
+}
+.feat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.feat-card {
+  background: var(--page);
+  border: 2px solid var(--mint);
+  border-radius: 24px;
+  padding: 32px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  cursor: default;
+}
+.feat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(27,67,50,0.08);
+  border-color: var(--vivid);
+}
+.feat-icon {
+  width: 56px; height: 56px;
+  background: var(--mint);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px;
+}
+.feat-icon svg { width: 28px; height: 28px; color: var(--green); }
+.feat-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--forest);
+  margin-bottom: 10px;
+  letter-spacing: -0.02em;
+}
+.feat-card p { font-size: 14px; color: var(--muted); line-height: 1.6; }
 
-  /* FEATURES (10 items grid) */
-  .features {
-    padding: 100px 24px;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-  .features-header { text-align: center; margin-bottom: 64px; }
-  .features-header h2 {
-    font-family: var(--serif);
-    font-size: clamp(32px, 5vw, 54px);
-    line-height: 1.12;
-    letter-spacing: -1px;
-    margin-top: 16px;
-  }
-  .feat-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-  .feat-card {
-    background: var(--white);
-    border: 1px solid var(--stone);
-    border-radius: 16px;
-    padding: 30px;
-    display: flex;
-    gap: 18px;
-    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-  }
-  .feat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 16px 40px rgba(10,9,8,0.06);
-    border-color: var(--green-light);
-  }
-  .feat-ico {
-    width: 46px; height: 46px;
-    border-radius: 12px;
-    background: var(--green-pale);
-    border: 1px solid var(--green-light);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    color: var(--green);
-  }
-  .feat-ico svg { width: 22px; height: 22px; }
-  .feat-card h3 {
-    font-size: 17px; font-weight: 500;
-    margin-bottom: 8px;
-    letter-spacing: -0.2px;
-  }
-  .feat-card p { font-size: 14px; color: var(--stone-dark); line-height: 1.65; font-weight: 300; }
+/* ── SOCIAL PROOF ── */
+.proof {
+  background: var(--forest);
+  padding: 100px 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.proof::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(82,183,136,0.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+.proof-inner { max-width: 1000px; margin: 0 auto; position: relative; }
+.proof h2 {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 56px;
+  opacity: 0.95;
+}
+.proof-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px;
+}
+.proof-stat {}
+.proof-number {
+  font-size: clamp(56px, 8vw, 88px);
+  font-weight: 700;
+  color: var(--vivid);
+  line-height: 1;
+  margin-bottom: 12px;
+  letter-spacing: -0.04em;
+}
+.proof-label {
+  font-size: 16px;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.5;
+  font-weight: 500;
+}
+.proof-detail {
+  font-size: 14px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 6px;
+}
 
-  /* FOR WHOM */
-  .forwhom {
-    padding: 60px 24px 100px;
-    max-width: 940px;
-    margin: 0 auto;
-  }
-  .forwhom-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-  .fw-col {
-    border-radius: 20px;
-    padding: 36px;
-  }
-  .fw-col.yes { background: var(--green-pale); border: 1px solid var(--green-light); }
-  .fw-col.no { background: var(--stone); border: 1px solid var(--stone-mid); }
-  .fw-col h3 {
-    font-family: var(--serif);
-    font-size: 26px;
-    letter-spacing: -0.4px;
-    margin-bottom: 24px;
-  }
-  .fw-col.yes h3 { color: var(--green); }
-  .fw-col.no h3 { color: var(--stone-dark); }
-  .fw-col ul { list-style: none; }
-  .fw-col li {
-    display: flex; align-items: flex-start; gap: 12px;
-    font-size: 15px; line-height: 1.5;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(0,0,0,0.06);
-    font-weight: 300;
-  }
-  .fw-col li:last-child { border-bottom: none; }
-  .fw-mark {
-    width: 22px; height: 22px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; font-size: 12px; font-weight: 500; margin-top: 1px;
-  }
-  .fw-col.yes .fw-mark { background: var(--green); color: white; }
-  .fw-col.no .fw-mark { background: var(--stone-mid); color: var(--white); }
+/* ── PRICING ── */
+.pricing {
+  padding: 120px 32px;
+  max-width: 560px;
+  margin: 0 auto;
+  text-align: center;
+}
+.pricing h2 {
+  font-size: clamp(36px, 5vw, 52px);
+  font-weight: 700;
+  color: var(--forest);
+  margin-bottom: 40px;
+  letter-spacing: -0.03em;
+}
+.pricing-card {
+  background: var(--forest);
+  color: var(--white);
+  border-radius: 32px;
+  padding: 48px 40px;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+}
+.pricing-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 100% 60% at 100% 0%, rgba(82,183,136,0.2) 0%, transparent 60%);
+  pointer-events: none;
+}
+.pricing-card-content { position: relative; }
+.pricing-badge {
+  display: inline-block;
+  background: var(--gold);
+  color: var(--forest);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 100px;
+  margin-bottom: 28px;
+  letter-spacing: 0.05em;
+}
+.billing-toggle {
+  display: inline-flex;
+  background: rgba(255,255,255,0.1);
+  border-radius: 100px;
+  padding: 4px;
+  margin-bottom: 32px;
+  position: relative;
+}
+.billing-toggle button {
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  padding: 10px 20px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: color 0.2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.billing-toggle button.active { color: var(--forest); }
+.toggle-pill {
+  position: absolute;
+  top: 4px; left: 4px;
+  height: calc(100% - 8px);
+  background: var(--vivid);
+  border-radius: 100px;
+  transition: transform 0.25s ease, width 0.25s ease;
+}
+.save-badge {
+  font-size: 10px;
+  background: rgba(27,67,50,0.4);
+  color: var(--vivid);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+.billing-toggle button.active .save-badge {
+  background: rgba(27,67,50,0.6);
+  color: var(--white);
+}
+.price-row {
+  display: flex; align-items: baseline; gap: 4px;
+  margin-bottom: 4px;
+}
+.price-currency {
+  font-size: 24px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+}
+.price-value {
+  font-size: 72px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.price-period {
+  font-size: 18px;
+  color: rgba(255,255,255,0.5);
+  align-self: flex-end;
+  padding-bottom: 8px;
+}
+.price-annual {
+  font-size: 14px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 28px;
+  min-height: 20px;
+}
+.vagas-bar {
+  background: rgba(255,255,255,0.1);
+  border-radius: 100px;
+  height: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.vagas-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--vivid), var(--gold));
+  border-radius: 100px;
+  transition: width 0.6s ease;
+}
+.vagas-text {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  text-align: left;
+  margin-bottom: 32px;
+  display: flex; align-items: center; gap: 8px;
+}
+.vagas-text svg { width: 16px; height: 16px; color: var(--vivid); }
+.feat-list { list-style: none; margin-bottom: 32px; }
+.feat-list li {
+  display: flex; align-items: flex-start; gap: 12px;
+  font-size: 15px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.9);
+}
+.feat-list li:last-child { border-bottom: none; }
+.feat-check {
+  width: 22px; height: 22px;
+  background: rgba(82,183,136,0.25);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.feat-check svg { width: 12px; height: 12px; color: var(--vivid); }
+.cta-btn {
+  width: 100%;
+  background: var(--vivid);
+  color: var(--forest);
+  border: none;
+  padding: 18px;
+  border-radius: 100px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  text-decoration: none;
+  display: block;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(82,183,136,0.4);
+}
+.cta-btn:hover {
+  background: var(--white);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(82,183,136,0.5);
+}
+.cta-btn:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+.cta-note {
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  text-align: center;
+  margin-top: 20px;
+  line-height: 1.7;
+}
 
-  /* PRICING */
-  .pricing {
-    padding: 100px 24px;
-    max-width: 560px;
-    margin: 0 auto;
-    text-align: center;
-  }
-  .founder-banner {
-    background: var(--black);
-    color: var(--white);
-    border-radius: 16px;
-    padding: 28px 32px;
-    margin-bottom: 48px;
-    text-align: left;
-    position: relative;
-    overflow: hidden;
-  }
-  .founder-banner::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse 80% 100% at 100% 0%, rgba(13,107,71,0.3) 0%, transparent 60%);
-    pointer-events: none;
-  }
-  .founder-banner h2 {
-    font-family: var(--serif);
-    font-size: clamp(24px, 3.5vw, 34px);
-    line-height: 1.2;
-    letter-spacing: -0.5px;
-    margin-bottom: 14px;
-    position: relative;
-  }
-  .founder-banner p {
-    font-size: 15px;
-    color: rgba(255,255,255,0.7);
-    line-height: 1.7;
-    font-weight: 300;
-    position: relative;
-  }
-  .pricing-sub { font-size: 16px; color: var(--stone-dark); margin-bottom: 32px; font-weight: 300; }
+/* ── FAQ ── */
+.faq {
+  padding: 100px 32px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.faq h2 {
+  font-size: clamp(32px, 4vw, 44px);
+  font-weight: 700;
+  color: var(--forest);
+  text-align: center;
+  margin-bottom: 48px;
+  letter-spacing: -0.03em;
+}
+.faq-item {
+  border-bottom: 1px solid var(--mint);
+  padding: 24px 0;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-radius: 8px;
+}
+.faq-item:first-of-type { border-top: 1px solid var(--mint); }
+.faq-q {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--forest);
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 16px;
+  user-select: none;
+  padding: 4px 0;
+}
+.faq-icon {
+  width: 28px; height: 28px;
+  background: var(--mint);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.25s ease, background 0.2s;
+}
+.faq-icon svg { width: 14px; height: 14px; color: var(--green); }
+.faq-item.open .faq-icon {
+  transform: rotate(45deg);
+  background: var(--vivid);
+}
+.faq-item.open .faq-icon svg { color: var(--white); }
+.faq-a {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.75;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+.faq-item.open .faq-a { max-height: 200px; padding-top: 16px; }
 
-  /* billing toggle */
-  .billing-toggle {
-    display: inline-flex;
-    background: var(--stone);
-    border-radius: 100px;
-    padding: 4px;
-    margin-bottom: 32px;
-    position: relative;
-  }
-  .billing-toggle button {
-    border: none;
-    background: transparent;
-    font-family: var(--sans);
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--stone-dark);
-    padding: 9px 22px;
-    border-radius: 100px;
-    cursor: pointer;
-    transition: color 0.2s;
-    position: relative;
-    z-index: 1;
-    display: inline-flex; align-items: center; gap: 8px;
-  }
-  .billing-toggle button.active { color: var(--white); }
-  .toggle-pill {
-    position: absolute;
-    top: 4px; left: 4px;
-    height: calc(100% - 8px);
-    background: var(--green);
-    border-radius: 100px;
-    transition: transform 0.25s ease, width 0.25s ease;
-    z-index: 0;
-  }
-  .save-badge {
-    font-size: 11px;
-    background: var(--green-light);
-    color: var(--green);
-    padding: 2px 8px;
-    border-radius: 100px;
-    font-weight: 500;
-  }
-  .billing-toggle button.active .save-badge { background: rgba(255,255,255,0.2); color: var(--white); }
+/* ── FINAL CTA ── */
+.final-cta {
+  background: linear-gradient(135deg, var(--green), var(--forest));
+  padding: 100px 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.final-cta::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 80% at 50% 100%, rgba(82,183,136,0.2) 0%, transparent 60%);
+  pointer-events: none;
+}
+.final-cta-content { position: relative; max-width: 640px; margin: 0 auto; }
+.final-cta h2 {
+  font-size: clamp(32px, 4.5vw, 48px);
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 20px;
+  letter-spacing: -0.03em;
+}
+.final-cta p {
+  font-size: 16px;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 36px;
+}
+.final-btn {
+  background: var(--white);
+  color: var(--green);
+  padding: 18px 48px;
+  border-radius: 100px;
+  font-size: 17px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.15s, opacity 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  display: inline-block;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+.final-btn:hover {
+  transform: translateY(-3px);
+  opacity: 0.95;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+}
+.final-btn:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
 
-  .pricing-card {
-    background: var(--black);
-    color: var(--white);
-    border-radius: 24px;
-    padding: 44px 40px;
-    position: relative;
-    overflow: hidden;
-    text-align: left;
-  }
-  .pricing-card::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse 100% 60% at 100% 0%, rgba(13,107,71,0.25) 0%, transparent 60%);
-    pointer-events: none;
-  }
-  .pricing-card-label {
-    font-size: 12px; font-weight: 500;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--green-mid);
-    margin-bottom: 24px;
-    position: relative;
-  }
-  .price-row {
-    display: flex; align-items: baseline; gap: 6px;
-    margin-bottom: 8px; position: relative;
-  }
-  .price-currency { font-size: 24px; font-weight: 300; color: rgba(255,255,255,0.6); }
-  .price-val {
-    font-family: var(--serif);
-    font-size: 80px;
-    line-height: 1;
-    letter-spacing: -3px;
-  }
-  .price-period { font-size: 16px; color: rgba(255,255,255,0.5); align-self: flex-end; padding-bottom: 8px; }
-  .price-annual { font-size: 13px; color: var(--green-mid); margin-bottom: 28px; position: relative; min-height: 18px; }
+/* ── FOOTER ── */
+footer {
+  padding: 40px 32px;
+  background: var(--page);
+  border-top: 1px solid var(--mint);
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 20px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.footer-logo { display: flex; align-items: center; gap: 10px; }
+.footer-logo svg { cursor: pointer; }
+.footer-logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--forest);
+}
+.footer-links { display: flex; gap: 24px; }
+.footer-links a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+.footer-links a:hover { color: var(--forest); }
+.footer-links a:focus-visible {
+  outline: 2px solid var(--vivid);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
 
-  /* vagas counter */
-  .vagas-box {
-    position: relative;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 14px 18px;
-    margin-bottom: 28px;
-  }
-  .vagas-box .vagas-text {
-    font-size: 13px; font-weight: 500;
-    color: var(--white);
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 10px;
-  }
-  .vagas-box .vagas-text .dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--green-mid); animation: pulse 2s infinite;
-  }
-  .vagas-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 100px; overflow: hidden; }
-  .vagas-fill { height: 100%; background: var(--green-mid); border-radius: 100px; transition: width 0.6s ease; }
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.reveal { opacity: 0; transform: translateY(36px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
 
-  .feat-list { list-style: none; margin-bottom: 32px; position: relative; }
-  .feat-list li {
-    display: flex; align-items: flex-start; gap: 12px;
-    font-size: 14px; font-weight: 300;
-    padding: 9px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
-    color: rgba(255,255,255,0.85);
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
-  .feat-list li:last-child { border-bottom: none; }
-  .feat-check {
-    width: 20px; height: 20px;
-    background: rgba(13,107,71,0.3);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    margin-top: 1px;
-    font-size: 11px;
-    color: var(--green-mid);
-  }
-  .cta-btn {
-    width: 100%;
-    background: var(--green);
-    color: var(--white);
-    border: none;
-    padding: 18px;
-    border-radius: 100px;
-    font-size: 17px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.15s;
-    font-family: var(--sans);
-    position: relative;
-    text-decoration: none;
-    display: block;
-    text-align: center;
-  }
-  .cta-btn:hover { background: var(--green-mid); transform: translateY(-2px); }
-  .cta-note { font-size: 13px; color: rgba(255,255,255,0.4); text-align: center; margin-top: 16px; position: relative; }
+  .reveal { opacity: 1; transform: none; }
+  .chat-bubble { opacity: 1; transform: none; }
+}
 
-  /* GUARANTEE */
-  .guarantee {
-    padding: 80px 24px;
-    text-align: center;
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  .guarantee-badge {
-    width: 84px; height: 84px;
-    border-radius: 50%;
-    background: var(--green-pale);
-    border: 2px solid var(--green-light);
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 24px;
-    font-size: 34px;
-  }
-  .guarantee h3 {
-    font-family: var(--serif);
-    font-size: clamp(26px, 4vw, 36px);
-    letter-spacing: -0.5px;
-    margin-bottom: 16px;
-  }
-  .guarantee p { font-size: 16px; color: var(--stone-dark); line-height: 1.8; font-weight: 300; }
-
-  /* FAQ */
-  .faq {
-    padding: 80px 24px;
-    max-width: 680px;
-    margin: 0 auto;
-  }
-  .faq h2 {
-    font-family: var(--serif);
-    font-size: clamp(28px, 4vw, 42px);
-    letter-spacing: -0.5px;
-    margin-bottom: 40px;
-    text-align: center;
-  }
-  .faq-item {
-    border-top: 1px solid var(--stone);
-    padding: 24px 0;
-  }
-  .faq-item:last-child { border-bottom: 1px solid var(--stone); }
-  .faq-q {
-    font-size: 16px; font-weight: 500;
-    cursor: pointer;
-    display: flex; justify-content: space-between; align-items: center; gap: 16px;
-    user-select: none;
-  }
-  .faq-q span { font-size: 20px; color: var(--stone-dark); transition: transform 0.2s; flex-shrink: 0; }
-  .faq-item.open .faq-q span { transform: rotate(45deg); }
-  .faq-a {
-    font-size: 14px; color: var(--stone-dark); line-height: 1.8;
-    max-height: 0; overflow: hidden;
-    transition: max-height 0.3s ease, padding 0.3s ease;
-    font-weight: 300;
-  }
-  .faq-item.open .faq-a { max-height: 320px; padding-top: 14px; }
-
-  /* FINAL CTA */
-  .final-cta {
-    background: var(--green);
-    padding: 100px 24px;
-    text-align: center;
-    color: var(--white);
-  }
-  .final-cta h2 {
-    font-family: var(--serif);
-    font-size: clamp(32px, 5vw, 60px);
-    line-height: 1.1;
-    letter-spacing: -1.5px;
-    max-width: 760px;
-    margin: 0 auto 20px;
-  }
-  .final-cta h2 em { font-style: italic; opacity: 0.78; }
-  .final-cta > p { font-size: 18px; opacity: 0.85; margin-bottom: 40px; font-weight: 300; }
-  .final-btn {
-    background: var(--white);
-    color: var(--green);
-    padding: 18px 48px;
-    border-radius: 100px;
-    font-size: 17px;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    display: inline-block;
-    text-decoration: none;
-    transition: transform 0.15s, opacity 0.2s;
-  }
-  .final-btn:hover { transform: translateY(-2px); opacity: 0.92; }
-  .final-ps {
-    font-size: 14px;
-    opacity: 0.72;
-    margin: 44px auto 0;
-    max-width: 600px;
-    line-height: 1.7;
-    font-weight: 300;
-    text-align: left;
-    border-top: 1px solid rgba(255,255,255,0.2);
-    padding-top: 28px;
-  }
-  .final-ps strong { font-weight: 500; opacity: 1; }
-
-  /* FOOTER */
-  footer {
-    padding: 40px 48px;
-    border-top: 1px solid var(--stone);
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: 13px; color: var(--stone-dark);
-    flex-wrap: wrap; gap: 12px;
-  }
-  .footer-logo { font-family: var(--serif); font-size: 18px; color: var(--black); }
-  .footer-logo span { color: var(--green); }
-
-  /* ANIMATIONS */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* SCROLL REVEAL */
-  .reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.7s ease, transform 0.7s ease; }
-  .reveal.visible { opacity: 1; transform: translateY(0); }
-
-  @media (max-width: 880px) {
-    .pain-grid { grid-template-columns: 1fr 1fr; }
-  }
-  @media (max-width: 768px) {
-    nav { padding: 14px 20px; }
-    .nav-cta { padding: 9px 18px; font-size: 13px; }
-    .pain-grid, .feat-grid, .forwhom-grid { grid-template-columns: 1fr; }
-    footer { flex-direction: column; gap: 12px; text-align: center; }
-    .creator-head { flex-direction: column; text-align: center; align-items: center; gap: 14px; }
-  }
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  .hero { grid-template-columns: 1fr; padding: 100px 32px 60px; gap: 48px; }
+  .hero-content { order: 1; text-align: center; }
+  .whatsapp-mockup { order: 2; max-width: 440px; margin: 0 auto; }
+  .hero-sub { margin: 0 auto 32px; }
+  .hero-ctas { justify-content: center; }
+  .how-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+  .feat-grid { grid-template-columns: repeat(2, 1fr); }
+  .proof-grid { grid-template-columns: 1fr; gap: 40px; }
+}
+@media (max-width: 768px) {
+  nav { padding: 14px 20px; }
+  .nav-logo-text { font-size: 18px; }
+  .nav-cta { padding: 10px 18px; font-size: 13px; }
+  .hero { padding: 90px 20px 48px; }
+  .trust-inner { gap: 24px; }
+  .how { padding: 80px 20px; }
+  .how h2 { margin-bottom: 48px; }
+  .features { padding: 80px 20px; }
+  .feat-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
+  .proof { padding: 80px 20px; }
+  .pricing { padding: 80px 20px; }
+  .pricing-card { padding: 36px 24px; }
+  .faq { padding: 80px 20px; }
+  .final-cta { padding: 80px 20px; }
+  footer { flex-direction: column; text-align: center; gap: 16px; padding: 32px 20px; }
+  .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
+}
+@media (max-width: 480px) {
+  .hero h1 { font-size: 32px; }
+  .hero-sub { font-size: 16px; }
+  .btn-primary { padding: 14px 24px; font-size: 15px; }
+  .whatsapp-mockup { padding: 20px; border-radius: 24px; }
+  .price-value { font-size: 56px; }
+  .proof-number { font-size: 48px; }
+}
 </style>
 </head>
 <body>
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">Renda<span>Viva</span></div>
-  <a href="/register" class="nav-cta">Quero o Renda Viva</a>
+  <a href="/" class="nav-logo">
+    <svg width="40" height="40" viewBox="0 0 120 120" fill="none">
+      <circle cx="60" cy="60" r="58" fill="#2D6A4F"/>
+      <text x="60" y="82" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="62" font-weight="700" fill="white" letter-spacing="-5">RV</text>
+      <g transform="translate(83 30) rotate(33)">
+        <path d="M0,-15 C9,-9 9,5 0,15 C-9,5 -9,-9 0,-15 Z" fill="#52B788"/>
+        <path d="M0,-11.5 L0,11.5" stroke="#2D6A4F" stroke-width="1.7" stroke-linecap="round" fill="none" opacity=".6"/>
+      </g>
+    </svg>
+    <span class="nav-logo-text">Renda Viva</span>
+  </a>
+  <a href="https://rendavivaapp.com/register" class="nav-cta">Começar agora</a>
 </nav>
 
-<!-- SEÇÃO 1 — HERO -->
+<!-- HERO -->
 <section class="hero">
-  <div class="hero-badge">Fase de lançamento · Preço de fundador para as primeiras 100 pessoas</div>
-  <h1>Você não precisa de mais um app de finanças. Precisa de <em>alguém cuidando</em> disso por você.</h1>
-  <p class="hero-sub">O Renda Viva é a plataforma financeira com IA que categoriza seus gastos, entende áudios no WhatsApp e avisa antes do problema acontecer — sem planilha, sem login diário, sem esforço.</p>
-  <div class="hero-ctas">
-    <a href="/register" class="btn-primary">Quero o Renda Viva →</a>
-    <a href="#features" class="btn-ghost">Ver como funciona ↓</a>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      AO VIVO · 100 vagas de fundador
+    </div>
+    <h1>Seu dinheiro organizado. Pelo WhatsApp.</h1>
+    <p class="hero-sub">Manda uma mensagem de texto ou áudio — a IA categoriza, registra e te avisa quando algo está errado.</p>
+    <div class="hero-ctas">
+      <a href="https://rendavivaapp.com/register" class="btn-primary">Começar por R$97/mês →</a>
+      <a href="#como-funciona" class="btn-secondary">
+        Ver como funciona
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12l7 7 7-7"/>
+        </svg>
+      </a>
+    </div>
   </div>
-</section>
 
-<!-- SEÇÃO 2 — ABERTURA / IDENTIFICAÇÃO -->
-<section class="opening reveal">
-  <p class="section-label">Talvez você já se reconheça</p>
-  <p class="lead">Você já tentou. Mais de uma vez.</p>
-  <p>Baixou um app, conectou o cartão, ficou animado durante a primeira semana. Categorizou tudo, olhou os gráficos, se sentiu no controle.</p>
-  <p>Aí a vida aconteceu. Passou um dia sem abrir o app. Depois três. Depois uma semana. No fim do mês, o extrato estava do mesmo jeito de sempre: uma lista de números que não conta história nenhuma.</p>
-  <p>Não é falta de organização. É que nenhum app até hoje foi feito para encaixar na sua vida — todos esperam que <strong>você</strong> se encaixe neles.</p>
-  <p>O Renda Viva é diferente: ele se encaixa em algo que você já faz 100 vezes por dia. <em>Mandar mensagem no WhatsApp.</em></p>
-</section>
+  <div class="whatsapp-mockup">
+    <div class="whatsapp-header">
+      <div class="whatsapp-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a10 10 0 1 0 10 10"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+      </div>
+      <div>
+        <div class="whatsapp-name">Renda Viva</div>
+        <div class="whatsapp-status">online</div>
+      </div>
+    </div>
 
-<!-- SEÇÃO 3 — AGITAÇÃO DA DOR -->
-<section class="pain reveal">
-  <div class="pain-head">
-    <p class="section-label">O problema real</p>
-    <h2>Você reconhece alguma destas cenas?</h2>
-  </div>
-  <div class="pain-grid">
-    <div class="pain-item">
-      <div class="pain-icon">📄</div>
-      <h3>A planilha que virou cemitério</h3>
-      <p>Ela está lá, na sua pasta do Drive. Você a criou com toda boa intenção. Tem três linhas preenchidas em março e nada depois disso. Todo mês 1, você pensa "desta vez eu mantenho atualizada" — e todo mês 1 ela continua exatamente do mesmo jeito.</p>
-    </div>
-    <div class="pain-item">
-      <div class="pain-icon">👻</div>
-      <h3>O dinheiro fantasma</h3>
-      <p>Existe uma assinatura de R$39,90 saindo do seu cartão há 8 meses. Você não lembra o que é. Não é a única. Pessoas descobrem, em média, R$200 a R$500 por mês saindo em cobranças esquecidas — streaming duplicado, app testado uma vez, seguro renovado sozinho.</p>
-    </div>
-    <div class="pain-item">
-      <div class="pain-icon">🔮</div>
-      <h3>O extrato que conta o passado, não o futuro</h3>
-      <p>Você abre o app no dia 28 e vê: "saldo: R$340". Ótimo. Mas você não sabe se isso é suficiente para os próximos 15 dias, porque ninguém te disse que o aluguel sai dia 5 e a parcela do celular dia 10.</p>
-    </div>
-    <div class="pain-item">
-      <div class="pain-icon">🌑</div>
-      <h3>A decisão no escuro</h3>
-      <p>"Posso comprar essa TV em 10x?" Você não sabe. Faz as contas de cabeça, chuta, compra — e descobre só depois se foi uma boa ideia.</p>
-    </div>
-    <div class="pain-item">
-      <div class="pain-icon">👨‍👩‍👧</div>
-      <h3>A família que não fala a mesma língua financeira</h3>
-      <p>Você organiza suas finanças. Seu cônjuge tem outro método (ou nenhum). No fim, ninguém sabe quanto a família gasta de verdade, porque os dados estão espalhados em três lugares diferentes — ou em lugar nenhum.</p>
-    </div>
-    <div class="pain-close">
-      <p>Você não precisa de mais disciplina. Precisa que o sistema trabalhe <strong>COM você</strong>, não contra.</p>
-    </div>
-  </div>
-</section>
+    <div class="chat-container">
+      <div class="chat-bubble bubble-user">
+        <div class="bubble-label">Você</div>
+        Gastei 35 reais no almoço
+      </div>
 
-<!-- SEÇÃO 4 — TRANSIÇÃO / SOLUÇÃO -->
-<section class="transition-block reveal">
-  <div class="transition-inner">
-    <p class="section-label">A virada</p>
-    <p class="lead">O Renda Viva nasceu de uma ideia simples: e se o seu dinheiro se <em>organizasse sozinho</em>, do jeito que você já vive?</p>
-    <p>Sem precisar abrir um app todo dia. Sem digitar cada gasto numa planilha. Sem aprender uma ferramenta nova.</p>
-    <p>Você manda uma mensagem de texto ou áudio pelo WhatsApp — <span class="chat-line">"Gastei 30 reais no almoço"</span>, <span class="chat-line">"Recebi 200 do meu irmão por pix"</span> — e a transação já está categorizada, registrada e somada ao seu dashboard. Em segundos.</p>
-    <p>Por trás disso, uma Inteligência Artificial trabalha 24 horas por dia como o seu <strong>CFO pessoal</strong>: categoriza cada gasto com mais de 95% de precisão, prevê seu saldo para os próximos 30 dias, identifica cobranças esquecidas, monta seu orçamento automaticamente e ainda escreve, todo mês, um relatório contando a história financeira do seu mês — em português, sem jargão.</p>
-    <p class="transition-promise">Zero fricção. Máxima inteligência. Essa é a única promessa do Renda Viva.</p>
-  </div>
-</section>
+      <div class="chat-bubble bubble-bot">
+        <div class="bubble-label">Viva</div>
+        <div class="bubble-response">
+          ✅ Registrado! Alimentação · <span class="bubble-highlight">R$35,00</span>
+        </div>
+        <div class="bubble-small">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/>
+          </svg>
+          Você já gastou 68% do orçamento de alimentação
+        </div>
+      </div>
 
-<!-- SEÇÃO 5 — SOBRE O CRIADOR -->
-<!-- TODO: Leo, personalize este texto com detalhes reais da sua trajetória -->
-<section class="creator reveal">
-  <div class="creator-head">
-    <div class="creator-avatar">L</div>
-    <h2>Quem está por trás do Renda Viva</h2>
-  </div>
-  <p>Sou o Leo, desenvolvedor e fundador do Renda Viva.</p>
-  <p>Como muita gente, eu já tentei de tudo: planilha no Google Sheets, apps de orçamento, métodos de organização financeira. Todos funcionavam... por uma ou duas semanas. Depois a vida ficava mais cheia, e a finança ficava em segundo plano de novo.</p>
-  <p>O que me fez criar o Renda Viva foi perceber que o problema nunca foi falta de força de vontade — era que toda ferramenta exigia que <strong>EU</strong> mudasse meu comportamento para usá-la.</p>
-  <p>Então decidi construir algo que se adaptasse a mim, em vez do contrário. Comecei integrando Inteligência Artificial real com o canal que eu já uso o dia inteiro: o <em>WhatsApp</em>.</p>
-  <p>O resultado é o Renda Viva — uma plataforma que estou usando para organizar minhas próprias finanças, e que hoje abro para você.</p>
-</section>
+      <div class="chat-bubble bubble-user">
+        <div class="bubble-label">Você</div>
+        Quanto gastei essa semana?
+      </div>
 
-<!-- SEÇÃO 6 — O QUE ESTÁ INCLUSO -->
-<section class="features" id="features">
-  <div class="features-header reveal">
-    <p class="section-label">O que está incluso</p>
-    <h2>Tudo que o Renda Viva faz por você.</h2>
-  </div>
-  <div class="feat-grid reveal">
-    <div class="feat-card">
-      <div class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/><path d="M16 2l2 2 4-4"/></svg></div>
-      <div>
-        <h3>Categorização automática com IA</h3>
-        <p>Cada transação é analisada e categorizada automaticamente. A precisão aumenta com o tempo conforme o sistema aprende com você.</p>
-      </div>
-    </div>
-    <div class="feat-card">
-      <div class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
-      <div>
-        <h3>Registro via WhatsApp — texto ou áudio</h3>
-        <p>"Viva, comprei um fardo de cerveja na adega por R$44" e pronto: a transação já está no seu dashboard.</p>
-      </div>
-    </div>
-    <div class="feat-card">
-      <div class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-      <div>
-        <h3>Gestão financeira em família</h3>
-        <p>Vincule o número de WhatsApp do seu cônjuge, filhos ou qualquer pessoa de confiança. Cada lançamento mostra quem registrou.</p>
-      </div>
-    </div>
-    <div class="feat-card">
-      <div class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
-      <div>
-        <h3>Dashboard com previsão de saldo</h3>
-        <p>Veja quanto você vai ter nos próximos 7, 30 ou 90 dias — com marcadores de salário e contas fixas.</p>
-      </div>
-    </div>
-    <div class="feat-card">
-      <div class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg></div>
-      <div>
-        <h3>Insights Inteligentes</h3>
-        <p>"Você gastou 23% mais com alimentação este mês" ou "Seu saldo pode ficar negativo em 12 dias" — todos os dias.</p>
-      </div>
-    </div>
-    <div class="feat-card">
-      <div class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
-      <div>
-        <h3>Painel de Saúde Financeira</h3>
-        <p>Um placar de 0 a 100 que mostra onde você está indo bem e onde precisa de atenção, sem economês.</p>
-      </div>
-    </div>
-    <div class="feat-card">
-      <div class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05"/><path d="M12 22.08V12"/></svg></div>
-      <div>
-        <h3>Orçamento que se ajusta sozinho</h3>
-        <p>A IA analisa seu histórico e propõe um orçamento 50/30/20 — você só aprova ou ajusta.</p>
-      </div>
-    </div>
-    <div class="feat-card">
-      <div class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
-      <div>
-        <h3>Metas com plano gerado por IA</h3>
-        <p>"Quero juntar R$10.000 em 8 meses" — a IA calcula o aporte mensal e de onde esse dinheiro pode vir.</p>
-      </div>
-    </div>
-    <div class="feat-card">
-      <div class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h8"/><path d="M8 9h2"/></svg></div>
-      <div>
-        <h3>Relatório mensal narrativo</h3>
-        <p>No dia 1, você recebe um texto contando como foi seu mês financeiro — não uma planilha.</p>
-      </div>
-    </div>
-    <div class="feat-card">
-      <div class="feat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg></div>
-      <div>
-        <h3>Radar de investimentos semanal</h3>
-        <p>Toda semana, as 3 melhores oportunidades de investimento para o seu perfil.</p>
+      <div class="chat-bubble bubble-bot">
+        <div class="bubble-label">Viva</div>
+        <div class="bubble-response">
+          📊 <span class="bubble-highlight">R$847,20</span> em 7 dias
+        </div>
+        <div class="bubble-small">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+            <polyline points="17 6 23 6 23 12"/>
+          </svg>
+          ↑ 23% vs semana passada
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- SEÇÃO 7 — PARA QUEM É / NÃO É -->
-<section class="forwhom reveal">
-  <div class="forwhom-grid">
-    <div class="fw-col yes">
-      <h3>É para você se:</h3>
-      <ul>
-        <li><span class="fw-mark">✓</span>Já tentou planilha ou app de finanças e desistiu em poucas semanas</li>
-        <li><span class="fw-mark">✓</span>Quer organização financeira sem trabalho manual</li>
-        <li><span class="fw-mark">✓</span>Vive (ou divide contas) com família, parceiro(a) ou sócio</li>
-        <li><span class="fw-mark">✓</span>Usa WhatsApp todos os dias</li>
-      </ul>
+<!-- TRUST BAR -->
+<section class="trust-bar">
+  <div class="trust-inner">
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      <span><strong>Criptografia</strong> AES-256</span>
     </div>
-    <div class="fw-col no">
-      <h3>Não é para você se:</h3>
-      <ul>
-        <li><span class="fw-mark">✕</span>Você já tem um sistema 100% funcional e sem fricção</li>
-        <li><span class="fw-mark">✕</span>Você não usa WhatsApp de forma alguma</li>
-        <li><span class="fw-mark">✕</span>Você procura uma plataforma de trading profissional</li>
-      </ul>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <span><strong>Dados</strong> protegidos</span>
+    </div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span><strong>Cancelamento</strong> sem multa</span>
+    </div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
+      </svg>
+      <span><strong>Resposta</strong> instantânea</span>
     </div>
   </div>
 </section>
 
-<!-- SEÇÃO 8 — PREÇO + OFERTA DE FUNDADOR -->
-<section class="pricing reveal" id="pricing">
-  <div class="founder-banner">
-    <h2>As primeiras 100 pessoas travam o preço de fundador para sempre.</h2>
-    <p>O Renda Viva está em fase de lançamento. As primeiras 100 pessoas que assinarem garantem R$97/mês para sempre — mesmo que o preço suba para novos assinantes no futuro. Depois que essas vagas se esgotarem, não tem como voltar atrás.</p>
+<!-- COMO FUNCIONA -->
+<section class="how" id="como-funciona">
+  <div class="how-inner">
+    <h2>Simples assim.</h2>
+    <div class="how-grid">
+      <div class="how-card reveal">
+        <div class="how-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          </svg>
+        </div>
+        <div class="how-number">PASSO 1</div>
+        <h3>Manda no WhatsApp</h3>
+        <p>Texto ou áudio — como você já faz</p>
+      </div>
+
+      <div class="how-card reveal">
+        <div class="how-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a10 10 0 1 0 10 10"/>
+            <path d="M12 6v6l4 2"/>
+            <path d="M16 2l2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="how-number">PASSO 2</div>
+        <h3>A IA entende tudo</h3>
+        <p>Categoriza, registra, analisa</p>
+      </div>
+
+      <div class="how-card reveal">
+        <div class="how-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </div>
+        <div class="how-number">PASSO 3</div>
+        <h3>Você recebe os alertas</h3>
+        <p>Antes do problema acontecer</p>
+      </div>
+    </div>
   </div>
+</section>
 
-  <p class="pricing-sub">Escolha como prefere pagar:</p>
+<!-- FEATURES -->
+<section class="features">
+  <div class="features-inner">
+    <h2>Tudo incluso no plano.</h2>
+    <div class="feat-grid">
+      <div class="feat-card reveal">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          </svg>
+        </div>
+        <h3>WhatsApp nativo</h3>
+        <p>Texto e áudio, família inteira</p>
+      </div>
 
-  <div class="billing-toggle" id="billingToggle">
-    <span class="toggle-pill" id="togglePill"></span>
-    <button class="active" data-plan="monthly">Mensal</button>
-    <button data-plan="annual">Anual <span class="save-badge">-17%</span></button>
+      <div class="feat-card reveal">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a10 10 0 1 0 10 10"/>
+            <path d="M12 6v6l4 2"/>
+            <path d="M16 2l2 2 4-4"/>
+          </svg>
+        </div>
+        <h3>IA que aprende com você</h3>
+        <p>97% de precisão nas categorias</p>
+      </div>
+
+      <div class="feat-card reveal">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3v18h18"/>
+            <path d="M7 14l4-4 3 3 5-6"/>
+          </svg>
+        </div>
+        <h3>Dashboard inteligente</h3>
+        <p>Previsão de saldo 30 dias</p>
+      </div>
+
+      <div class="feat-card reveal">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <circle cx="12" cy="12" r="6"/>
+            <circle cx="12" cy="12" r="2"/>
+          </svg>
+        </div>
+        <h3>Orçamento automático</h3>
+        <p>Regra 50/30/20 gerada pela IA</p>
+      </div>
+
+      <div class="feat-card reveal">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+            <path d="M2 12h20"/>
+          </svg>
+        </div>
+        <h3>Metas com plano</h3>
+        <p>A IA calcula como chegar lá</p>
+      </div>
+
+      <div class="feat-card reveal">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <h3>Relatório mensal</h3>
+        <p>Em texto, não em planilha</p>
+      </div>
+    </div>
   </div>
+</section>
 
+<!-- SOCIAL PROOF -->
+<section class="proof">
+  <div class="proof-inner">
+    <h2>Números que importam</h2>
+    <div class="proof-grid">
+      <div class="proof-stat reveal">
+        <div class="proof-number">97%</div>
+        <div class="proof-label">precisão</div>
+        <div class="proof-detail">da IA nas categorias</div>
+      </div>
+
+      <div class="proof-stat reveal">
+        <div class="proof-number">R$340</div>
+        <div class="proof-label">descobertos</div>
+        <div class="proof-detail">em cobranças esquecidas</div>
+      </div>
+
+      <div class="proof-stat reveal">
+        <div class="proof-number">0h</div>
+        <div class="proof-label">de lançamento</div>
+        <div class="proof-detail">manual/mês</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing">
+  <h2>Um preço. Tudo incluso.</h2>
   <div class="pricing-card">
-    <p class="pricing-card-label">Plano Fundador</p>
-    <div class="price-row">
-      <span class="price-currency">R$</span>
-      <span class="price-val" id="priceVal">97</span>
-      <span class="price-period" id="pricePeriod">/mês</span>
-    </div>
-    <p class="price-annual" id="priceAnnual">Cobrado mensalmente. Cancele quando quiser.</p>
+    <div class="pricing-card-content">
+      <div class="pricing-badge">FUNDADOR · 100 vagas</div>
 
-    <!-- TODO: atualizar VAGAS_RESTANTES manualmente conforme assinaturas chegam -->
-    <div class="vagas-box">
-      <p class="vagas-text"><span class="dot"></span><span id="vagasLabel">Restam 100 de 100 vagas de fundador</span></p>
-      <div class="vagas-bar"><div class="vagas-fill" id="vagasFill"></div></div>
-    </div>
+      <div class="billing-toggle" id="billingToggle">
+        <span class="toggle-pill" id="togglePill"></span>
+        <button class="active" data-plan="monthly">Mensal</button>
+        <button data-plan="annual">Anual <span class="save-badge">-17%</span></button>
+      </div>
 
-    <ul class="feat-list">
-      <li><span class="feat-check">✓</span>Categorização automática com IA</li>
-      <li><span class="feat-check">✓</span>Registro via WhatsApp — texto ou áudio</li>
-      <li><span class="feat-check">✓</span>Gestão financeira em família</li>
-      <li><span class="feat-check">✓</span>Dashboard com previsão de saldo</li>
-      <li><span class="feat-check">✓</span>Insights inteligentes diários</li>
-      <li><span class="feat-check">✓</span>Painel de saúde financeira (0–100)</li>
-      <li><span class="feat-check">✓</span>Orçamento que se ajusta sozinho</li>
-      <li><span class="feat-check">✓</span>Metas com plano gerado por IA</li>
-      <li><span class="feat-check">✓</span>Relatório mensal narrativo</li>
-      <li><span class="feat-check">✓</span>Radar de investimentos semanal</li>
-    </ul>
-    <a href="/register" class="cta-btn">Garantir minha vaga de fundador →</a>
-    <p class="cta-note">Cobrança via PIX, boleto ou cartão · Cancele quando quiser · 7 dias de garantia</p>
+      <div class="price-row">
+        <span class="price-currency">R$</span>
+        <span class="price-value" id="priceValue">97</span>
+        <span class="price-period" id="pricePeriod">/mês</span>
+      </div>
+      <div class="price-annual" id="priceAnnual">ou R$970/ano</div>
+
+      <div class="vagas-bar">
+        <div class="vagas-fill" id="vagasFill" style="width: 73%"></div>
+      </div>
+      <div class="vagas-text">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        73 de 100 vagas ocupadas
+      </div>
+
+      <ul class="feat-list">
+        <li>
+          <span class="feat-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </span>
+          WhatsApp nativo — texto e áudio
+        </li>
+        <li>
+          <span class="feat-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </span>
+          IA com 97% de precisão
+        </li>
+        <li>
+          <span class="feat-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </span>
+          Dashboard com previsão 30 dias
+        </li>
+        <li>
+          <span class="feat-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </span>
+          Orçamento e metas automáticas
+        </li>
+        <li>
+          <span class="feat-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </span>
+          Relatório mensal narrativo
+        </li>
+        <li>
+          <span class="feat-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </span>
+          Família inteira incluso
+        </li>
+      </ul>
+
+      <a href="https://rendavivaapp.com/register" class="cta-btn">Garantir minha vaga →</a>
+      <p class="cta-note">7 dias de garantia · Cancele quando quiser<br>PIX, boleto ou cartão</p>
+    </div>
   </div>
 </section>
 
-<!-- SEÇÃO 9 — GARANTIA -->
-<section class="guarantee reveal">
-  <div class="guarantee-badge">🛡️</div>
-  <h3>7 dias de garantia incondicional</h3>
-  <p>Use o Renda Viva por uma semana. Registre suas transações pelo WhatsApp, veja seu dashboard, receba seus primeiros insights. Se em 7 dias você sentir que não é para você, é só pedir o reembolso — devolvemos 100%, sem perguntas, sem formulário complicado.</p>
-</section>
-
-<!-- SEÇÃO 10 — FAQ -->
-<section class="faq reveal">
+<!-- FAQ -->
+<section class="faq">
   <h2>Dúvidas frequentes</h2>
 
   <div class="faq-item">
-    <div class="faq-q">É seguro conectar minhas informações financeiras?<span>+</span></div>
-    <div class="faq-a">Sim. Seus dados são criptografados (AES-256 em repouso, TLS em trânsito) e protegidos por Row Level Security — nenhum outro usuário acessa seus dados sem autorização.</div>
+    <div class="faq-q">
+      <span>É seguro?</span>
+      <div class="faq-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </div>
+    </div>
+    <div class="faq-a">Sim. Criptografia AES-256, padrão bancário. Seus dados nunca são compartilhados.</div>
   </div>
 
   <div class="faq-item">
-    <div class="faq-q">Como funciona o registro por WhatsApp?<span>+</span></div>
-    <div class="faq-a">Você vincula seu número (e o de outros membros da família, se quiser) nas configurações. Depois, envie texto ou áudio descrevendo o gasto — a IA entende e registra automaticamente.</div>
+    <div class="faq-q">
+      <span>Como funciona o WhatsApp?</span>
+      <div class="faq-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </div>
+    </div>
+    <div class="faq-a">Você vincula seu número, manda mensagem de texto ou áudio. A IA entende e registra automaticamente.</div>
   </div>
 
   <div class="faq-item">
-    <div class="faq-q">Posso usar com minha família?<span>+</span></div>
-    <div class="faq-a">Sim — vincule quantos números quiser à mesma conta. Cada transação mostra quem fez o registro.</div>
+    <div class="faq-q">
+      <span>Posso cancelar?</span>
+      <div class="faq-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </div>
+    </div>
+    <div class="faq-a">Sim, quando quiser, sem multa, sem burocracia.</div>
   </div>
 
   <div class="faq-item">
-    <div class="faq-q">Como funciona a cobrança?<span>+</span></div>
-    <div class="faq-a">Assinatura recorrente via Asaas — PIX, boleto ou cartão, mensal (R$97) ou anual (R$970, 2 meses grátis).</div>
-  </div>
-
-  <div class="faq-item">
-    <div class="faq-q">Posso cancelar quando quiser?<span>+</span></div>
-    <div class="faq-a">Sim, sem multa e sem burocracia.</div>
-  </div>
-
-  <div class="faq-item">
-    <div class="faq-q">E se eu não gostar?<span>+</span></div>
-    <div class="faq-a">Você tem 7 dias de garantia incondicional — devolvemos 100% do valor.</div>
+    <div class="faq-q">
+      <span>E se não gostar?</span>
+      <div class="faq-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </div>
+    </div>
+    <div class="faq-a">7 dias de garantia, 100% devolvido, sem perguntas.</div>
   </div>
 </section>
 
-<!-- SEÇÃO 11 — CTA FINAL -->
+<!-- FINAL CTA -->
 <section class="final-cta">
-  <h2>Pare de tentar se organizar sozinho. <em>Deixe a IA fazer por você.</em></h2>
-  <p>100 vagas de fundador com preço travado em R$97/mês para sempre.</p>
-  <a href="/register" class="final-btn">Garantir minha vaga de fundador →</a>
-  <p class="final-ps"><strong>PS:</strong> Se você chegou até aqui, provavelmente já se reconheceu em pelo menos uma das situações acima — a planilha abandonada, o dinheiro que some, a decisão tomada no escuro. A diferença entre continuar assim e mudar isso de uma vez não é força de vontade. É ter o sistema certo trabalhando por você. As 100 vagas de fundador não voltam.</p>
+  <div class="final-cta-content">
+    <h2>Sua vida financeira organizada. A partir de hoje.</h2>
+    <p>R$97/mês · 7 dias de garantia · Cancele quando quiser</p>
+    <a href="https://rendavivaapp.com/register" class="final-btn">Começar agora →</a>
+  </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-logo">Renda<span>Viva</span></div>
-  <span>© 2026 Renda Viva · Todos os direitos reservados · LGPD compliant</span>
-  <span>Privacidade · Termos · Suporte</span>
+  <div class="footer-logo">
+    <svg width="32" height="32" viewBox="0 0 120 120" fill="none">
+      <circle cx="60" cy="60" r="58" fill="#2D6A4F"/>
+      <text x="60" y="82" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="62" font-weight="700" fill="white" letter-spacing="-5">RV</text>
+      <g transform="translate(83 30) rotate(33)">
+        <path d="M0,-15 C9,-9 9,5 0,15 C-9,5 -9,-9 0,-15 Z" fill="#52B788"/>
+        <path d="M0,-11.5 L0,11.5" stroke="#2D6A4F" stroke-width="1.7" stroke-linecap="round" fill="none" opacity=".6"/>
+      </g>
+    </svg>
+    <span class="footer-logo-text">Renda Viva</span>
+  </div>
+  <span>© 2026 Renda Viva</span>
+  <div class="footer-links">
+    <a href="#">LGPD</a>
+    <a href="#">Privacidade</a>
+    <a href="#">Termos</a>
+  </div>
 </footer>
 
 <script>
-  /* ===== Contador de vagas de fundador ===== */
-  /* TODO: atualizar VAGAS_RESTANTES manualmente conforme assinaturas chegam */
-  const VAGAS_TOTAL = 100;
-  const VAGAS_RESTANTES = 100;
-  (function () {
-    const label = document.getElementById('vagasLabel');
-    const fill = document.getElementById('vagasFill');
-    if (label) label.textContent = `Restam ${VAGAS_RESTANTES} de ${VAGAS_TOTAL} vagas de fundador`;
-    const ocupadas = VAGAS_TOTAL - VAGAS_RESTANTES;
-    const pct = Math.max(0, Math.min(100, (ocupadas / VAGAS_TOTAL) * 100));
-    // pequeno atraso para a animação da barra acontecer ao carregar
-    setTimeout(() => { if (fill) fill.style.width = pct + '%'; }, 200);
-  })();
+/* Toggle Mensal / Anual */
+(function () {
+  var toggle = document.getElementById('billingToggle');
+  var pill = document.getElementById('togglePill');
+  var buttons = toggle.querySelectorAll('button');
+  var priceValue = document.getElementById('priceValue');
+  var pricePeriod = document.getElementById('pricePeriod');
+  var priceAnnual = document.getElementById('priceAnnual');
 
-  /* ===== Toggle Mensal / Anual ===== */
-  (function () {
-    const toggle = document.getElementById('billingToggle');
-    const pill = document.getElementById('togglePill');
-    const buttons = toggle.querySelectorAll('button');
-    const priceVal = document.getElementById('priceVal');
-    const pricePeriod = document.getElementById('pricePeriod');
-    const priceAnnual = document.getElementById('priceAnnual');
+  var PLANS = {
+    monthly: { value: '97', period: '/mês', annual: 'ou R$970/ano' },
+    annual: { value: '970', period: '/ano', annual: 'equivale a R$80,83/mês' }
+  };
 
-    const PLANS = {
-      monthly: {
-        value: '97',
-        period: '/mês',
-        note: 'Cobrado mensalmente. Cancele quando quiser.'
-      },
-      annual: {
-        value: '970',
-        period: '/ano',
-        note: 'Equivale a R$80,83/mês — 2 meses grátis (economia de 17%).'
-      }
-    };
+  function movePill(btn) {
+    pill.style.width = btn.offsetWidth + 'px';
+    pill.style.transform = 'translateX(' + (btn.offsetLeft - 4) + 'px)';
+  }
 
-    function movePill(btn) {
-      pill.style.width = btn.offsetWidth + 'px';
-      pill.style.transform = `translateX(${btn.offsetLeft - 4}px)`;
+  function select(btn) {
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].classList.remove('active');
     }
+    btn.classList.add('active');
+    movePill(btn);
+    var plan = PLANS[btn.dataset.plan];
+    priceValue.textContent = plan.value;
+    pricePeriod.textContent = plan.period;
+    priceAnnual.textContent = plan.annual;
+  }
 
-    function select(btn) {
-      buttons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      movePill(btn);
-      const plan = PLANS[btn.dataset.plan];
-      priceVal.textContent = plan.value;
-      pricePeriod.textContent = plan.period;
-      priceAnnual.textContent = plan.note;
-    }
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].addEventListener('click', (function(index) {
+      return function() { select(buttons[index]); };
+    })(i));
+  }
 
-    buttons.forEach(btn => btn.addEventListener('click', () => select(btn)));
-
-    // posição inicial da pílula
-    const initial = toggle.querySelector('button.active');
-    movePill(initial);
-    window.addEventListener('resize', () => {
-      const active = toggle.querySelector('button.active');
-      movePill(active);
-    });
-  })();
-
-  /* ===== Scroll reveal ===== */
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) { e.target.classList.add('visible'); }
-    });
-  }, { threshold: 0.12 });
-  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-  /* ===== FAQ accordion ===== */
-  document.querySelectorAll('.faq-item').forEach(item => {
-    item.querySelector('.faq-q').addEventListener('click', () => {
-      const isOpen = item.classList.contains('open');
-      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
-      if (!isOpen) item.classList.add('open');
-    });
+  var initial = toggle.querySelector('button.active');
+  movePill(initial);
+  window.addEventListener('resize', function () {
+    var active = toggle.querySelector('button.active');
+    movePill(active);
   });
+})();
+
+/* FAQ Accordion */
+var faqItems = document.querySelectorAll('.faq-item');
+for (var i = 0; i < faqItems.length; i++) {
+  faqItems[i].querySelector('.faq-q').addEventListener('click', function() {
+    var item = this.parentNode;
+    var isOpen = item.classList.contains('open');
+    for (var j = 0; j < faqItems.length; j++) {
+      faqItems[j].classList.remove('open');
+    }
+    if (!isOpen) item.classList.add('open');
+  });
+}
+
+/* Scroll Reveal */
+var observer = new IntersectionObserver(function (entries) {
+  for (var i = 0; i < entries.length; i++) {
+    if (entries[i].isIntersecting) {
+      entries[i].target.classList.add('visible');
+    }
+  }
+}, { threshold: 0.1 });
+
+var reveals = document.querySelectorAll('.reveal');
+for (var i = 0; i < reveals.length; i++) {
+  observer.observe(reveals[i]);
+}
 </script>
 </body>
 </html>

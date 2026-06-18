@@ -81,3 +81,23 @@ export async function buscarLinkPagamento(subscriptionId: string): Promise<strin
   const data = await response.json()
   return data.data?.[0]?.invoiceUrl || null
 }
+
+export async function cancelarAssinaturaAsaas(subscriptionId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch(`${env.ASAAS_API_URL}/subscriptions/${subscriptionId}`, {
+      method: 'DELETE',
+      headers
+    })
+
+    if (!response.ok) {
+      const erro = await response.text()
+      console.error('[Asaas] Erro ao cancelar assinatura:', response.status, erro)
+      return { success: false, error: erro }
+    }
+
+    return { success: true }
+  } catch (err) {
+    console.error('[Asaas] Erro ao cancelar assinatura:', err)
+    return { success: false, error: 'Erro de conexão com Asaas' }
+  }
+}
