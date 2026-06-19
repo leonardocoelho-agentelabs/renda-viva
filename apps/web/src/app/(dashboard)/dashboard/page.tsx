@@ -69,8 +69,7 @@ export default async function DashboardPage() {
     .eq("user_id", user.id)
     .gte("data", inicioMes)
     .lte("data", fimMes)
-    .order("data", { ascending: false })
-    .limit(10);
+    .order("data", { ascending: false });
 
   // Calcular totais
   const totalGastos = transactions

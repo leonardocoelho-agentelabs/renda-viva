@@ -85,10 +85,6 @@ const transactionsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
         const userId = request.user!.id;
         const body = request.body;
 
-        // Log de debug para rastrear valor
-        console.log('[TRANSACTION] Valor recebido:', body?.valor);
-        console.log('[TRANSACTION] Tipo recebido:', body?.tipo);
-
         if (
           !body?.data ||
           !body?.descricao_raw?.trim() ||
@@ -103,7 +99,6 @@ const transactionsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
         }
 
         const valorFinal = valorComSinal(body.valor, body.tipo);
-        console.log('[TRANSACTION] Valor final salvo:', valorFinal);
 
         const { data: criada, error } = await fastify.supabaseAdmin
           .from("transactions")
