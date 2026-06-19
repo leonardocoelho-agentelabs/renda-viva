@@ -74,6 +74,15 @@ interface RelatorioIR {
   };
 }
 
+interface HistoricoIR {
+  id: string;
+  ano: number;
+  total_rendimentos: number | null;
+  total_deducoes: number | null;
+  imposto_estimado: number | null;
+  created_at: string;
+}
+
 // ─── Utilitários ─────────────────────────────────────────────────────────────
 
 function formatarBRL(valor: number): string {
@@ -480,6 +489,7 @@ function ImpostoDeRenda() {
     const anoAtual = new Date().getFullYear();
     return anoAtual - 1;
   });
+  const [historicoIR, setHistoricoIR] = useState<HistoricoIR[]>([]);
   const [relatorio, setRelatorio] = useState<RelatorioIR | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -491,6 +501,69 @@ function ImpostoDeRenda() {
     const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token ?? null;
   }, [supabase]);
+
+  // Carregar histórico de relatórios de IR
+  const carregarHistorico = useCallback(async () => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      const res = await fetch(`${apiUrl}/reports/ir/historico`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setHistoricoIR(data.historico || []);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar histórico de IR:", err);
+    }
+  }, [apiUrl, getToken]);
+
+  useEffect(() => {
+    carregarHistorico();
+  }, [carregarHistorico]);
+
+  // Carregar relatório de um ano específico do histórico
+  const carregarRelatorioAno = useCallback(async (ano: number) => {
+    setLoading(true);
+    setError(null);
+    setRelatorio(null);
+    setAnoSelecionado(ano);
+
+    try {
+      const token = await getToken();
+      if (!token) {
+        setError("Sessão expirada. Faça login novamente.");
+        return;
+      }
+
+      const res = await fetch(`${apiUrl}/reports/ir/historico/${ano}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        // Se não encontrou no histórico, gera novo
+        const generateRes = await fetch(`${apiUrl}/reports/ir/${ano}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!generateRes.ok) {
+          const data = await generateRes.json();
+          throw new Error(data.error || `Erro ${generateRes.status}`);
+        }
+        const data: RelatorioIR = await generateRes.json();
+        setRelatorio(data);
+      } else {
+        const data: RelatorioIR = await res.json();
+        setRelatorio(data);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao carregar relatório");
+    } finally {
+      setLoading(false);
+    }
+  }, [apiUrl, getToken]);
 
   const gerarRelatorio = useCallback(async () => {
     setLoading(true);
@@ -515,12 +588,14 @@ function ImpostoDeRenda() {
 
       const data: RelatorioIR = await res.json();
       setRelatorio(data);
+      // Recarregar histórico após gerar novo relatório
+      carregarHistorico();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao gerar relatório");
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, anoSelecionado, getToken]);
+  }, [apiUrl, anoSelecionado, getToken, carregarHistorico]);
 
   const baixarJSON = useCallback(async () => {
     if (!relatorio) return;
@@ -565,6 +640,37 @@ function ImpostoDeRenda() {
           Relatório anual para facilitar sua declaração de IRPF
         </p>
       </div>
+
+      {/* Relatórios anteriores */}
+      {historicoIR.length > 0 && (
+        <div className="mb-8">
+          <h3 className="font-[var(--font-poppins)] font-semibold text-rv-ink dark:text-[#F0F0F0] text-sm mb-3">
+            Relatórios gerados
+          </h3>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {historicoIR.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => carregarRelatorioAno(r.ano)}
+                className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-rv-forest/10 dark:border-white/8 p-4 text-left hover:border-rv-green dark:hover:border-rv-vivid transition-colors"
+              >
+                <p className="font-[var(--font-poppins)] font-bold text-2xl text-rv-forest dark:text-rv-vivid">
+                  {r.ano}
+                </p>
+                <p className="text-xs text-[#8A8A8A] mt-1">
+                  Rendimentos: {r.total_rendimentos != null ? `R$ ${r.total_rendimentos.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "—"}
+                </p>
+                <p className="text-xs text-[#8A8A8A]">
+                  Imposto est.: {r.imposto_estimado != null ? `R$ ${r.imposto_estimado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "—"}
+                </p>
+                <p className="text-xs text-rv-green dark:text-rv-vivid mt-2">
+                  Ver relatório →
+                </p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Seletor de ano e botão gerar */}
       <div className="flex flex-wrap items-center gap-4 mb-8">

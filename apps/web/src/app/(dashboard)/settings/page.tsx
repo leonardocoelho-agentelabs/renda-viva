@@ -64,6 +64,11 @@ export default function SettingsPage() {
   // Exportação
   const [exportando, setExportando] = useState(false);
 
+  // Modo Crise
+  const [modoCrise, setModoCrise] = useState(false);
+  const [modoCriseMotivo, setModoCriseMotivo] = useState<string | null>(null);
+  const [togglingCrise, setTogglingCrise] = useState(false);
+
   // Toast
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
@@ -121,10 +126,65 @@ export default function SettingsPage() {
     }
   }, [apiUrl, getToken]);
 
+  // Carregar status do modo crise
+  const carregarModoCrise = useCallback(async () => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      const res = await fetch(`${apiUrl}/users/modo-crise`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setModoCrise(data.modo_crise || false);
+        setModoCriseMotivo(data.motivo || null);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar modo crise:", err);
+    }
+  }, [apiUrl, getToken]);
+
+  // Toggle modo crise
+  const toggleModoCrise = async () => {
+    setTogglingCrise(true);
+    try {
+      const token = await getToken();
+      if (!token) {
+        showToast("Sessão expirada. Faça login novamente.", "error");
+        return;
+      }
+
+      const novoEstado = !modoCrise;
+      const res = await fetch(`${apiUrl}/users/modo-crise`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ativo: novoEstado }),
+      });
+
+      if (res.ok) {
+        setModoCrise(novoEstado);
+        setModoCriseMotivo(novoEstado ? "Ativado manualmente" : null);
+        showToast(novoEstado ? "Modo Crise ativado" : "Modo Crise desativado");
+      } else {
+        showToast("Erro ao atualizar modo crise", "error");
+      }
+    } catch {
+      showToast("Erro ao atualizar modo crise", "error");
+    } finally {
+      setTogglingCrise(false);
+    }
+  };
+
   useEffect(() => {
     carregarContatos();
     carregarAssinatura();
-  }, [carregarContatos, carregarAssinatura]);
+    carregarModoCrise();
+  }, [carregarContatos, carregarAssinatura, carregarModoCrise]);
 
   const adicionarContato = async () => {
     setErro("");
@@ -718,6 +778,74 @@ export default function SettingsPage() {
               Atendimento de segunda a sexta, das 9h às 18h.
               Responderemos em até 24 horas úteis.
             </p>
+          </div>
+
+          {/* Seção Modo Crise */}
+          <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-rv-forest/10 dark:border-white/8 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-950/20 flex items-center justify-center">
+                <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-rv-ink dark:text-[#F0F0F0]">
+                  Modo Crise
+                </h3>
+                <p className="text-xs text-[#8A8A8A]">
+                  Painel simplificado para momentos de estresse financeiro
+                </p>
+              </div>
+            </div>
+
+            <p className="text-sm text-[#8A8A8A] mb-4">
+              Quando ativo, o dashboard exibe apenas o essencial: quanto entra, quanto precisa sair e quanto sobra.
+              Ativa automaticamente quando seu score cai abaixo de 30 ou seu saldo cai por 3 meses consecutivos.
+            </p>
+
+            {/* Status atual */}
+            <div className="flex items-center justify-between p-4 rounded-xl bg-rv-page dark:bg-[#2A2A2A] mb-4">
+              <div>
+                <p className="text-sm font-semibold text-rv-ink dark:text-[#F0F0F0]">
+                  Status atual
+                </p>
+                <p className="text-xs text-[#8A8A8A]">
+                  {modoCrise
+                    ? modoCriseMotivo
+                      ? `Ativo — ${modoCriseMotivo}`
+                      : "Ativo — dashboard simplificado habilitado"
+                    : "Inativo — seu score está saudável (68/100)"}
+                </p>
+              </div>
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                modoCrise
+                  ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
+                  : "bg-rv-mint dark:bg-rv-green/20 text-rv-forest dark:text-rv-vivid"
+              }`}>
+                {modoCrise ? "🚨 ATIVO" : "✅ INATIVO"}
+              </span>
+            </div>
+
+            {/* Botão toggle manual */}
+            <button
+              onClick={toggleModoCrise}
+              disabled={togglingCrise}
+              className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50 ${
+                modoCrise
+                  ? "bg-rv-mint dark:bg-rv-green/20 text-rv-forest dark:text-rv-vivid hover:bg-rv-light"
+                  : "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 hover:bg-red-100 border border-red-200 dark:border-red-800"
+              }`}
+            >
+              {togglingCrise ? "Atualizando..." : modoCrise ? "Desativar Modo Crise" : "Ativar Modo Crise manualmente"}
+            </button>
+
+            {/* Link para ver o painel */}
+            {modoCrise && (
+              <a href="/dashboard"
+                 className="block text-center text-xs text-rv-green dark:text-rv-vivid mt-3 hover:opacity-80">
+                Ver painel de crise no dashboard →
+              </a>
+            )}
           </div>
 
           {/* Zona de Perigo */}

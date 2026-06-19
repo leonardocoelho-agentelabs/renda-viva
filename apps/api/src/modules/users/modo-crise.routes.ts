@@ -59,6 +59,45 @@ const modoCriseRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => 
     }
   );
 
+  // PATCH /users/modo-crise - Ativa ou desativa modo crise manualmente
+  fastify.patch<{ Body: { ativo: boolean } }>(
+    "/",
+    { preHandler: [authHook, requireActiveSubscription] },
+    async (request, reply) => {
+      try {
+        const userId = request.user!.id;
+        const ativo = request.body?.ativo ?? false;
+
+        const { error } = await fastify.supabaseAdmin
+          .from("users")
+          .update({
+            modo_crise: ativo,
+            modo_crise_ativado_em: ativo ? new Date().toISOString() : null,
+          })
+          .eq("id", userId);
+
+        if (error) {
+          fastify.log.error({ err: error }, "Erro em PATCH /users/modo-crise");
+          return reply.status(500).send({
+            success: false,
+            error: "Erro ao atualizar modo crise",
+          });
+        }
+
+        return reply.send({
+          success: true,
+          modo_crise: ativo,
+        });
+      } catch (error) {
+        fastify.log.error({ err: error }, "Erro em PATCH /users/modo-crise");
+        return reply.status(500).send({
+          success: false,
+          error: "Erro ao atualizar modo crise",
+        });
+      }
+    }
+  );
+
   // POST /users/modo-crise/verificar - Força verificação (útil para workers)
   fastify.post(
     "/verificar",

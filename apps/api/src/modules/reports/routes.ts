@@ -182,12 +182,112 @@ const reportsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         }
 
         const relatorio = await gerarRelatorioIR(userId, ano);
+
+        // Salvar/atualizar relatório de IR no banco
+        const totalDeducoes = relatorio.analise_ia?.deducoes_possiveis
+          ? Object.values(relatorio.analise_ia.deducoes_possiveis as Record<string, { total?: number }>)
+              .reduce((s: number, d) => s + (d.total || 0), 0)
+          : 0;
+
+        const { error: saveError } = await fastify.supabaseAdmin
+          .from("ir_reports")
+          .upsert({
+            user_id: userId,
+            ano: Number(request.params.ano),
+            dados: relatorio,
+            resumo_executivo: relatorio.analise_ia?.resumo_executivo,
+            alerta_declaracao: relatorio.analise_ia?.alerta_declaracao,
+            total_rendimentos: relatorio.rendimentos?.total_geral,
+            total_deducoes: totalDeducoes,
+            imposto_estimado: relatorio.analise_ia?.imposto_estimado,
+          }, {
+            onConflict: "user_id,ano",
+          });
+
+        if (saveError) {
+          console.error("[IR] Erro ao salvar relatório:", saveError);
+        }
+
         return reply.send(relatorio);
       } catch (error) {
         fastify.log.error({ err: error }, "Erro em GET /reports/ir/:ano");
         return reply.status(500).send({
           success: false,
           error: "Erro ao gerar relatório de IR",
+        });
+      }
+    }
+  );
+
+  // GET /reports/ir/historico - Lista todos os relatórios de IR do usuário
+  fastify.get(
+    "/ir/historico",
+    { preHandler: [authHook, requireActiveSubscription] },
+    async (request, reply) => {
+      try {
+        const userId = request.user!.id;
+
+        const { data: historico, error } = await fastify.supabaseAdmin
+          .from("ir_reports")
+          .select("id, ano, total_rendimentos, total_deducoes, imposto_estimado, created_at")
+          .eq("user_id", userId)
+          .order("ano", { ascending: false });
+
+        if (error) {
+          fastify.log.error({ err: error }, "Erro ao buscar histórico de IR");
+          return reply.status(500).send({
+            success: false,
+            error: "Erro ao buscar histórico de relatórios",
+          });
+        }
+
+        return reply.send({ historico: historico || [] });
+      } catch (error) {
+        fastify.log.error({ err: error }, "Erro em GET /reports/ir/historico");
+        return reply.status(500).send({
+          success: false,
+          error: "Erro ao buscar histórico de relatórios",
+        });
+      }
+    }
+  );
+
+  // GET /reports/ir/historico/:ano - Retorna relatório completo de um ano específico
+  fastify.get<{ Params: { ano: string } }>(
+    "/ir/historico/:ano",
+    { preHandler: [authHook, requireActiveSubscription] },
+    async (request, reply) => {
+      try {
+        const userId = request.user!.id;
+        const ano = parseInt(request.params.ano, 10);
+
+        if (isNaN(ano) || ano < 2000 || ano > new Date().getFullYear()) {
+          return reply.status(400).send({
+            success: false,
+            error: "Ano inválido. Use um ano entre 2000 e o ano atual.",
+          });
+        }
+
+        const { data: relatorio, error } = await fastify.supabaseAdmin
+          .from("ir_reports")
+          .select("*")
+          .eq("user_id", userId)
+          .eq("ano", ano)
+          .single();
+
+        if (error || !relatorio) {
+          return reply.status(404).send({
+            success: false,
+            error: "Relatório não encontrado para este ano",
+          });
+        }
+
+        return reply.send(relatorio.dados);
+      } catch (error) {
+        fastify.log.error({ err: error }, "Erro em GET /reports/ir/historico/:ano");
+        return reply.status(500).send({
+          success: false,
+          error: "Erro ao buscar relatório",
         });
       }
     }
