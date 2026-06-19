@@ -58,14 +58,20 @@ export async function processUpload(uploadId: string, userId: string, fileType: 
     const buffer = Buffer.from(await fileData.arrayBuffer());
     console.log("[OCR Worker] Arquivo baixado:", { bytes: buffer.length });
 
-    let transacoes;
+    let parseResult;
     if (fileType === "csv") {
-      transacoes = await parseCSV(buffer);
+      parseResult = await parseCSV(buffer);
     } else {
-      transacoes = await parsePDF(buffer);
+      const pdfTransacoes = await parsePDF(buffer);
+      parseResult = { transacoes: pdfTransacoes, saldo_final: null, periodo_inicio: null, periodo_fim: null };
     }
 
+    const transacoes = parseResult.transacoes;
+
     console.log("[OCR Worker] Transações parseadas:", { count: transacoes.length });
+    if (parseResult.saldo_final !== null) {
+      console.log("[OCR Worker] Saldo declarado no CSV:", { saldo: parseResult.saldo_final });
+    }
 
     if (transacoes.length === 0) {
       await supabase
@@ -106,6 +112,45 @@ export async function processUpload(uploadId: string, userId: string, fileType: 
       console.warn("[OCR Worker] Aviso ao limpar transações anteriores:", deleteError.message);
     }
     console.log("[OCR Worker] Transações anteriores limpas para upload:", uploadId);
+
+    // 6.5. Criar transação de ajuste de saldo se o CSV contém saldo declarado
+    if (parseResult.saldo_final !== null && parseResult.periodo_inicio) {
+      // Calcular soma das transações importadas
+      const somaTransacoes = transacoes.reduce((sum, t) => sum + t.valor, 0);
+
+      // Saldo antes do período = saldo_final - soma_transacoes
+      const saldoAnterior = parseResult.saldo_final - somaTransacoes;
+
+      // Só criar ajuste se havia saldo anterior significativo
+      if (Math.abs(saldoAnterior) > 0.01) {
+        // Data do ajuste = período_inicio - 1 dia
+        const [ano, mes, dia] = parseResult.periodo_inicio.split('-').map(Number);
+        const dataAjuste = new Date(ano, mes - 1, dia - 1);
+        const dataAjusteStr = dataAjuste.toISOString().split('T')[0];
+
+        const ajusteTipo = saldoAnterior > 0 ? 'credito' : 'debito';
+        const ajusteCategoria = saldoAnterior > 0 ? 'Receita' : 'Outros';
+
+        const { error: ajusteError } = await supabase.from('transactions').insert({
+          user_id: userId,
+          data: dataAjusteStr,
+          valor: saldoAnterior,
+          descricao_raw: 'Saldo anterior ao período importado',
+          categoria: ajusteCategoria,
+          tipo: ajusteTipo,
+          status_revisao: 'aprovado',
+          score_confianca: 1.0,
+          origem: 'csv',
+          upload_id: uploadId,
+        });
+
+        if (ajusteError) {
+          console.warn("[OCR Worker] Erro ao criar transação de ajuste:", ajusteError.message);
+        } else {
+          console.log(`[CSV PARSER] ✅ Saldo anterior criado: R$ ${saldoAnterior.toFixed(2)} em ${dataAjusteStr}`);
+        }
+      }
+    }
 
     // 8. Inserir transações brutas na tabela
     const transacoesParaInserir = transacoes.map((t) => ({

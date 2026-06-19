@@ -8,6 +8,7 @@ interface SummaryCardProps {
   variacaoLabel?: string;
   icon: LucideIcon;
   variacaoInvertida?: boolean; // true quando "subir" é ruim (ex: gastos)
+  tooltip?: string; // texto de ajuda exibido ao lado do label
 }
 
 export function SummaryCard({
@@ -17,6 +18,7 @@ export function SummaryCard({
   variacaoLabel,
   icon: Icon,
   variacaoInvertida,
+  tooltip,
 }: SummaryCardProps) {
   const temVariacao = variacao !== null && variacao !== undefined;
   const isPositivo = temVariacao && variacao >= 0;
@@ -30,9 +32,19 @@ export function SummaryCard({
       "hover:shadow-md transition-shadow"
     )}>
       <div className="flex items-center justify-between mb-4">
-        <span className="text-xs font-semibold text-rv-muted dark:text-[#8A8A8A] uppercase tracking-widest">
-          {label}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-semibold text-rv-muted dark:text-[#8A8A8A] uppercase tracking-widest">
+            {label}
+          </span>
+          {tooltip && (
+            <span
+              className="text-rv-muted dark:text-[#8A8A8A] cursor-help"
+              title={tooltip}
+            >
+              ⓘ
+            </span>
+          )}
+        </div>
         <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-rv-mint dark:bg-[#2A2A2A]">
           <Icon className="w-5 h-5 text-rv-green dark:stroke-[#8A8A8A]" />
         </div>

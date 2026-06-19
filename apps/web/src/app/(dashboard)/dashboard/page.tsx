@@ -63,6 +63,11 @@ export default async function DashboardPage() {
   const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split("T")[0];
   const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).toISOString().split("T")[0];
 
+  // Buscar TODAS as transações para calcular o saldo atual (sem filtro de data)
+  const { data: todasTransacoes } = await supabase
+    .from("transactions")
+    .select("id, data, descricao_raw, categoria, valor, tipo");
+
   const { data: transactions, error } = await supabase
     .from("transactions")
     .select("id, data, descricao_raw, categoria, valor, tipo")
@@ -71,7 +76,11 @@ export default async function DashboardPage() {
     .lte("data", fimMes)
     .order("data", { ascending: false });
 
-  // Calcular totais
+  // Calcular SALDO ATUAL = soma de TODAS as transações (inclui saldo anterior ao período importado)
+  const saldoAtual = todasTransacoes
+    ?.reduce((sum, t) => sum + Number(t.valor), 0) || 0;
+
+  // Calcular totais do mês
   const totalGastos = transactions
     ?.filter((t) => t.valor < 0)
     .reduce((sum, t) => sum + Math.abs(t.valor), 0) || 0;
@@ -80,9 +89,9 @@ export default async function DashboardPage() {
     ?.filter((t) => t.valor > 0)
     .reduce((sum, t) => sum + t.valor, 0) || 0;
 
-  const saldo = totalReceitas - totalGastos;
+  const saldoMes = totalReceitas - totalGastos;
 
-  // Dados do mês anterior (para variação)
+  // Dados do mês anterior (para variação) - soma de TODAS as transações até o fim do mês anterior
   const mesAnteriorInicio = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1)
     .toISOString()
     .split("T")[0];
@@ -94,8 +103,7 @@ export default async function DashboardPage() {
     .from("transactions")
     .select("valor, categoria")
     .eq("user_id", user.id)
-    .gte("data", mesAnteriorInicio)
-    .lte("data", mesAnteriorFim);
+    .lt("data", inicioMes);  // Todas as transações ANTES do mês atual
 
   const saldoAnterior = transacoesAnterior?.reduce((s, t) => s + t.valor, 0) || 0;
   const gastosAnterior =
@@ -135,14 +143,14 @@ export default async function DashboardPage() {
         <ModoCrisePanel
           totalEntradas={totalReceitas}
           totalGastos={totalGastos}
-          saldo={saldo}
+          saldo={saldoAtual}
         />
       )}
 
       {/* Cabeçalho */}
       <DashboardHeader
         nome={userData?.full_name || ""}
-        saldoAtual={saldo}
+        saldoAtual={saldoAtual}
         gastosAtual={totalGastos}
         gastosMediaTresMeses={gastosMediaTresMeses}
       />
@@ -153,10 +161,11 @@ export default async function DashboardPage() {
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <SummaryCard
-          label="Saldo do mês"
-          value={formatCurrency(saldo)}
-          variacao={calcularVariacao(saldo, saldoAnterior)}
+          label="Saldo atual"
+          value={formatCurrency(saldoAtual)}
+          variacao={calcularVariacao(saldoAtual, saldoAnterior)}
           icon={Wallet}
+          tooltip="Soma de todas as transações registradas, incluindo o saldo anterior ao período importado."
         />
         <SummaryCard
           label="Total de gastos"

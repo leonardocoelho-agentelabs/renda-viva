@@ -7,6 +7,13 @@ export interface ParsedTransaction {
   tipo: "debito" | "credito" | "pix" | "transferencia";
 }
 
+export interface ParseResult {
+  transacoes: ParsedTransaction[];
+  saldo_final: number | null; // saldo declarado no CSV
+  periodo_inicio: string | null; // YYYY-MM-DD
+  periodo_fim: string | null; // YYYY-MM-DD
+}
+
 // ============================================================
 // FUNÇÃO CORRETA para parsing de valores brasileiros
 // Exemplos de entrada: "76,00" | "-76,00" | "1.234,56" | "R$ 1.234,56"
@@ -45,6 +52,66 @@ function parseBrazilianDate(dateStr: string): string {
   if (isoMatch) return trimmed.slice(0, 10);
 
   return trimmed;
+}
+
+// ============================================================
+// UTILITÁRIOS PARA EXTRAÇÃO DE SALDO E PERÍODO DO CSV
+// ============================================================
+
+/**
+ * Extrai o saldo declarado do CSV (formato: "Saldo ;80,20" ou "Saldo;80,20")
+ */
+function extrairSaldoCSV(content: string): number | null {
+  const lines = content.split('\n');
+  for (const line of lines) {
+    if (line.toLowerCase().startsWith('saldo')) {
+      const parts = line.split(';');
+      if (parts[1]) {
+        const valor = parts[1].trim()
+          .replace(/\./g, '')
+          .replace(',', '.');
+        const num = parseFloat(valor);
+        if (!isNaN(num)) return num;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Converte data DD/MM/YYYY para YYYY-MM-DD
+ */
+function converterData(dataStr: string | undefined): string | null {
+  if (!dataStr) return null;
+  const trimmed = dataStr.trim();
+  const parts = trimmed.split('/');
+  if (parts.length === 3) {
+    return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+  }
+  return null;
+}
+
+/**
+ * Extrai o período declarado do CSV (formato: "Período ;20/05/2026 a 18/06/2026")
+ */
+function extrairPeriodoCSV(content: string): { inicio: string | null; fim: string | null } {
+  const lines = content.split('\n');
+  for (const line of lines) {
+    const lineLower = line.toLowerCase();
+    if (lineLower.startsWith('período') || lineLower.startsWith('periodo')) {
+      const parts = line.split(';');
+      if (parts[1]) {
+        const periodo = parts[1].trim();
+        // "20/05/2026 a 18/06/2026"
+        const [inicio, fim] = periodo.split(' a ');
+        return {
+          inicio: converterData(inicio?.trim()),
+          fim: converterData(fim?.trim()),
+        };
+      }
+    }
+  }
+  return { inicio: null, fim: null };
 }
 
 // Determina o tipo a partir do histórico e do sinal do valor
@@ -771,11 +838,22 @@ function isTransacaoNubankInterna(descricao: string, valor: number): boolean {
 // ============================================================
 // PARSER PRINCIPAL COM DETECÇÃO AUTOMÁTICA
 // ============================================================
-export async function parseCSV(buffer: Buffer): Promise<ParsedTransaction[]> {
+export async function parseCSV(buffer: Buffer): Promise<ParseResult> {
   const content = fixEncoding(buffer).replace(/^﻿/, "");
   const format = detectCSVFormat(content);
 
   console.log(`[CSV PARSER] Banco detectado: ${format}`);
+
+  // Extrair saldo e período do CSV
+  const saldo_final = extrairSaldoCSV(content);
+  const { inicio: periodo_inicio, fim: periodo_fim } = extrairPeriodoCSV(content);
+
+  if (saldo_final !== null) {
+    console.log(`[CSV PARSER] Saldo declarado encontrado: R$ ${saldo_final.toFixed(2)}`);
+  }
+  if (periodo_inicio && periodo_fim) {
+    console.log(`[CSV PARSER] Período: ${periodo_inicio} a ${periodo_fim}`);
+  }
 
   let transactions: ParsedTransaction[] = [];
 
@@ -833,5 +911,10 @@ export async function parseCSV(buffer: Buffer): Promise<ParsedTransaction[]> {
     );
   });
 
-  return transactions;
+  return {
+    transacoes: transactions,
+    saldo_final,
+    periodo_inicio,
+    periodo_fim,
+  };
 }
