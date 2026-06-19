@@ -38,10 +38,11 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
 
   return (
     <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl
-                    border border-rv-forest/10 dark:border-white/8">
+                    border border-rv-forest/10 dark:border-white/8
+                    flex flex-col h-full">
 
       {/* Header fixo */}
-      <div className="flex items-center justify-between p-5 pb-3">
+      <div className="flex items-center justify-between p-5 pb-3 flex-shrink-0">
         <div>
           <h3 className="font-poppins font-semibold text-rv-ink
                          dark:text-[#F0F0F0] text-base">
@@ -55,11 +56,11 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
         </a>
       </div>
 
-      {/* Lista com scroll — altura fixa */}
-      <div className="overflow-y-auto max-h-[400px] px-3 pb-3
+      {/* Lista com scroll — altura máxima */}
+      <div className="overflow-y-auto max-h-[380px] px-3
                       scrollbar-thin scrollbar-thumb-rv-forest/10
                       dark:scrollbar-thumb-white/10
-                      scrollbar-track-transparent">
+                      scrollbar-track-transparent flex-1">
         {transacoesVisiveis.length === 0 ? (
           <p className="text-[#8A8A8A] text-center py-8">Nenhuma transação ainda</p>
         ) : (
@@ -71,16 +72,18 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                          hover:bg-rv-mint/5 dark:hover:bg-white/5
                          rounded-lg transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <div className="text-sm text-[#8A8A8A] w-12">{formatDate(tx.data)}</div>
-                <div>
-                  <p className="text-sm font-medium text-rv-ink dark:text-[#F0F0F0] truncate max-w-[200px]">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="text-sm text-[#8A8A8A] w-12 flex-shrink-0">{formatDate(tx.data)}</div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-rv-ink dark:text-[#F0F0F0] truncate">
                     {tx.descricao_raw}
                   </p>
                   <CategoryBadge category={tx.categoria || "Outros"} />
                 </div>
               </div>
-              <div className={tx.valor >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}>
+              <div className={`text-sm font-semibold flex-shrink-0 ml-2 ${
+                tx.valor >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+              }`}>
                 {tx.valor >= 0 ? "+" : "-"}
                 {formatCurrency(tx.valor)}
               </div>
@@ -91,7 +94,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
 
       {/* Footer com link */}
       <div className="border-t border-rv-forest/5 dark:border-white/5
-                      p-3 text-center">
+                      p-3 text-center flex-shrink-0">
         <a href="/transactions"
            className="text-rv-muted dark:text-[#8A8A8A] text-xs
                       hover:text-rv-green dark:hover:text-rv-vivid

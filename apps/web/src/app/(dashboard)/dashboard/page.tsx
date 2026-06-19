@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { DashboardHeader } from "./components/dashboard-header";
 import { SummaryCard } from "./components/summary-card";
-import { CategoryDonutChart } from "./components/category-donut-chart";
+import { CategoryBarChart } from "./components/CategoryBarChart";
 import { RecentTransactions } from "./components/recent-transactions";
 import { ForecastChart } from "./components/forecast-chart";
 import { InsightsPanel } from "./components/insights-panel";
@@ -216,16 +216,21 @@ export default async function DashboardPage() {
       </div>
 
       {/* Detalhes */}
-      <h2 className="text-xs font-semibold tracking-widest uppercase text-rv-muted dark:text-rv-dark-muted mb-3">
+      <p className="text-xs font-semibold tracking-widest uppercase
+                    text-rv-muted dark:text-rv-dark-muted mb-3 mt-6">
         Detalhes
-      </h2>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <CategoryDonutChart data={categoryData} />
-        <RecentTransactions transactions={transactions || []} />
+      </p>
+
+      {/* Bloco 1: Barras de categorias — largura total */}
+      <div className="mb-6">
+        <CategoryBarChart data={categoryData} />
       </div>
 
-      {/* Vazamentos */}
-      <LeaksPreviewCard />
+      {/* Bloco 2: Transações + Vazamentos lado a lado */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <RecentTransactions transactions={(transactions || []).slice(0, 10)} />
+        <LeaksPreviewCard />
+      </div>
     </DashboardLayout>
   );
 }

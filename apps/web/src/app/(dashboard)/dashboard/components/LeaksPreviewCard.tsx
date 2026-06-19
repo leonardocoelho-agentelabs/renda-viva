@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Droplets, ArrowRight, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 interface Vazamento {
@@ -55,13 +55,11 @@ export function LeaksPreviewCard() {
     fetchLeaks();
   }, [supabase]);
 
-  function formatCurrency(value: number): string {
-    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
-  }
-
   if (loading) {
     return (
-      <div className="bg-white dark:bg-rv-dark-card rounded-2xl border border-gray-200 dark:border-white/10 p-5">
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl
+                      border border-rv-forest/10 dark:border-white/8 p-5
+                      flex flex-col h-full">
         <div className="flex items-center justify-center h-32">
           <Loader2 className="w-6 h-6 text-rv-green animate-spin" />
         </div>
@@ -69,64 +67,91 @@ export function LeaksPreviewCard() {
     );
   }
 
-  if (!data || data.vazamentos.length === 0) {
-    return null;
-  }
-
-  // Pegar top 3 vazamentos
-  const topLeaks = data.vazamentos.slice(0, 3);
-
   return (
-    <div className="bg-white dark:bg-rv-dark-card rounded-2xl border border-red-200 dark:border-red-900/50 p-5">
+    <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl
+                    border border-rv-forest/10 dark:border-white/8 p-5
+                    flex flex-col h-full">
+
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Droplets className="w-5 h-5 text-red-500" />
-          <h3 className="font-semibold text-gray-900 dark:text-white">
-            Vazamentos detectados
-          </h3>
-        </div>
-        <Link
-          href="/vazamentos"
-          className="text-sm text-rv-green hover:text-rv-green/80 flex items-center gap-1 transition-colors"
-        >
-          Ver análise completa
-          <ArrowRight className="w-4 h-4" />
-        </Link>
+        <h3 className="font-poppins font-semibold text-rv-ink
+                       dark:text-[#F0F0F0] text-base">
+          💧 Vazamentos detectados
+        </h3>
+        <a href="/vazamentos"
+           className="text-rv-green dark:text-rv-vivid text-xs
+                      font-semibold hover:opacity-80 transition-opacity">
+          Ver análise →
+        </a>
       </div>
 
-      {/* Total */}
-      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        <span className="font-semibold text-gray-900 dark:text-white">
-          {formatCurrency(data.total_vazamentos)}
-        </span>{" "}
-        em gastos invisíveis nos últimos {data.periodo} dias
-      </p>
-
-      {/* Lista de vazamentos */}
-      <div className="space-y-2 mb-4">
-        {topLeaks.map((leak, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between text-sm py-1.5 border-b border-gray-100 dark:border-white/5 last:border-0"
-          >
-            <span className="text-gray-700 dark:text-gray-300 truncate flex-1 mr-2">
-              • {leak.nome}
-            </span>
-            <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">
-              {formatCurrency(leak.total_periodo)}/{data.periodo >= 60 ? "90d" : "30d"}
-            </span>
+      {/* Estado: sem análise ainda */}
+      {!data || data.vazamentos.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center
+                        text-center py-6">
+          <div className="w-12 h-12 rounded-2xl bg-rv-mint/50
+                          dark:bg-rv-green/10 flex items-center
+                          justify-center mb-3">
+            <span className="text-2xl">💧</span>
           </div>
-        ))}
-      </div>
+          <p className="text-rv-muted dark:text-[#8A8A8A] text-sm mb-3">
+            Ainda não foi feita uma análise de vazamentos
+          </p>
+          <a href="/vazamentos"
+             className="px-4 py-2 rounded-xl bg-rv-green
+                        dark:bg-rv-vivid text-white text-sm
+                        font-semibold hover:opacity-90 transition-opacity">
+            Analisar agora
+          </a>
+        </div>
+      ) : (
+        <>
+          {/* Estado: com análise */}
+          <div className="bg-red-50 dark:bg-red-950/20 rounded-xl p-4 mb-4
+                          border border-red-100 dark:border-red-900/30">
+            <p className="text-red-600 dark:text-red-400 font-poppins
+                          font-bold text-2xl">
+              R$ {data.total_vazamentos.toLocaleString('pt-BR',
+                    { minimumFractionDigits: 2 })}
+            </p>
+            <p className="text-red-500 dark:text-red-400/70 text-xs mt-0.5">
+              em gastos invisíveis detectados
+            </p>
+          </div>
 
-      {/* Economia potencial */}
-      <div className="bg-rv-mint/20 dark:bg-rv-green/10 rounded-xl p-3">
-        <p className="text-sm text-rv-green dark:text-rv-mint font-medium">
-          💰 Economia anual potencial:{" "}
-          <span className="font-bold">{formatCurrency(data.economia_anual_total)}</span>
-        </p>
-      </div>
+          <div className="space-y-2 flex-1 overflow-y-auto max-h-[200px]">
+            {data.vazamentos.slice(0, 4).map((v, i) => (
+              <div key={i}
+                   className="flex items-center justify-between py-2
+                              border-b border-rv-forest/5 dark:border-white/5
+                              last:border-0">
+                <span className="text-sm text-rv-ink dark:text-[#F0F0F0]
+                                 truncate flex-1">
+                  {v.nome}
+                </span>
+                <span className="text-sm font-semibold text-red-500
+                                 ml-2 flex-shrink-0">
+                  -R$ {v.total_periodo.toLocaleString('pt-BR',
+                        { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-3 pt-3 border-t border-rv-forest/5
+                          dark:border-white/5">
+            <p className="text-xs text-rv-muted dark:text-[#8A8A8A]">
+              💰 Economia anual potencial:{' '}
+              <span className="font-semibold text-rv-green dark:text-rv-vivid">
+                R$ {data.economia_anual_total.toLocaleString('pt-BR',
+                      { minimumFractionDigits: 2 })}
+              </span>
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 }
+
+export default LeaksPreviewCard;
