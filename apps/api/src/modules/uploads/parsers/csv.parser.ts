@@ -73,6 +73,34 @@ function fixEncoding(buffer: Buffer): string {
 }
 
 /**
+ * Verifica se uma transação é um movimento interno de CDB/Investimentos.
+ * Estes NÃO devem ser importados como receitas ou despesas reais.
+ *
+ * TRANSAÇÕES IGNORADAS:
+ * - Histórico "Aplicação" (aplicação em CDB)
+ * - Histórico "Resgate" (resgate de CDB)
+ * - Histórico "Estorno" quando a descrição contém aplicação/resgate/CDB
+ */
+function isTransacaoInterna(historico: string, descricao: string): boolean {
+  const hist = (historico || "").toLowerCase().trim();
+  const desc = (descricao || "").toLowerCase().trim();
+
+  // Aplicações e resgates de CDB/investimentos são movimentos internos
+  if (hist === "aplicação" || hist === "aplicacao") return true;
+  if (hist === "resgate") return true;
+
+  // Estornos de aplicação/resgate são internos (compensam o movimento original)
+  if (hist === "estorno" && (
+    desc.includes("aplicação") ||
+    desc.includes("aplicacao") ||
+    desc.includes("resgate") ||
+    desc.includes("cdb")
+  )) return true;
+
+  return false;
+}
+
+/**
  * Parse valor com parênteses (negativos) ou sinal D/C no final
  * Exemplos: "(1.234,56)" | "-1.234,56" | "1.234,56 D" | "500,00 C"
  */
@@ -260,6 +288,12 @@ function parseNubankCSV(content: string): ParsedTransaction[] {
     const valor = parseFloat(valorRaw.trim());
     if (isNaN(valor)) continue;
 
+    // Filtrar transações internas de investimentos
+    if (isTransacaoNubankInterna(descricao, valor)) {
+      console.log(`[CSV PARSER] Ignorando transação interna Nubank: ${descricao}`);
+      continue;
+    }
+
     // Determinar tipo
     let tipo: ParsedTransaction["tipo"] = valor < 0 ? "debito" : "credito";
     const descLower = descricao.toLowerCase();
@@ -349,11 +383,18 @@ function parseInterCSV(buffer: Buffer): ParsedTransaction[] {
 
     if (!dataRaw || !valorRaw) continue;
 
+    const h = historico.trim();
+    const d = descricao.trim();
+
+    // Filtrar transações internas de CDB/Investimentos
+    if (isTransacaoInterna(h, d)) {
+      console.log(`[CSV PARSER] Ignorando transação interna: ${h} - ${d}`);
+      continue;
+    }
+
     const valor = parseBrazilianNumber(String(valorRaw));
     if (valor === 0) continue;
 
-    const h = historico.trim();
-    const d = descricao.trim();
     const descricao_raw = h && d ? `${h}: ${d}` : h || d || "Transação";
 
     transactions.push({
@@ -706,6 +747,25 @@ function parseBBCSV(buffer: Buffer): ParsedTransaction[] {
   }
 
   return transactions;
+}
+
+/**
+ * Verifica se uma transação Nubank é um movimento interno de investimentos.
+ * O Nubank também pode ter estornos de aplicações/transferências de investimentos.
+ */
+function isTransacaoNubankInterna(descricao: string, valor: number): boolean {
+  const desc = (descricao || "").toLowerCase();
+
+  // Estornos de investimentos Nubank (valores positivos geralmente)
+  // Estes são "créditos" que na verdade são devoluções de transferências de investimento
+  if (valor > 0 && (
+    desc.includes("estorno") ||
+    desc.includes("devolução") ||
+    desc.includes("devolucao") ||
+    desc.includes("estorno de transferência")
+  )) return true;
+
+  return false;
 }
 
 // ============================================================
