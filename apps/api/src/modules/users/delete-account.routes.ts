@@ -1,24 +1,27 @@
 import { FastifyPluginAsync } from 'fastify'
-import { createClient } from '@supabase/supabase-js'
-import { env } from '../../env.js'
 
 const deleteAccountRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.delete('/users/me', {
     preHandler: [fastify.authenticate]
   }, async (request, reply) => {
-    // Cliente admin com service role key (necessário para deletar de auth.users)
-    const adminClient = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
+    const userId = request.user.id
 
-    const { error } = await adminClient.auth.admin.deleteUser(request.user.id)
+    fastify.log.info({ userId }, '[Delete Account] Iniciando exclusão completa do usuário')
 
-    if (error) {
-      fastify.log.error('[Delete Account] Erro:', error)
-      return reply.status(500).send({ error: 'Erro ao excluir conta' })
+    // Deletar do Supabase Auth (último passo - critical)
+    const { error: authError } = await fastify.supabaseAdmin.auth.admin.deleteUser(userId)
+
+    if (authError) {
+      fastify.log.error({ err: authError, userId }, '[Delete Account] Erro ao deletar usuário do Auth')
+      return reply.status(500).send({ success: false, error: 'Erro ao finalizar exclusão da conta' })
     }
 
     // Dados em public.users e outras tabelas são removidos via ON DELETE CASCADE
-    // nas foreign keys referenciando auth.users(id)
-    return reply.send({ success: true })
+    // nas foreign keys referenciando auth.users(id) e public.users(id)
+
+    fastify.log.info({ userId }, '[Delete Account] Usuário completamente excluído (Auth + dados via CASCADE)')
+
+    return reply.send({ success: true, message: 'Conta excluída com sucesso' })
   })
 }
 

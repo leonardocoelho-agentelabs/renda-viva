@@ -10,7 +10,8 @@
     "worker:tsx": "tsx src/queues/ocr.worker.ts",
     "worker:dev": "tsx watch src/queues/ocr.worker.ts",
     "lint": "eslint src/",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "force-delete": "tsx scripts/force-delete-user.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
