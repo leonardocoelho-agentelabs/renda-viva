@@ -13,6 +13,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
+import ws from 'ws'
 
 const userId = process.argv[2]
 const supabaseUrl = process.argv[3]
@@ -31,9 +32,8 @@ const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
     autoRefreshToken: false,
     persistSession: false,
   },
-  // Desabilitar realtime para evitar erro com ws em Node.js < 22
   realtime: {
-    enabled: false,
+    transport: ws,
   },
 })
 
