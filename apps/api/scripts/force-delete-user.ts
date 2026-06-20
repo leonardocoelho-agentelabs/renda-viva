@@ -31,6 +31,10 @@ const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
     autoRefreshToken: false,
     persistSession: false,
   },
+  // Desabilitar realtime para evitar erro com ws em Node.js < 22
+  realtime: {
+    enabled: false,
+  },
 })
 
 // Tabelas que referenciam auth.users(id) via CASCADE
