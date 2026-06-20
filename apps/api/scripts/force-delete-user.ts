@@ -12,6 +12,8 @@
  *     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
  */
 
+import { createClient } from '@supabase/supabase-js'
+
 const userId = process.argv[2]
 const supabaseUrl = process.argv[3]
 const serviceRoleKey = process.argv[4]
@@ -23,8 +25,6 @@ if (!userId || !supabaseUrl || !serviceRoleKey) {
   console.error('  Supabase Dashboard > Project Settings > API > service_role secret')
   process.exit(1)
 }
-
-const { createClient } = await import('@supabase/supabase-js')
 
 const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
   auth: {
