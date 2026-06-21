@@ -158,6 +158,16 @@ const openfinanceRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
   fastify.post<{ Body: WebhookBody }>(
     "/webhook",
     async (request, reply) => {
+      // [SECURITY C2] Validar assinatura do webhook Pluggy
+      const pluggySignature = request.headers['x-pluggy-signature']
+      if (!pluggySignature || pluggySignature !== process.env.PLUGGY_WEBHOOK_SECRET) {
+        fastify.log.warn({
+          ip: request.ip,
+          path: request.url
+        }, '[SECURITY] Webhook Pluggy sem assinatura válida')
+        return reply.status(401).send({ error: 'Unauthorized' })
+      }
+
       const body = request.body || {};
       const event = body.event || "";
       const itemId = body.itemId || body.id;

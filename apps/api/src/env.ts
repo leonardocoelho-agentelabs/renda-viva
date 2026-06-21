@@ -14,21 +14,22 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string().min(1, "OPENAI_API_KEY é obrigatória"),
 
   // Secret para endpoints internos (n8n, jobs)
-  API_SECRET: z.string().min(1).default("renda-viva-internal-secret-2026"),
+  API_SECRET: z.string().min(1, "API_SECRET é obrigatória"),
 
   // Evolution API (WhatsApp)
   EVOLUTION_URL: z.string().url().default("http://localhost:8080"),
   EVOLUTION_INSTANCE: z.string().min(1).default("Leonardo"),
-  EVOLUTION_API_KEY: z.string().min(1, "EVOLUTION_API_KEY é obrigatória").default("G6hJn4M6mEPryjQHpptXAesAdjnbahpW"),
+  EVOLUTION_API_KEY: z.string().min(1, "EVOLUTION_API_KEY é obrigatória"),
   // Número de teste para alertas (futuramente virá de users.telefone)
   ALERTS_TEST_NUMBER: z.string().min(1).default("5511951474246"),
 
   // Pluggy (Open Finance)
-  PLUGGY_CLIENT_ID: z.string().min(1).default("5f998b64-52d7-48b8-a5c8-7c69b950541e"),
-  PLUGGY_CLIENT_SECRET: z.string().min(1).default("39500383-17b5-4f5b-9486-ec641f277db1"),
+  PLUGGY_CLIENT_ID: z.string().min(1, "PLUGGY_CLIENT_ID é obrigatório"),
+  PLUGGY_CLIENT_SECRET: z.string().min(1, "PLUGGY_CLIENT_SECRET é obrigatório"),
   // Não usada pelo serviço (a API key é obtida via /auth com clientId+secret), mantida por compatibilidade.
   PLUGGY_API_KEY: z.string().optional().default(""),
   PLUGGY_WEBHOOK_URL: z.string().default("https://rendavivaapp.com/api/openfinance/webhook"),
+  PLUGGY_WEBHOOK_SECRET: z.string().min(1, "PLUGGY_WEBHOOK_SECRET é obrigatório"),
 
   // Redis
   REDIS_URL: z.string().url("REDIS_URL deve ser uma URL válida"),
@@ -37,7 +38,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(3001),
 
   // JWT
-  JWT_SECRET: z.string().min(1, "JWT_SECRET é obrigatória").default("change-me-in-production"),
+  JWT_SECRET: z.string().min(1, "JWT_SECRET é obrigatória"),
 
   // Asaas (Assinaturas)
   ASAAS_API_KEY: z.string(),

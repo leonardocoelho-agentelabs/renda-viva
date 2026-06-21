@@ -8,6 +8,16 @@ import { transcreverAudio } from '../../services/audio-transcription.service'
 
 const whatsappWebhookRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post('/whatsapp/webhook', async (request, reply) => {
+    // [SECURITY C2] Validar header de autenticação do webhook Evolution API
+    const webhookSecret = request.headers['apikey'] || request.headers['x-webhook-secret']
+    if (webhookSecret !== process.env.EVOLUTION_API_KEY) {
+      fastify.log.warn({
+        ip: request.ip,
+        path: request.url
+      }, '[SECURITY] Webhook WhatsApp com chave inválida')
+      return reply.status(401).send({ error: 'Unauthorized' })
+    }
+
     const body = request.body as any
 
     // Responder rápido para a Evolution API não reenviar
