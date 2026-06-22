@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
 import { authHook, requireActiveSubscription } from "../../plugins/auth.js";
-import { criarConnectToken, buscarItem } from "../../services/pluggy.service.js";
+import { criarConnectToken, buscarItem, isPluggyConfigured } from "../../services/pluggy.service.js";
 import { sincronizarItem } from "../../services/openfinance.service.js";
 
 interface ConnectBody {
@@ -10,16 +10,43 @@ interface ConnectBody {
 interface WebhookBody {
   event?: string;
   itemId?: string;
-  // Pluggy também pode enviar o id em "id" dependendo do evento
   id?: string;
 }
 
 const openfinanceRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
+  // Helper: verificar se Pluggy está configurado
+  const checkPluggyConfigured = (reply: ReturnType<FastifyInstance["reply"]>) => {
+    if (!isPluggyConfigured()) {
+      reply.status(503).send({
+        success: false,
+        error: "Open Finance ainda não disponível",
+        code: "OPENFINANCE_NOT_CONFIGURED",
+      });
+      return false;
+    }
+    return true;
+  };
+
+  // GET /openfinance/status - Verificar status da integração
+  fastify.get(
+    "/status",
+    async (_request, reply) => {
+      return reply.send({
+        configured: isPluggyConfigured(),
+        message: isPluggyConfigured()
+          ? "Open Finance ativo"
+          : "Open Finance ainda não disponível",
+      });
+    }
+  );
+
   // POST /openfinance/connect-token - Token para abrir o widget Pluggy
   fastify.post(
     "/connect-token",
     { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
+      if (!checkPluggyConfigured(reply)) return;
+
       try {
         const connectToken = await criarConnectToken(request.user!.id);
         return reply.send({ connectToken });

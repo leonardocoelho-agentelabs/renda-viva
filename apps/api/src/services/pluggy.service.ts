@@ -21,8 +21,17 @@ export interface PluggyItem {
   lastUpdatedAt?: string;
 }
 
+// Verifica se a integração Pluggy está configurada
+export function isPluggyConfigured(): boolean {
+  return Boolean(env.PLUGGY_CLIENT_ID && env.PLUGGY_CLIENT_SECRET);
+}
+
 // Obtém a API key da Pluggy (válida por ~2 horas) usando clientId/clientSecret.
 async function getApiKey(): Promise<string> {
+  if (!isPluggyConfigured()) {
+    throw new Error("Integração Pluggy não configurada. Defina PLUGGY_CLIENT_ID e PLUGGY_CLIENT_SECRET.");
+  }
+
   if (apiKeyCache && Date.now() < apiKeyCache.expiresAt) {
     return apiKeyCache.key;
   }

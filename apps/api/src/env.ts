@@ -23,13 +23,13 @@ const envSchema = z.object({
   // Número de teste para alertas (futuramente virá de users.telefone)
   ALERTS_TEST_NUMBER: z.string().min(1).default("5511951474246"),
 
-  // Pluggy (Open Finance)
-  PLUGGY_CLIENT_ID: z.string().min(1, "PLUGGY_CLIENT_ID é obrigatório"),
-  PLUGGY_CLIENT_SECRET: z.string().min(1, "PLUGGY_CLIENT_SECRET é obrigatório"),
+  // Pluggy (Open Finance) - opcional até integração estar ativa
+  PLUGGY_CLIENT_ID: z.string().optional().default(""),
+  PLUGGY_CLIENT_SECRET: z.string().optional().default(""),
   // Não usada pelo serviço (a API key é obtida via /auth com clientId+secret), mantida por compatibilidade.
   PLUGGY_API_KEY: z.string().optional().default(""),
   PLUGGY_WEBHOOK_URL: z.string().default("https://rendavivaapp.com/api/openfinance/webhook"),
-  PLUGGY_WEBHOOK_SECRET: z.string().min(1, "PLUGGY_WEBHOOK_SECRET é obrigatório"),
+  PLUGGY_WEBHOOK_SECRET: z.string().optional().default(""),
 
   // Redis
   REDIS_URL: z.string().url("REDIS_URL deve ser uma URL válida"),
