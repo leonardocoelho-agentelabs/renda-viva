@@ -19,6 +19,11 @@ function getOcrQueue(): Queue {
         password: new URL(env.REDIS_URL).password || undefined,
       },
     });
+    // Evita que um erro de conexão Redis (evento "error" não tratado) derrube
+    // o processo da API. O enfileiramento em si é protegido por try/catch no handler.
+    ocrQueue.on("error", (err) => {
+      console.error("❌ [OCR Queue/uploads] Erro de conexão Redis:", err.message);
+    });
   }
   return ocrQueue;
 }

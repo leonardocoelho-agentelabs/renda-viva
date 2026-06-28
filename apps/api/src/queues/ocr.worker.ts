@@ -35,6 +35,13 @@ export const ocrQueue = new Queue<OcrJobData>("ocr-queue", {
   },
 });
 
+// Sem este handler, um erro de conexão (ex.: Redis ECONNREFUSED) vira um evento
+// "error" não tratado e o Node derruba o processo — fazendo o PM2 marcar o worker
+// como "errored" em loop. Tratamos aqui para o ioredis reconectar sozinho.
+ocrQueue.on("error", (err) => {
+  console.error("❌ [OCR Queue] Erro de conexão Redis:", err.message);
+});
+
 // Criar worker
 export const ocrWorker = new Worker<OcrJobData>(
   "ocr-queue",
@@ -105,6 +112,13 @@ ocrWorker.on("completed", (job, result) => {
 
 ocrWorker.on("failed", (job, err) => {
   console.error(`❌ Job ${job?.id} falhou:`, err.message);
+});
+
+// Erros de conexão do worker (ex.: Redis indisponível) não devem encerrar o
+// processo — o ioredis reconecta e os jobs voltam a ser processados quando o
+// Redis estiver de volta. Apenas registramos para manter o worker "online".
+ocrWorker.on("error", (err) => {
+  console.error("❌ [OCR Worker] Erro de conexão Redis:", err.message);
 });
 
 ocrWorker.on("progress", (job, progress) => {
