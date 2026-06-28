@@ -37,6 +37,13 @@ function getRelativeDay(dias_restantes: number): string {
   return `Em ${dias_restantes}d`;
 }
 
+function formatShortDate(data: string): string {
+  return new Date(`${data}T00:00:00`).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+  });
+}
+
 export function UpcomingPaymentsCard() {
   const supabase = createClient();
   const [data, setData] = useState<UpcomingData | null>(null);
@@ -159,7 +166,10 @@ export function UpcomingPaymentsCard() {
                     {event.titulo}
                   </p>
                   <p className="text-xs text-[#8A8A8A]">
-                    {getRelativeDay(event.dias_restantes)}
+                    <span className="font-medium text-rv-ink dark:text-[#F0F0F0]">
+                      {formatShortDate(event.data)}
+                    </span>
+                    {` · ${getRelativeDay(event.dias_restantes)}`}
                     {event.categoria && ` · ${event.categoria}`}
                   </p>
                 </div>
