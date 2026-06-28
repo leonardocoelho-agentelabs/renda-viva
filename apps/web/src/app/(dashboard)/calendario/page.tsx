@@ -98,6 +98,13 @@ function getRelativeDay(dias_restantes: number): string {
   return `Em ${dias_restantes}d`;
 }
 
+function formatShortDate(data: string): string {
+  return new Date(`${data}T00:00:00`).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+  });
+}
+
 export default function CalendarioPage() {
   const supabase = createClient();
   const [calendarData, setCalendarData] = useState<CalendarData | null>(null);
@@ -440,10 +447,19 @@ export default function CalendarioPage() {
                       <p className="font-medium text-rv-forest dark:text-white">
                         {event.titulo}
                       </p>
-                      <p className="text-sm text-rv-forest/50 dark:text-white/40">
-                        {getRelativeDay(event.dias_restantes)}
-                        {event.categoria && ` · ${event.categoria}`}
-                      </p>
+                      <div className="flex items-center gap-1.5 text-sm text-rv-forest/50 dark:text-white/40">
+                        <span className="font-medium text-rv-forest dark:text-white">
+                          {formatShortDate(event.data)}
+                        </span>
+                        <span>·</span>
+                        <span>{getRelativeDay(event.dias_restantes)}</span>
+                        {event.categoria && (
+                          <>
+                            <span>·</span>
+                            <span>{event.categoria}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
@@ -540,8 +556,11 @@ export default function CalendarioPage() {
                   </div>
 
                   <div className="text-sm text-rv-forest/60 dark:text-white/50 mb-3">
-                    {event.categoria && <span>{event.categoria} · </span>}
-                    {event.descricao && <span>{event.descricao}</span>}
+                    <span className="font-medium text-rv-forest dark:text-white">
+                      {formatShortDate(selectedDay.date)}
+                    </span>
+                    {event.categoria && <span> · {event.categoria}</span>}
+                    {event.descricao && <span> · {event.descricao}</span>}
                   </div>
 
                   <div className="flex items-center justify-between">
