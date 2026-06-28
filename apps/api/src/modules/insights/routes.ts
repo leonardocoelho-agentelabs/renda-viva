@@ -14,13 +14,24 @@ const insightsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const userId = request.user!.id;
         const cacheKey = `insights:${userId}`;
 
-        const cached = await fastify.redis.get(cacheKey);
+        // Cache é opcional: se o Redis estiver indisponível (ex: réplica read-only),
+        // seguimos sem cache em vez de quebrar o endpoint.
+        let cached: string | null = null;
+        try {
+          cached = await fastify.redis.get(cacheKey);
+        } catch (redisErr) {
+          fastify.log.warn({ err: redisErr }, "Redis indisponível (leitura) — gerando insights sem cache");
+        }
         if (cached) {
           return reply.send({ insights: JSON.parse(cached), cached: true });
         }
 
         const insights = await gerarInsights(userId);
-        await fastify.redis.set(cacheKey, JSON.stringify(insights), "EX", CACHE_TTL);
+        try {
+          await fastify.redis.set(cacheKey, JSON.stringify(insights), "EX", CACHE_TTL);
+        } catch (redisErr) {
+          fastify.log.warn({ err: redisErr }, "Redis indisponível (escrita) — continuando sem cache");
+        }
 
         return reply.send({ insights, cached: false });
       } catch (error) {
@@ -40,7 +51,11 @@ const insightsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         const cacheKey = `insights:${userId}`;
 
         const insights = await gerarInsights(userId);
-        await fastify.redis.set(cacheKey, JSON.stringify(insights), "EX", CACHE_TTL);
+        try {
+          await fastify.redis.set(cacheKey, JSON.stringify(insights), "EX", CACHE_TTL);
+        } catch (redisErr) {
+          fastify.log.warn({ err: redisErr }, "Redis indisponível (escrita) — continuando sem cache");
+        }
 
         return reply.send({ insights });
       } catch (error) {

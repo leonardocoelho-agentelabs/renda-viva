@@ -37,12 +37,18 @@ const whatsappWebhookRoutes: FastifyPluginAsync = async (fastify) => {
       const messageId = data.key?.id
       if (messageId) {
         const cacheKey = `whatsapp:processed:${messageId}`
-        const jaProcessado = await fastify.redis.get(cacheKey)
-        if (jaProcessado) {
-          console.log('[WhatsApp Webhook] Mensagem duplicada ignorada:', messageId)
-          return
+        // Deduplicação é opcional: se o Redis estiver indisponível (ex: réplica
+        // read-only), seguimos processando em vez de descartar a mensagem.
+        try {
+          const jaProcessado = await fastify.redis.get(cacheKey)
+          if (jaProcessado) {
+            console.log('[WhatsApp Webhook] Mensagem duplicada ignorada:', messageId)
+            return
+          }
+          await fastify.redis.set(cacheKey, '1', 'EX', 300)
+        } catch (redisErr) {
+          fastify.log.warn({ err: redisErr }, 'Redis indisponível — deduplicação desativada temporariamente')
         }
-        await fastify.redis.set(cacheKey, '1', 'EX', 300)
       }
 
       const remoteJid = data.key?.remoteJid || ''
