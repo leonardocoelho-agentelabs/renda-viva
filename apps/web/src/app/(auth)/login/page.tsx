@@ -4,8 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -52,46 +50,96 @@ export default function LoginPage() {
     }
   };
 
-  return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-[#F8FAFC] mb-6">Entrar</h2>
+  const inputStyle = {
+    width: "100%",
+    padding: "11px 14px",
+    border: "1.5px solid #D8F3DC",
+    borderRadius: "10px",
+    fontFamily: "Inter, sans-serif",
+    fontSize: "14px",
+    color: "#1B2A22",
+    outline: "none",
+    boxSizing: "border-box" as const,
+    background: "#FFFFFF",
+  };
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+  const labelStyle = {
+    fontFamily: "Inter, sans-serif",
+    fontSize: "13px",
+    fontWeight: 500,
+    color: "#1B4332",
+    display: "block",
+    marginBottom: "6px",
+  };
+
+  return (
+    <>
+      <h2 style={{ fontFamily: "Poppins, sans-serif", fontWeight: 600, fontSize: "22px", color: "#1B4332", marginBottom: "6px", marginTop: 0 }}>
+        Acesse sua Conta
+      </h2>
+      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", color: "#5A6B62", marginBottom: "28px", marginTop: 0 }}>
+        Bem-vindo de volta ao Renda Viva
+      </p>
+
+      <form onSubmit={handleSubmit}>
         {error && (
-          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
+          <div style={{ padding: "12px 14px", background: "#FEF2F0", border: "1px solid #F5C6C0", borderRadius: "10px", color: "#C44B35", fontSize: "13px", fontFamily: "Inter, sans-serif", marginBottom: "16px" }}>
             {error}
           </div>
         )}
 
-        <Input
-          label="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="seu@email.com"
-          required
-        />
+        <div style={{ marginBottom: "16px" }}>
+          <label style={labelStyle}>E-mail</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="seu@email.com"
+            required
+            style={inputStyle}
+          />
+        </div>
 
-        <Input
-          label="Senha"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
-          required
-        />
+        <div style={{ marginBottom: "8px" }}>
+          <label style={labelStyle}>Senha</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            required
+            style={inputStyle}
+          />
+        </div>
 
-        <Button type="submit" className="w-full" loading={loading}>
-          Entrar
-        </Button>
+        <div style={{ textAlign: "right", marginBottom: "20px" }}>
+          <Link href="/forgot-password" style={{ fontSize: "12px", color: "#2D6A4F", textDecoration: "none", fontFamily: "Inter, sans-serif" }}>
+            Esqueceu sua senha?
+          </Link>
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            width: "100%", padding: "13px",
+            background: loading ? "#74C69D" : "#2D6A4F",
+            color: "#FFFFFF", border: "none", borderRadius: "10px",
+            fontFamily: "Poppins, sans-serif", fontSize: "15px",
+            fontWeight: 600, cursor: loading ? "not-allowed" : "pointer",
+            transition: "background 0.2s",
+          }}
+        >
+          {loading ? "Entrando..." : "Entrar"}
+        </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+      <p style={{ textAlign: "center", fontSize: "13px", color: "#5A6B62", marginTop: "20px", fontFamily: "Inter, sans-serif" }}>
         Não tem uma conta?{" "}
-        <Link href="/register" className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium">
+        <Link href="/register" style={{ color: "#2D6A4F", fontWeight: 500, textDecoration: "none" }}>
           Criar conta
         </Link>
       </p>
-    </div>
+    </>
   );
 }
