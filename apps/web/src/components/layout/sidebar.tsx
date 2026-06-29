@@ -23,6 +23,7 @@ import {
   Zap,
   CalendarDays,
   Droplets,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -43,6 +44,7 @@ const navItems = [
   { href: "/simulador", label: "Simulador", icon: Zap },
   { href: "/calendario", label: "Calendário", icon: CalendarDays },
   { href: "/vazamentos", label: "Vazamentos", icon: Droplets },
+  { href: "/familia", label: "Família", icon: Users },
   { href: "/assinar", label: "Assinatura", icon: CreditCard },
   { href: "/settings", label: "Configurações", icon: Settings },
 ];

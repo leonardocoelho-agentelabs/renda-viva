@@ -95,6 +95,16 @@ export async function requireActiveSubscription(
   const statusComAcesso = ["active", "overdue"];
 
   if (!data || !statusComAcesso.includes(data.status)) {
+    // Membros ativos de uma família têm acesso liberado sem assinatura própria
+    const { data: familyMember } = await supabaseAdmin
+      .from("family_members")
+      .select("id, status")
+      .eq("user_id", userId)
+      .eq("status", "ativo")
+      .maybeSingle();
+
+    if (familyMember) return; // é membro de família — acesso liberado
+
     return reply.status(403).send({ error: "subscription_required" });
   }
 }
