@@ -211,7 +211,7 @@ export default function InvestmentsPage() {
       ) : data ? (
         <div className="space-y-6">
           {/* Dados de mercado */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {mercadoCards.map((c) => (
               <div
                 key={c.label}
@@ -232,7 +232,7 @@ export default function InvestmentsPage() {
               <h2 className="text-sm font-semibold text-[#8A8A8A] uppercase tracking-wide mb-3 flex items-center gap-2">
                 🏦 Renda Fixa
               </h2>
-              <div className="grid gap-4 lg:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {rendaFixa.map((op, i) => (
                   <OportunidadeCard key={`rf-${i}`} oportunidade={op} />
                 ))}
@@ -246,7 +246,7 @@ export default function InvestmentsPage() {
               <h2 className="text-sm font-semibold text-[#8A8A8A] uppercase tracking-wide mb-3 flex items-center gap-2">
                 🏢 Fundos Imobiliários
               </h2>
-              <div className="grid gap-4 lg:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {fiisOportunidades.map((op, i) => (
                   <OportunidadeCard key={`fii-${i}`} oportunidade={op} />
                 ))}
@@ -260,7 +260,7 @@ export default function InvestmentsPage() {
               <h2 className="text-sm font-semibold text-[#8A8A8A] uppercase tracking-wide mb-3 flex items-center gap-2">
                 📈 Ações B3
               </h2>
-              <div className="grid gap-4 lg:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {acoesOportunidades.map((op, i) => (
                   <OportunidadeCard key={`acao-${i}`} oportunidade={op} />
                 ))}
@@ -270,7 +270,7 @@ export default function InvestmentsPage() {
 
           {/* Fallback: todas as oportunidades */}
           {(!rendaFixa?.length && !fiisOportunidades?.length && !acoesOportunidades?.length) && data.oportunidades.length > 0 && (
-            <div className="grid gap-4 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {data.oportunidades.map((op, i) => (
                 <OportunidadeCard key={`all-${i}`} oportunidade={op} />
               ))}

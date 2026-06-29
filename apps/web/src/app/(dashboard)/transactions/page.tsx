@@ -157,12 +157,12 @@ export default function TransactionsPage() {
   return (
     <DashboardLayout>
       <div className="mb-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
             <h1 className="font-[var(--font-poppins)] font-bold text-2xl text-rv-ink dark:text-[#F0F0F0]">Transações</h1>
             <p className="text-rv-muted dark:text-[#8A8A8A]">Gerencie suas transações financeiras</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={abrirNova}
               className="flex items-center gap-2 bg-rv-green dark:bg-rv-vivid text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-rv-forest dark:hover:bg-rv-vivid/90 transition-colors"

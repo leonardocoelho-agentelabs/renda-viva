@@ -463,7 +463,7 @@ export default function SettingsPage() {
 
             <div className="pt-4 border-t border-white/5">
               <label className="block text-xs font-medium text-rv-ink dark:text-[#F0F0F0] mb-2">Alterar email</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="email"
                   placeholder="novo@email.com"
@@ -473,7 +473,7 @@ export default function SettingsPage() {
                 />
                 <button
                   onClick={alterarEmail}
-                  className="text-sm bg-rv-forest dark:bg-[#1E1E1E] text-white rounded-lg px-4 py-2 whitespace-nowrap hover:bg-rv-green dark:hover:bg-white/10"
+                  className="text-sm bg-rv-forest dark:bg-[#1E1E1E] text-white rounded-lg px-4 py-2 whitespace-nowrap hover:bg-rv-green dark:hover:bg-white/10 sm:w-auto w-full"
                 >
                   Alterar email
                 </button>
@@ -804,7 +804,7 @@ export default function SettingsPage() {
             </p>
 
             {/* Status atual */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-rv-page dark:bg-[#2A2A2A] mb-4">
+            <div className="flex items-center justify-between gap-3 p-4 rounded-xl bg-rv-page dark:bg-[#2A2A2A] mb-4">
               <div>
                 <p className="text-sm font-semibold text-rv-ink dark:text-[#F0F0F0]">
                   Status atual
@@ -817,7 +817,7 @@ export default function SettingsPage() {
                     : "Inativo — seu score está saudável (68/100)"}
                 </p>
               </div>
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 ${
                 modoCrise
                   ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
                   : "bg-rv-mint dark:bg-rv-green/20 text-rv-forest dark:text-rv-vivid"
