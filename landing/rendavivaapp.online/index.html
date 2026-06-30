@@ -1,16 +1,19 @@
-// AUTO-GERADO a partir do index.html de produção de rendavivaapp.online.
-// Server Component: o CSS e o HTML são renderizados no servidor (SSR) 1:1
-// via dangerouslySetInnerHTML, idêntico ao arquivo estático original.
-// Únicas alterações em relação ao original:
-//   1. Link "Entrar" -> /login adicionado no nav (antes de "Começar agora").
-//   2. CTAs de registro trocados de https://rendavivaapp.com/register para /register.
-// Fontes Google (Poppins/Inter) e a regra .nav-login foram adicionadas ao <style>.
-
-import Script from "next/script";
-import { LandingPixelEvents } from "@/components/analytics/LandingPixelEvents";
-
-const LANDING_STYLE = `@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
-
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Renda Viva — seu consultor financeiro pessoal no WhatsApp. Descubra onde seu dinheiro está vazando, receba alertas e organize suas finanças sem planilha e sem trabalho manual.">
+<meta name="theme-color" content="#0D1F17">
+<meta property="og:title" content="Renda Viva — Pare de trabalhar muito e ver o dinheiro sumir">
+<meta property="og:description" content="O Renda Viva analisa seus gastos, encontra onde seu dinheiro está vazando e te avisa no WhatsApp. Sem planilha, sem trabalho manual.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://rendavivaapp.online">
+<title>Renda Viva — Seu consultor financeiro pessoal no WhatsApp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
   :root{
     --forest:#1B4332;
     --green:#2D6A4F;
@@ -272,13 +275,11 @@ const LANDING_STYLE = `@import url('https://fonts.googleapis.com/css2?family=Pop
     *{animation:none!important;transition:none!important}
     .reveal{opacity:1;transform:none}
   }
+</style>
+</head>
+<body>
 
-  /* ---------- Nav login link (added) ---------- */
-  .nav-login{color:rgba(255,255,255,0.7);font-size:14px;font-family:'Inter',sans-serif;font-weight:500;text-decoration:none;margin-right:8px;transition:color 0.2s}
-  .nav-login:hover{color:#52B788}
-`;
-
-const LANDING_BODY = `<!-- ========== NAV ========== -->
+<!-- ========== NAV ========== -->
 <header class="nav">
   <div class="nav-inner">
     <a href="#" class="brand" aria-label="Renda Viva">
@@ -295,8 +296,7 @@ const LANDING_BODY = `<!-- ========== NAV ========== -->
     <nav class="nav-links">
       <a class="link" href="#como-funciona">Como funciona</a>
       <a class="link" href="#preco">Preço</a>
-      <a class="nav-login" href="/login">Entrar</a>
-      <a class="nav-cta" href="/register">Começar agora →</a>
+      <a class="nav-cta" href="https://rendavivaapp.com/register">Começar agora →</a>
     </nav>
   </div>
 </header>
@@ -308,7 +308,7 @@ const LANDING_BODY = `<!-- ========== NAV ========== -->
     <h1>Você trabalha muito. O dinheiro <span class="hero-glow">some</span>. E no fim do mês, sobra a pergunta: para onde foi tudo isso?</h1>
     <p class="hero-sub">O Renda Viva analisa seus gastos, encontra onde seu dinheiro está vazando e te avisa no WhatsApp — sem planilha, sem trabalho manual, sem mais aquela sensação de trabalhar à toa.</p>
     <div class="hero-ctas">
-      <a class="btn btn-primary" href="/register">Quero organizar minhas finanças agora →</a>
+      <a class="btn btn-primary" href="https://rendavivaapp.com/register">Quero organizar minhas finanças agora →</a>
       <a class="btn btn-secondary" href="#como-funciona">Ver como funciona ↓</a>
     </div>
     <p class="hero-trust">🔒 Garantia de 15 dias · Cancele quando quiser · Sem burocracia</p>
@@ -492,7 +492,7 @@ const LANDING_BODY = `<!-- ========== NAV ========== -->
           <li><span class="chk">✓</span> Modo Família (1 membro adicional)</li>
           <li><span class="chk">✓</span> Suporte via WhatsApp</li>
         </ul>
-        <a class="btn-price" href="/register">Começar agora →</a>
+        <a class="btn-price" href="https://rendavivaapp.com/register">Começar agora →</a>
       </div>
       <!-- Anual -->
       <div class="price-card card-anual reveal reveal-delay-1">
@@ -512,7 +512,7 @@ const LANDING_BODY = `<!-- ========== NAV ========== -->
           <li><span class="chk">✓</span> Modo Família (1 membro adicional)</li>
           <li><span class="chk">✓</span> Suporte via WhatsApp</li>
         </ul>
-        <a class="btn-price" href="/register">Começar agora →</a>
+        <a class="btn-price" href="https://rendavivaapp.com/register">Começar agora →</a>
       </div>
     </div>
     <p class="price-foot">🔒 Pagamento seguro via Asaas · Garantia de 15 dias · Cancele quando quiser</p>
@@ -563,7 +563,7 @@ const LANDING_BODY = `<!-- ========== NAV ========== -->
   <div class="cta-final-inner">
     <h2>Chega de trabalhar muito e não ter nada para mostrar.</h2>
     <p class="sub">Você merece saber exatamente onde está cada centavo do seu dinheiro — e o que fazer para ele render mais.</p>
-    <a class="btn btn-primary" href="/register">Quero organizar minhas finanças agora →</a>
+    <a class="btn btn-primary" href="https://rendavivaapp.com/register">Quero organizar minhas finanças agora →</a>
     <p class="trust">🔒 Pagamento seguro via Asaas · Garantia de 15 dias · Cancele quando quiser</p>
   </div>
 </section>
@@ -585,9 +585,9 @@ const LANDING_BODY = `<!-- ========== NAV ========== -->
     <div class="copy">© 2026 Renda Viva · AgenteLabs · Todos os direitos reservados</div>
     <div class="links"><a href="https://rendavivaapp.com">rendavivaapp.com</a> · <a href="https://rendavivaapp.com/privacidade">Privacidade</a> · <a href="https://rendavivaapp.com/termos">Termos</a></div>
   </div>
-</footer>`;
+</footer>
 
-const LANDING_SCRIPT = `
+<script>
   // ---- Scroll reveal ----
   (function(){
     var els = document.querySelectorAll('.reveal');
@@ -648,19 +648,6 @@ const LANDING_SCRIPT = `
       });
     });
   })();
-`;
-
-export default function Home() {
-  return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: LANDING_STYLE }} />
-      <div id="landing-root" dangerouslySetInnerHTML={{ __html: LANDING_BODY }} />
-      <Script
-        id="landing-script"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{ __html: LANDING_SCRIPT }}
-      />
-      <LandingPixelEvents />
-    </>
-  );
-}
+</script>
+</body>
+</html>

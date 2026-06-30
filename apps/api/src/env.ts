@@ -45,6 +45,10 @@ const envSchema = z.object({
   ASAAS_API_URL: z.string().default("https://api-sandbox.asaas.com/v3"),
   ASAAS_WEBHOOK_TOKEN: z.string(),
 
+  // Meta Conversions API (tracking server-side) - opcional até token ser gerado
+  META_PIXEL_ID: z.string().optional().default("1690677962052297"),
+  META_CONVERSIONS_API_TOKEN: z.string().optional().default(""),
+
   // Node env
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 });

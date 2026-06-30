@@ -25,15 +25,18 @@ import {
   Droplets,
   Users,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import Logo from "@/components/brand/Logo";
 
-const navItems = [
+type NavItem = { href: string; label: string; icon: LucideIcon; badge?: string };
+
+const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/transactions", label: "Transações", icon: ArrowLeftRight },
-  { href: "/connections", label: "Contas", icon: Building2 },
+  { href: "/connections", label: "Contas", icon: Building2, badge: "Em breve" },
   { href: "/budget", label: "Orçamentos", icon: PieChart },
   { href: "/goals", label: "Metas", icon: Target },
   { href: "/diagnostico", label: "Diagnóstico", icon: Stethoscope },
@@ -122,7 +125,8 @@ export function Sidebar({ onClose }: SidebarProps) {
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-medium transition-all duration-150",
                 isActive
                   ? "bg-rv-vivid text-white font-semibold dark:bg-rv-vivid dark:text-white"
-                  : "text-white/70 dark:text-[#8A8A8A] hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:hover:text-white"
+                  : "text-white/70 dark:text-[#8A8A8A] hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:hover:text-white",
+                item.badge && "opacity-60"
               )}
             >
               <item.icon
@@ -131,7 +135,12 @@ export function Sidebar({ onClose }: SidebarProps) {
                   isActive ? "text-white dark:text-white" : "text-white/60 dark:text-[#8A8A8A]"
                 )}
               />
-              {item.label}
+              <span className={cn(item.badge && "line-through decoration-1")}>{item.label}</span>
+              {item.badge && (
+                <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 whitespace-nowrap">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           );
         })}

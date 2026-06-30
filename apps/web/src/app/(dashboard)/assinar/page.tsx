@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, Loader2, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { trackEvent } from '@/lib/meta-pixel'
 
 const handleLogout = async () => {
   const supabase = createClient()
@@ -38,6 +39,13 @@ export default function AssinarPage() {
 
     if (json.temAcesso) {
       router.push('/dashboard')
+    } else {
+      // Tela de assinatura exibida (usuário ainda sem acesso) -> InitiateCheckout
+      trackEvent('InitiateCheckout', {
+        content_name: 'renda_viva_assinatura',
+        value: ciclo === 'MONTHLY' ? 97 : 970,
+        currency: 'BRL',
+      })
     }
   }
 
@@ -148,6 +156,12 @@ export default function AssinarPage() {
 
       if (json.subscription?.status === 'active' || json.subscription?.status === 'overdue') {
         clearInterval(intervalo)
+        // Purchase (client-side) — deduplicado com o server-side via event_id
+        trackEvent(
+          'Purchase',
+          { value: ciclo === 'MONTHLY' ? 97 : 970, currency: 'BRL' },
+          json.subscription.asaas_subscription_id
+        )
         window.location.href = '/dashboard'
       }
 

@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { trackEvent } from "@/lib/meta-pixel";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
@@ -70,6 +71,11 @@ function RegisterForm() {
       }
 
       if (data.user) {
+        trackEvent("CompleteRegistration", {
+          content_name: "renda_viva_signup",
+          status: "completed",
+        });
+
         // Se veio de convite, aceitar automaticamente antes de redirecionar
         if (inviteToken) {
           const accessToken = (await supabase.auth.getSession()).data.session
