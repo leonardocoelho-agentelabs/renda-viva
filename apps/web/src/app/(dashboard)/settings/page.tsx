@@ -69,6 +69,13 @@ export default function SettingsPage() {
   const [modoCriseMotivo, setModoCriseMotivo] = useState<string | null>(null);
   const [togglingCrise, setTogglingCrise] = useState(false);
 
+  // Categorias personalizadas
+  const [categorias, setCategorias] = useState<string[]>([]);
+  const [novaCategoria, setNovaCategoria] = useState("");
+  const [salvandoCategoria, setSalvandoCategoria] = useState(false);
+  const [erroCategoria, setErroCategoria] = useState("");
+  const [loadingCategorias, setLoadingCategorias] = useState(false);
+
   // Toast
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
@@ -146,6 +153,73 @@ export default function SettingsPage() {
     }
   }, [apiUrl, getToken]);
 
+  // Carregar categorias personalizadas
+  const carregarCategorias = useCallback(async () => {
+    setLoadingCategorias(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const res = await fetch(`${apiUrl}/transactions/categories`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        // Mostrar apenas as personalizadas (não as padrão)
+        setCategorias(json.personalizadas || []);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar categorias:", err);
+    } finally {
+      setLoadingCategorias(false);
+    }
+  }, [apiUrl, getToken]);
+
+  const criarCategoria = async () => {
+    if (!novaCategoria.trim()) return;
+    setSalvandoCategoria(true);
+    setErroCategoria("");
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const res = await fetch(`${apiUrl}/transactions/categories`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ nome: novaCategoria.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setErroCategoria(json.error || "Erro ao criar categoria.");
+        return;
+      }
+      setNovaCategoria("");
+      await carregarCategorias();
+    } catch {
+      setErroCategoria("Erro ao criar categoria.");
+    } finally {
+      setSalvandoCategoria(false);
+    }
+  };
+
+  const deletarCategoria = async (nome: string) => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+      await fetch(
+        `${apiUrl}/transactions/categories/${encodeURIComponent(nome)}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      await carregarCategorias();
+    } catch (err) {
+      console.error("Erro ao deletar categoria:", err);
+    }
+  };
+
   // Toggle modo crise
   const toggleModoCrise = async () => {
     setTogglingCrise(true);
@@ -184,7 +258,8 @@ export default function SettingsPage() {
     carregarContatos();
     carregarAssinatura();
     carregarModoCrise();
-  }, [carregarContatos, carregarAssinatura, carregarModoCrise]);
+    carregarCategorias();
+  }, [carregarContatos, carregarAssinatura, carregarModoCrise, carregarCategorias]);
 
   const adicionarContato = async () => {
     setErro("");
@@ -846,6 +921,107 @@ export default function SettingsPage() {
                 Ver painel de crise no dashboard →
               </a>
             )}
+          </div>
+
+          {/* CATEGORIAS PERSONALIZADAS */}
+          <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-gray-100 dark:border-white/8 p-6">
+            <h2 className="font-semibold text-base text-rv-ink dark:text-[#F0F0F0] mb-1">
+              Categorias personalizadas
+            </h2>
+            <p className="text-sm text-rv-muted dark:text-[#8A8A8A] mb-5">
+              Crie categorias extras além das padrão. Elas aparecem em todas as
+              telas onde você classifica transações.
+            </p>
+
+            {/* Input para nova categoria */}
+            <div className="flex gap-2 mb-4">
+              <input
+                type="text"
+                value={novaCategoria}
+                onChange={(e) => {
+                  setNovaCategoria(e.target.value);
+                  setErroCategoria("");
+                }}
+                onKeyDown={(e) => e.key === "Enter" && criarCategoria()}
+                placeholder="Nome da nova categoria"
+                maxLength={40}
+                className="flex-1 px-3 py-2 text-sm rounded-xl border border-gray-200
+                           dark:border-white/10 bg-white dark:bg-[#2A2A2A]
+                           text-rv-ink dark:text-[#F0F0F0]
+                           placeholder:text-rv-muted dark:placeholder:text-[#8A8A8A]
+                           focus:outline-none focus:ring-2 focus:ring-rv-green/30"
+              />
+              <button
+                onClick={criarCategoria}
+                disabled={salvandoCategoria || !novaCategoria.trim()}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium
+                           bg-rv-green text-white rounded-xl hover:bg-rv-forest
+                           disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                {salvandoCategoria ? "Salvando..." : "Adicionar"}
+              </button>
+            </div>
+
+            {erroCategoria && (
+              <p className="text-sm text-red-500 mb-3">{erroCategoria}</p>
+            )}
+
+            {/* Lista de categorias personalizadas */}
+            {loadingCategorias ? (
+              <p className="text-sm text-rv-muted dark:text-[#8A8A8A]">Carregando...</p>
+            ) : categorias.length === 0 ? (
+              <p className="text-sm text-rv-muted dark:text-[#8A8A8A]">
+                Nenhuma categoria personalizada criada ainda.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {categorias.map((cat) => (
+                  <li
+                    key={cat}
+                    className="flex items-center justify-between px-3 py-2
+                               bg-rv-page dark:bg-[#2A2A2A] rounded-xl
+                               border border-gray-100 dark:border-white/6"
+                  >
+                    <span className="text-sm text-rv-ink dark:text-[#F0F0F0]">
+                      {cat}
+                    </span>
+                    <button
+                      onClick={() => deletarCategoria(cat)}
+                      className="p-1.5 text-rv-muted hover:text-red-500
+                                 dark:text-[#8A8A8A] dark:hover:text-red-400
+                                 transition-colors rounded-lg"
+                      title="Remover categoria"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* Categorias padrão — informativo */}
+            <details className="mt-5">
+              <summary className="text-xs text-rv-muted dark:text-[#8A8A8A]
+                                  cursor-pointer hover:text-rv-ink dark:hover:text-[#F0F0F0]
+                                  transition-colors select-none">
+                Ver categorias padrão do sistema
+              </summary>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {["Alimentação","Transporte","Saúde","Educação","Lazer",
+                  "Moradia","Investimentos","Receita","Assinaturas","Outros"].map((cat) => (
+                  <span
+                    key={cat}
+                    className="px-2.5 py-1 text-xs rounded-full
+                               bg-rv-mint dark:bg-rv-green/10
+                               text-rv-forest dark:text-rv-vivid
+                               border border-rv-green/15 dark:border-rv-vivid/20"
+                  >
+                    {cat}
+                  </span>
+                ))}
+              </div>
+            </details>
           </div>
 
           {/* Zona de Perigo */}

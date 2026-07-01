@@ -54,25 +54,131 @@ async function recalcularScore(userId: string): Promise<void> {
 }
 
 const transactionsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
-  // GET /transactions/categories - categorias padrão + as já usadas pelo usuário
+  // GET /transactions/categories - padrão + personalizadas + as já usadas
   fastify.get(
     "/categories",
     { preHandler: [authHook, requireActiveSubscription] },
     async (request, reply) => {
-      const { data: usadas } = await fastify.supabaseAdmin
-        .from("transactions")
-        .select("categoria")
-        .eq("user_id", request.user!.id)
-        .not("categoria", "is", null);
+      try {
+        const userId = request.user!.id;
 
-      const categoriasUsadas = [
-        ...new Set((usadas || []).map((t) => t.categoria as string)),
-      ];
-      const categorias = [
-        ...new Set([...CATEGORIAS_PADRAO, ...categoriasUsadas]),
-      ].sort();
+        // Categorias já usadas em transações
+        const { data: usadas } = await fastify.supabaseAdmin
+          .from("transactions")
+          .select("categoria")
+          .eq("user_id", userId)
+          .not("categoria", "is", null);
 
-      return reply.send({ categorias });
+        const categoriasUsadas = [
+          ...new Set((usadas || []).map((t) => t.categoria as string)),
+        ];
+
+        // Categorias personalizadas do usuário
+        const { data: personalizadasData } = await fastify.supabaseAdmin
+          .from("user_categories")
+          .select("nome")
+          .eq("user_id", userId)
+          .order("nome", { ascending: true });
+
+        const personalizadas = (personalizadasData || []).map(
+          (c) => c.nome as string
+        );
+
+        // Merge: padrão + personalizadas + usadas, sem duplicatas
+        const categorias = [
+          ...new Set([
+            ...CATEGORIAS_PADRAO,
+            ...personalizadas,
+            ...categoriasUsadas,
+          ]),
+        ].sort((a, b) => {
+          // Padrão primeiro, depois as demais em ordem alfabética
+          const aPadrao = CATEGORIAS_PADRAO.includes(a);
+          const bPadrao = CATEGORIAS_PADRAO.includes(b);
+          if (aPadrao && !bPadrao) return -1;
+          if (!aPadrao && bPadrao) return 1;
+          return a.localeCompare(b, "pt-BR");
+        });
+
+        return reply.send({ categorias, personalizadas });
+      } catch (err) {
+        fastify.log.error({ err }, "Erro ao buscar categorias");
+        return reply.status(500).send({ error: "Erro ao buscar categorias." });
+      }
+    }
+  );
+
+  // POST /transactions/categories - criar categoria personalizada
+  fastify.post<{ Body: { nome: string } }>(
+    "/categories",
+    { preHandler: [authHook, requireActiveSubscription] },
+    async (request, reply) => {
+      try {
+        const userId = request.user!.id;
+        const { nome } = request.body || {};
+
+        if (!nome?.trim()) {
+          return reply.status(400).send({ error: "Informe o nome da categoria." });
+        }
+
+        const nomeFormatado = nome.trim();
+
+        // Não permitir sobrescrever categorias padrão
+        if (
+          CATEGORIAS_PADRAO.map((c) => c.toLowerCase()).includes(
+            nomeFormatado.toLowerCase()
+          )
+        ) {
+          return reply
+            .status(400)
+            .send({ error: "Essa categoria já existe como padrão." });
+        }
+
+        const { data, error } = await fastify.supabaseAdmin
+          .from("user_categories")
+          .insert({ user_id: userId, nome: nomeFormatado })
+          .select()
+          .single();
+
+        if (error) {
+          if (error.code === "23505") {
+            return reply
+              .status(400)
+              .send({ error: "Você já tem uma categoria com esse nome." });
+          }
+          throw error;
+        }
+
+        return reply.status(201).send({ categoria: data });
+      } catch (err) {
+        fastify.log.error({ err }, "Erro ao criar categoria");
+        return reply.status(500).send({ error: "Erro ao criar categoria." });
+      }
+    }
+  );
+
+  // DELETE /transactions/categories/:nome - deletar categoria personalizada
+  fastify.delete<{ Params: { nome: string } }>(
+    "/categories/:nome",
+    { preHandler: [authHook, requireActiveSubscription] },
+    async (request, reply) => {
+      try {
+        const userId = request.user!.id;
+        const nome = decodeURIComponent(request.params.nome);
+
+        const { error } = await fastify.supabaseAdmin
+          .from("user_categories")
+          .delete()
+          .eq("user_id", userId)
+          .eq("nome", nome);
+
+        if (error) throw error;
+
+        return reply.send({ ok: true });
+      } catch (err) {
+        fastify.log.error({ err }, "Erro ao deletar categoria");
+        return reply.status(500).send({ error: "Erro ao deletar categoria." });
+      }
     }
   );
 
