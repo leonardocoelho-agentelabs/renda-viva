@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { Check, Loader2, LogOut, Calendar, CreditCard, Clock, ShieldCheck, AlertTriangle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/meta-pixel'
@@ -28,7 +27,6 @@ export default function AssinarPage() {
   const [cancelado, setCancelado] = useState(false)
   const [erroCancelamento, setErroCancelamento] = useState('')
   const supabase = createClient()
-  const router = useRouter()
 
   useEffect(() => {
     verificarAcesso()
@@ -367,7 +365,7 @@ export default function AssinarPage() {
 
           {/* Botão voltar ao dashboard */}
           <button
-            onClick={() => router.push('/dashboard')}
+            onClick={() => { window.location.href = '/dashboard' }}
             className="w-full bg-rv-green dark:bg-rv-vivid text-white rounded-xl
                        py-3 text-sm font-semibold hover:bg-rv-forest
                        dark:hover:bg-rv-vivid/90 transition-colors"
@@ -375,56 +373,81 @@ export default function AssinarPage() {
             Voltar ao Dashboard
           </button>
 
-          {/* Cancelamento — só mostrar se não estiver cancelado */}
-          {status !== 'canceled' && !acessoLiberado && (
-            <>
-              <div className="border-t border-gray-100 dark:border-white/6 pt-2">
-                {!cancelado ? (
-                  <>
-                    <p className="text-xs text-rv-muted dark:text-[#8A8A8A] mb-3 text-center">
-                      Para cancelar sua assinatura, digite <strong>CANCELAR</strong> abaixo
-                    </p>
-                    <input
-                      type="text"
-                      value={textoCancelamento}
-                      onChange={e => setTextoCancelamento(e.target.value.toUpperCase())}
-                      placeholder="Digite CANCELAR para confirmar"
-                      className="w-full border border-gray-200 dark:border-white/10
-                                 dark:bg-[#2A2A2A] rounded-xl px-3 py-2 text-sm
-                                 text-rv-ink dark:text-[#F0F0F0]
-                                 placeholder:text-rv-muted/60 dark:placeholder:text-[#8A8A8A]
-                                 focus:outline-none focus:ring-2 focus:ring-red-500/30
-                                 mb-2"
-                    />
-                    {erroCancelamento && (
-                      <p className="text-xs text-red-500 mb-2">{erroCancelamento}</p>
-                    )}
-                    <button
-                      onClick={confirmarCancelamento}
-                      disabled={textoCancelamento !== 'CANCELAR' || cancelando}
-                      className="w-full border border-red-200 dark:border-red-500/30
-                                 text-red-500 dark:text-red-400 rounded-xl py-2.5
-                                 text-sm font-medium hover:bg-red-50 dark:hover:bg-red-500/10
-                                 disabled:opacity-40 disabled:cursor-not-allowed
-                                 transition-colors flex items-center justify-center gap-2"
-                    >
-                      {cancelando ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <AlertTriangle className="w-4 h-4" />
-                      )}
-                      {cancelando ? 'Cancelando...' : 'Cancelar assinatura'}
-                    </button>
-                  </>
-                ) : (
-                  <div className="text-center py-2">
-                    <p className="text-sm text-rv-muted dark:text-[#8A8A8A]">
-                      Assinatura cancelada. Você ainda tem acesso até o fim do período pago.
-                    </p>
-                  </div>
-                )}
+          {/* Fundadores — acesso vitalício */}
+          {acessoLiberado && (
+            <div className="border-t border-gray-100 dark:border-white/6 pt-4">
+              <div className="rounded-xl bg-rv-mint/60 dark:bg-rv-vivid/10
+                              border border-rv-green/15 dark:border-rv-vivid/20
+                              p-4 text-center">
+                <p className="text-sm font-semibold text-rv-forest dark:text-rv-vivid mb-1">
+                  👑 Acesso Vitalício de Fundador
+                </p>
+                <p className="text-xs text-rv-ink dark:text-[#B0B0B0] leading-relaxed">
+                  Como co-fundador do Renda Viva, seu acesso é permanente e gratuito.
+                  Você não será cobrado e não precisa gerenciar nenhuma assinatura.
+                </p>
               </div>
-            </>
+            </div>
+          )}
+
+          {/* Assinantes normais — bloco de cancelamento */}
+          {status !== 'canceled' && !acessoLiberado && (
+            <div className="border-t border-gray-100 dark:border-white/6 pt-2">
+              {!cancelado ? (
+                <>
+                  <p className="text-xs text-rv-muted dark:text-[#8A8A8A] mb-3 text-center">
+                    Para cancelar sua assinatura, digite{' '}
+                    <strong className="text-rv-ink dark:text-[#F0F0F0]">CANCELAR</strong> abaixo
+                  </p>
+                  <input
+                    type="text"
+                    value={textoCancelamento}
+                    onChange={e => setTextoCancelamento(e.target.value.toUpperCase())}
+                    placeholder="Digite CANCELAR para confirmar"
+                    className="w-full border border-gray-200 dark:border-white/10
+                               dark:bg-[#2A2A2A] rounded-xl px-3 py-2 text-sm
+                               text-rv-ink dark:text-[#F0F0F0]
+                               placeholder:text-rv-muted/60 dark:placeholder:text-[#8A8A8A]
+                               focus:outline-none focus:ring-2 focus:ring-red-500/30 mb-2"
+                  />
+                  {erroCancelamento && (
+                    <p className="text-xs text-red-500 mb-2">{erroCancelamento}</p>
+                  )}
+                  <button
+                    onClick={confirmarCancelamento}
+                    disabled={textoCancelamento !== 'CANCELAR' || cancelando}
+                    className="w-full border border-red-200 dark:border-red-500/30
+                               text-red-500 dark:text-red-400 rounded-xl py-2.5
+                               text-sm font-medium hover:bg-red-50 dark:hover:bg-red-500/10
+                               disabled:opacity-40 disabled:cursor-not-allowed
+                               transition-colors flex items-center justify-center gap-2"
+                  >
+                    {cancelando ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4" />
+                    )}
+                    {cancelando ? 'Cancelando...' : 'Cancelar assinatura'}
+                  </button>
+                </>
+              ) : (
+                <div className="text-center py-2">
+                  <p className="text-sm text-rv-muted dark:text-[#8A8A8A]">
+                    Assinatura cancelada com sucesso. Você mantém acesso até o
+                    fim do período já pago.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Assinatura já cancelada */}
+          {status === 'canceled' && !acessoLiberado && (
+            <div className="border-t border-gray-100 dark:border-white/6 pt-4">
+              <p className="text-xs text-rv-muted dark:text-[#8A8A8A] text-center">
+                Sua assinatura está cancelada. Para reativar, entre em contato conosco.
+              </p>
+            </div>
           )}
         </div>
 
